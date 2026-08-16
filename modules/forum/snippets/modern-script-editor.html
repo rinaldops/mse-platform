@@ -1,0 +1,45 @@
+<div
+  id="mse-forum-home"
+  data-mse-module="forum"
+  data-config-key="forum-home">
+</div>
+
+<link
+  rel="stylesheet"
+  href="__SITE_ASSETS__/mse-platform/core/0.10.0/core.css">
+
+<link
+  rel="stylesheet"
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum.css">
+
+<script type="module">
+  import { createSharePointDataSourceRegistry } from "__SITE_ASSETS__/mse-platform/core/0.10.0/data-sources.js";
+  import { sanitizeRichText } from "__SITE_ASSETS__/mse-platform/core/0.10.0/rich-text.js";
+  import { createForumReadService } from "__SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-data.js";
+  import { mountForum } from "__SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum.js";
+
+  const webUrl = "__WEB_URL__";
+
+  const dataSources = createSharePointDataSourceRegistry({
+    allowedWebUrls: [webUrl],
+    sources: [
+      { key: "forum-taxonomy", webUrl, listId: "00000000-0000-4000-8000-000000000001" },
+      { key: "forum-topics", webUrl, listId: "00000000-0000-4000-8000-000000000002" },
+      { key: "forum-topic-tags", webUrl, listId: "00000000-0000-4000-8000-000000000003" },
+      { key: "forum-answers", webUrl, listId: "00000000-0000-4000-8000-000000000004" },
+      { key: "forum-reactions", webUrl, listId: "00000000-0000-4000-8000-000000000005" },
+      { key: "forum-preferences", webUrl, listId: "00000000-0000-4000-8000-000000000006" },
+      { key: "forum-media", webUrl, listId: "00000000-0000-4000-8000-000000000007" }
+    ]
+  });
+
+  mountForum({
+    service: createForumReadService({ dataSources, sanitizeRichText }),
+    instances: {
+      "forum-home": {
+        layout: { mode: "contained" },
+        forum: { pageSize: 12 }
+      }
+    }
+  });
+</script>

@@ -31,3 +31,7 @@ SiteAssets/mse-platform/modules/<module>/<version>/
 ```
 
 Use immutable version folders. Do not overwrite an already published version.
+
+## Forum quick start
+
+See [`modules/forum/USAGE.md`](modules/forum/USAGE.md) for the first SharePoint Modern Script Editor test.
