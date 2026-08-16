@@ -37,14 +37,14 @@ __SITE_ASSETS__/mse-platform/core/0.13.2/vendor/summernote/0.9.0/font/summernote
 __SITE_ASSETS__/mse-platform/core/0.13.2/vendor/summernote/0.9.0/font/summernote.woff
 __SITE_ASSETS__/mse-platform/core/0.13.2/vendor/summernote/0.9.0/font/summernote.ttf
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -123,9 +123,9 @@ Example:
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum.css">
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum.css">
 
-<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.2/forum-loader.js"></script>
+<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.3/forum-loader.js"></script>
 ```
 
 The public repository intentionally keeps `__SITE_ASSETS__` as a placeholder. Replace it with the target SharePoint server-relative `SiteAssets` path only when pasting into the target environment.

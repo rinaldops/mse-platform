@@ -289,7 +289,7 @@ demoWindow.prompt = window.prompt.bind(window);
 const result = await mountModule({
   name: "forum",
   selector: '[data-mse-module="forum"]',
-  moduleDefaults: { layout: { mode: "contained" } },
+  moduleDefaults: { layout: { mode: "fullBleed" } },
   render({ root }) { return createForumView({ root, service, renderRichText, sanitizeRichText, windowImpl: demoWindow }); }
 });
 
@@ -303,6 +303,12 @@ const setContent = (value) => {
 const checks = [];
 checks.push(result.mounted.length === 1);
 checks.push(await waitFor(() => document.querySelectorAll(".mse-forum__topic").length === 3));
+const forumRoot = document.querySelector('[data-mse-module="forum"]');
+const forumShellStyle = getComputedStyle(document.querySelector(".mse-forum"));
+checks.push(forumRoot.classList.contains("mse-app--full-bleed"));
+checks.push(forumShellStyle.borderLeftWidth === "0px" && forumShellStyle.borderRightWidth === "0px");
+checks.push(forumShellStyle.borderRadius === "0px" && forumShellStyle.boxShadow === "none");
+checks.push(parseFloat(forumShellStyle.paddingLeft) >= 16 && parseFloat(forumShellStyle.paddingRight) >= 16);
 checks.push(document.querySelectorAll(".mse-forum__tab").length === 4);
 checks.push(document.querySelector(".mse-forum__contributors")?.textContent.includes("Bruno Costa"));
 
@@ -370,7 +376,9 @@ Object.defineProperty(paste, "clipboardData", {
 });
 editor.dispatchEvent(paste);
 checks.push(editor.querySelector("strong")?.textContent === "segura");
-checks.push(!editor.querySelector("script, img") && !globalThis.pasteXss);
+checks.push(!editor.querySelector("script, [onclick]")
+  && editor.querySelector('img[src="https://example.test/rastreio.png"]')
+  && !globalThis.pasteXss);
 editor.replaceChildren();
 document.querySelector('[name="forumTitle"]').value = "Como criar um tópico?";
 document.querySelector('.mse-forum__save-draft').click();
@@ -387,7 +395,9 @@ document.querySelector(".mse-forum__preview-button").click();
 checks.push(await waitFor(() => !document.querySelector(".mse-forum__compose-preview").hidden));
 checks.push(document.querySelector(".mse-forum__compose-preview .mse-forum__preview-title")?.textContent === "Como criar um tópico?");
 checks.push(document.querySelector(".mse-forum__compose-preview .mse-forum__body strong")?.textContent === "teste");
-checks.push(!document.querySelector(".mse-forum__compose-preview script, .mse-forum__compose-preview img") && !globalThis.previewXss);
+checks.push(!document.querySelector(".mse-forum__compose-preview script, .mse-forum__compose-preview [onclick]")
+  && document.querySelector('.mse-forum__compose-preview img[src="https://example.test/rastreio.png"]')
+  && !globalThis.previewXss);
 checks.push(topicWrites + draftWrites === writesBeforePreview);
 document.querySelector(".mse-forum__compose-form").requestSubmit();
 checks.push(await waitFor(() => document.querySelector(".mse-forum__title")?.textContent === "Como criar um tópico?"));
@@ -426,5 +436,8 @@ checks.push(document.documentElement.scrollWidth <= document.documentElement.cli
 
 const status = document.querySelector("#forum-demo-status");
 const passed = checks.every(Boolean);
-status.textContent = passed ? `${checks.length} verificações concluídas.` : "O preview apresentou falhas.";
+const failedChecks = checks.flatMap((result, index) => result ? [] : [index + 1]);
+status.textContent = passed
+  ? `${checks.length} verificações concluídas.`
+  : `O preview apresentou falhas nas verificações: ${failedChecks.join(", ")}.`;
 status.dataset.mseTestStatus = passed ? "passed" : "failed";
