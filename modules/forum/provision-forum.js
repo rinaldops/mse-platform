@@ -11,6 +11,35 @@
     if (output && data !== undefined) output.textContent = JSON.stringify(data, null, 2);
   }
 
+  function odataText(value) {
+    return String(value).replace(/'/g, "''");
+  }
+
+  async function configureTaxonomyView(webUrl) {
+    const headers = { Accept: "application/json;odata=nometadata" };
+    const listPath = `${webUrl}/_api/web/lists/getbytitle('${odataText("Fórum — Taxonomia")}')`;
+    const current = await fetch(`${listPath}/DefaultView/ViewFields`, { headers, cache: "no-store" });
+    if (!current.ok) throw new Error(`Read taxonomy default view: HTTP ${current.status}`);
+
+    const fields = (await current.json()).Items || [];
+    const missing = ["LinkTitle", "Chave", "Tipo", "Descricao", "Cor", "Ordem", "Ativo"]
+      .filter((field) => !fields.includes(field));
+    if (!missing.length) return { status: "unchanged", fields };
+
+    const context = await fetch(`${webUrl}/_api/contextinfo`, { method: "POST", headers });
+    if (!context.ok) throw new Error(`Read request digest: HTTP ${context.status}`);
+    const digest = (await context.json()).FormDigestValue;
+
+    for (const field of missing) {
+      const response = await fetch(`${listPath}/DefaultView/ViewFields/addViewField('${odataText(field)}')`, {
+        method: "POST",
+        headers: { ...headers, "X-RequestDigest": digest }
+      });
+      if (!response.ok) throw new Error(`Add ${field} to taxonomy default view: HTTP ${response.status}`);
+    }
+    return { status: "configured", fields: [...fields, ...missing] };
+  }
+
   try {
     if (!root || !status || !output) throw new Error(`Provisioning panel not found: ${target}`);
 
@@ -26,7 +55,7 @@
 
     const [{ provisionLists }, { FORUM_LIST_SCHEMAS }] = await Promise.all([
       import(`${assetBase}/mse-platform/core/0.10.0/list-provisioning.js`),
-      import(`${assetBase}/mse-platform/modules/forum/0.15.1/forum-schema.js`)
+      import(`${assetBase}/mse-platform/modules/forum/0.15.2/forum-schema.js`)
     ]);
 
     write("Inspecting SharePoint lists...");
@@ -40,7 +69,10 @@
       }
     });
 
-    write(`Finished: ${result.status}`, result);
+    write("Configuring default views...", result);
+    const taxonomyView = await configureTaxonomyView(webUrl);
+
+    write(`Finished: ${result.status}`, { ...result, taxonomyView });
   } catch (error) {
     if (status) status.textContent = "Provisioning failed.";
     if (output) output.textContent = error?.stack || error?.message || String(error);

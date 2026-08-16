@@ -18,13 +18,13 @@ __SITE_ASSETS__/mse-platform/core/0.10.0/data-sources.js
 __SITE_ASSETS__/mse-platform/core/0.10.0/rich-text.js
 __SITE_ASSETS__/mse-platform/core/0.10.0/list-provisioning.js
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.1/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/provision-forum.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -47,6 +47,8 @@ If the panel stays on `Starting...`, the Modern Script Editor did not execute th
 ## 3. Add one category
 
 Open the list `Fórum — Taxonomia` and create at least one category:
+
+The provisioning snippet configures the default view to show the operational columns. If the list still shows only `Nome`, the fields exist but are not in the current view yet. Open `+ Add column > Show or hide columns`, enable `Chave`, `Tipo`, `Ordem` and `Ativo`, or create the item from the `New` form.
 
 | Field | Value |
 |---|---|
