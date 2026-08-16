@@ -4,7 +4,6 @@ This guide uses placeholders. Replace:
 
 - `__WEB_URL__` with your SharePoint site server-relative URL, for example `/sites/my-site` or `/teams/my-team`.
 - `__SITE_ASSETS__` with `__WEB_URL__/SiteAssets`.
-- each `00000000-0000-4000-8000-000000000000` with the GUID returned after provisioning.
 
 ## 1. Publish the files
 
@@ -18,13 +17,14 @@ __SITE_ASSETS__/mse-platform/core/0.10.0/data-sources.js
 __SITE_ASSETS__/mse-platform/core/0.10.0/rich-text.js
 __SITE_ASSETS__/mse-platform/core/0.10.0/list-provisioning.js
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.15.2/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.3/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -40,7 +40,7 @@ Before saving, replace:
 - `__WEB_URL__`
 - `__SITE_ASSETS__`
 
-Copy the returned `listId` values. They are required by the runtime snippet.
+The runtime loader resolves the list IDs automatically from the provisioned internal list names.
 
 If the panel stays on `Starting...`, the Modern Script Editor did not execute the external script tag. Confirm that script execution is enabled in the webpart settings and that `provision-forum.js` was published. If it changes to `Loading modules...` and then fails, verify the asset URLs and open the browser console for the import error.
 
@@ -76,9 +76,9 @@ Add a Modern Script Editor webpart and paste the snippet from [`snippets/modern-
 
 Before saving, replace:
 
-- `__WEB_URL__`
 - `__SITE_ASSETS__`
-- all list GUID placeholders
+
+The runtime snippet does not require list GUIDs. It resolves the provisioned lists by their stable internal names.
 
 ## 5. Validate the MVP
 
@@ -93,4 +93,4 @@ On the published page:
 7. React to the topic or answer.
 8. Mark an answer as accepted.
 
-If the page shows an access or missing-list error, verify the current user has permission on the site and that the GUIDs in the snippet match the provisioned lists.
+If the page shows an access or missing-list error, verify the current user has permission on the site and that the provisioning created all `Forum*` lists.
