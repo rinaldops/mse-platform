@@ -2,7 +2,7 @@
 
 Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
 
-Current version: `0.13.2`.
+Current version: `0.13.3`.
 
 ## What it provides
 
@@ -44,11 +44,11 @@ The Edge smoke test serves the repository locally and validates the demo pages w
 When uploaded to SharePoint, keep assets versioned:
 
 ```text
-SiteAssets/mse-platform/core/0.13.2/
+SiteAssets/mse-platform/core/0.13.3/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.
 
 ## Full-bleed layout note
 
-`layout.mode = "fullBleed"` expands the module root to the available viewport width without changing SharePoint ancestors. Since multiple core CSS versions may coexist on the same page, version-specific selectors are used for the full-bleed rule to avoid older `core.css` files overriding newer layout fixes.
+`layout.mode = "fullBleed"` expands the module root to the available SharePoint page width without changing SharePoint ancestors. When the SharePoint chrome reserves a lateral navigation area, the root aligns with the chrome content bounds instead of rendering underneath it; outside SharePoint, the viewport is used as fallback. Since multiple core CSS versions may coexist on the same page, version-specific selectors are used for the full-bleed rule to avoid older `core.css` files overriding newer layout fixes.

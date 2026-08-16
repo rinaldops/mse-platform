@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.13.2";
+export const CORE_VERSION = "0.13.3";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
@@ -381,12 +381,22 @@ function applyPresentation(root, config) {
 
   const documentElement = root.ownerDocument?.documentElement || globalThis.document?.documentElement;
   if (config.layout.mode === "fullBleed" && documentElement?.clientWidth) {
+    const layoutHost = root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
     update = () => {
       root.style.setProperty("--mse-full-bleed-margin-left", "0px");
       root.style.setProperty("--mse-full-bleed-margin-right", "0px");
       const rect = root.getBoundingClientRect();
-      root.style.setProperty("--mse-full-bleed-margin-left", `${-Math.max(0, rect.left)}px`);
-      root.style.setProperty("--mse-full-bleed-margin-right", `${-Math.max(0, documentElement.clientWidth - rect.right)}px`);
+      const viewportRight = documentElement.clientWidth;
+      const hostRect = layoutHost?.getBoundingClientRect();
+      const hostIsVisible = hostRect?.width > 0 && hostRect.right > hostRect.left;
+      const targetLeft = hostIsVisible
+        ? Math.max(0, Math.min(viewportRight, hostRect.left))
+        : 0;
+      const targetRight = hostIsVisible
+        ? Math.max(targetLeft, Math.min(viewportRight, hostRect.right))
+        : viewportRight;
+      root.style.setProperty("--mse-full-bleed-margin-left", `${targetLeft - rect.left}px`);
+      root.style.setProperty("--mse-full-bleed-margin-right", `${rect.right - targetRight}px`);
     };
 
     update();
@@ -400,6 +410,7 @@ function applyPresentation(root, config) {
     if (typeof globalThis.ResizeObserver === "function") {
       const observer = new globalThis.ResizeObserver(update);
       observer.observe(documentElement);
+      if (layoutHost) observer.observe(layoutHost);
       cleanups.push(() => observer.disconnect());
     }
     cleanup = () => cleanups.forEach((dispose) => dispose());

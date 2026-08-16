@@ -9,7 +9,6 @@
 }
 
 .mse-app--full-bleed > .mse-forum {
-  padding-inline: max(clamp(1rem, 3vw, 2rem), calc((100vw - 75rem) / 2));
   border-inline: 0;
   border-radius: 0;
   box-shadow: none;
