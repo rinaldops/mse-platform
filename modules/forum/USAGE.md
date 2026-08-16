@@ -41,7 +41,7 @@ Before saving, replace:
 
 Copy the returned `listId` values. They are required by the runtime snippet.
 
-If nothing appears on the page, the script did not run or a module import was blocked. In that case, verify the asset URLs and open the browser console for the import error.
+If the panel stays on `Starting...`, the Modern Script Editor did not execute the script tag. Confirm that script execution is enabled in the webpart settings. If it changes to `Loading modules...` and then fails, verify the asset URLs and open the browser console for the import error.
 
 ## 3. Add one category
 
