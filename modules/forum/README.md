@@ -39,3 +39,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File test/edge-smoke.ps1
 ```
 
 The smoke test validates the local demo in narrow and desktop widths.
+
+## SharePoint test
+
+Use [`USAGE.md`](USAGE.md) to publish the assets, provision the lists and paste the Modern Script Editor snippet.
