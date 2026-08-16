@@ -54,6 +54,10 @@
   color: var(--mse-color-muted, #616161);
 }
 
+.mse-forum__status--empty {
+  color: var(--mse-color-muted, #616161);
+}
+
 .mse-forum__description {
   max-width: 70ch;
   margin-top: 0.4rem;

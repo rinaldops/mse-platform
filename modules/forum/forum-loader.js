@@ -42,8 +42,8 @@
       await Promise.all([
         import(`${assetBase}/mse-platform/core/0.13.3/data-sources.js`),
         import(`${assetBase}/mse-platform/core/0.13.3/rich-text.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.18.4/forum-data.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.18.4/forum.js`)
+        import(`${assetBase}/mse-platform/modules/forum/0.18.5/forum-data.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.18.5/forum.js`)
       ]);
 
     const response = await fetch(

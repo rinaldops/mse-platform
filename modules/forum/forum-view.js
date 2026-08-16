@@ -136,8 +136,9 @@ export function createForumView({
     return render();
   }
 
-  function status(text, role = "status") {
-    const node = element(document, "p", "mse-forum__status", text);
+  function status(text, role = "status", modifier = "") {
+    const className = ["mse-forum__status", modifier].filter(Boolean).join(" ");
+    const node = element(document, "p", className, text);
     node.setAttribute("role", role);
     return node;
   }
@@ -878,7 +879,9 @@ export function createForumView({
       };
 
       answerPage.answers.forEach(drawAnswer);
-      if (!answerPage.answers.length) answers.append(status("Este tópico ainda não recebeu respostas."));
+      if (!answerPage.answers.length) {
+        answers.append(status("Este tópico ainda não recebeu respostas.", "status", "mse-forum__status--empty"));
+      }
       const loadMoreAnswers = nextAnswers
         ? element(document, "button", "mse-forum__button mse-forum__button--secondary", "Carregar mais respostas")
         : null;
@@ -937,7 +940,9 @@ export function createForumView({
       related.append(element(document, "h3", "mse-forum__answers-title", "Tópicos relacionados"));
       const relatedList = element(document, "div", "mse-forum__topic-list");
       for (const item of relatedTopics) relatedList.append(topicCard(item));
-      if (!relatedTopics.length) relatedList.append(status("Nenhum tópico relacionado encontrado."));
+      if (!relatedTopics.length) {
+        relatedList.append(status("Nenhum tópico relacionado encontrado.", "status", "mse-forum__status--empty"));
+      }
       related.append(relatedList);
 
       content.replaceChildren(
