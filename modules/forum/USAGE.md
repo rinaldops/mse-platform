@@ -30,28 +30,18 @@ Do not overwrite an existing version folder. Publish a new version folder when t
 
 ## 2. Provision the SharePoint lists
 
-Create a temporary Modern Script Editor webpart, or run this as an administrator from a controlled test page:
+Create a temporary Modern Script Editor webpart, or run this as an administrator from a controlled test page.
 
-```html
-<script type="module">
-  import { provisionLists } from "__SITE_ASSETS__/mse-platform/core/0.10.0/list-provisioning.js";
-  import { FORUM_LIST_SCHEMAS } from "__SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-schema.js";
+Paste the visible provisioning snippet from [`snippets/provision-forum.html`](snippets/provision-forum.html).
 
-  const result = await provisionLists({
-    webUrl: "__WEB_URL__",
-    schemas: FORUM_LIST_SCHEMAS,
-    confirm(plan) {
-      console.table(plan.lists);
-      return window.confirm("Provision forum lists for this site?");
-    }
-  });
+Before saving, replace:
 
-  console.log("Forum provisioning result:", result);
-  console.table(result.lists);
-</script>
-```
+- `__WEB_URL__`
+- `__SITE_ASSETS__`
 
 Copy the returned `listId` values. They are required by the runtime snippet.
+
+If nothing appears on the page, the script did not run or a module import was blocked. In that case, verify the asset URLs and open the browser console for the import error.
 
 ## 3. Add one category
 
