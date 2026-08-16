@@ -1,5 +1,6 @@
 (async function provisionForum() {
-  const script = document.currentScript;
+  const script = document.currentScript
+    || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/forum/"));
   const target = script?.dataset.target || "#mse-forum-provision";
   const root = document.querySelector(target);
   const status = root?.querySelector("[data-mse-forum-provision-status]");
@@ -13,15 +14,19 @@
   try {
     if (!root || !status || !output) throw new Error(`Provisioning panel not found: ${target}`);
 
-    const webUrl = script?.dataset.webUrl?.replace(/\/+$/, "");
-    const assetBase = script?.dataset.assetBase?.replace(/\/+$/, "");
+    const scriptPath = script?.src ? new URL(script.src, window.location.href).pathname : "";
+    const inferredAssetBase = scriptPath.includes("/SiteAssets/")
+      ? scriptPath.slice(0, scriptPath.indexOf("/SiteAssets/") + "/SiteAssets".length)
+      : "";
+    const webUrl = (script?.dataset.webUrl || inferredAssetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
+    const assetBase = (script?.dataset.assetBase || inferredAssetBase).replace(/\/+$/, "");
     if (!webUrl || !assetBase) throw new Error("Missing data-web-url or data-asset-base.");
 
     write("Loading modules...");
 
     const [{ provisionLists }, { FORUM_LIST_SCHEMAS }] = await Promise.all([
       import(`${assetBase}/mse-platform/core/0.10.0/list-provisioning.js`),
-      import(`${assetBase}/mse-platform/modules/forum/0.15.0/forum-schema.js`)
+      import(`${assetBase}/mse-platform/modules/forum/0.15.1/forum-schema.js`)
     ]);
 
     write("Inspecting SharePoint lists...");
