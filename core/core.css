@@ -22,9 +22,17 @@
 }
 
 .mse-app--full-bleed {
-  width: var(--mse-full-bleed-width, 100vw);
+  width: auto;
   max-width: none;
-  margin-left: var(--mse-full-bleed-margin, calc(50% - 50vw));
+  margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
+  margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
+}
+
+.mse-app[data-mse-core-version="0.13.2"].mse-app--full-bleed {
+  width: auto;
+  max-width: none;
+  margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
+  margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
 }
 
 .mse-core__error {
