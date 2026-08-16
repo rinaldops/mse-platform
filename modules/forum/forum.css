@@ -465,7 +465,8 @@
 }
 
 .mse-forum__body {
-  max-width: 80ch;
+  width: 100%;
+  max-width: none;
 }
 
 .mse-forum__body--rich {

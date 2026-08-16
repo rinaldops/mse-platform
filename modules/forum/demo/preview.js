@@ -325,6 +325,10 @@ checks.push(await waitFor(() => document.querySelectorAll(".mse-forum__topic").l
 
 document.querySelector(".mse-forum__topic-link").click();
 checks.push(await waitFor(() => document.querySelectorAll(".mse-forum__answer").length === 2));
+const detailTitleRect = document.querySelector(".mse-forum__title").getBoundingClientRect();
+const detailBodyRect = document.querySelector(".mse-forum__body").getBoundingClientRect();
+checks.push(Math.abs(detailTitleRect.left - detailBodyRect.left) < 1
+  && Math.abs(detailTitleRect.right - detailBodyRect.right) < 1);
 checks.push(document.querySelector(".mse-forum__body strong")?.textContent === "sobrescrever");
 checks.push(!document.querySelector(".mse-forum__body script") && !globalThis.forumXss);
 checks.push([...document.querySelectorAll(".mse-forum__related .mse-forum__topic-link")]

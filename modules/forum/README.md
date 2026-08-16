@@ -2,7 +2,7 @@
 
 Forum module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
 
-Current version: `0.18.5`.
+Current version: `0.18.6`.
 
 ## Features in this MVP
 
