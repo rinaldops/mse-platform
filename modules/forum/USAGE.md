@@ -106,6 +106,32 @@ To choose the editor, set `data-editor` in the snippet:
 - `data-editor="Summernote"` loads Summernote Lite.
 - `data-editor="default"` uses the native forum editor.
 
+Example:
+
+```html
+<div
+  id="mse-forum-home"
+  data-mse-module="forum"
+  data-config-key="forum-home"
+  data-editor="Summernote">
+  Loading forum...
+</div>
+
+<link
+  rel="stylesheet"
+  href="__SITE_ASSETS__/mse-platform/core/0.13.0/core.css">
+
+<link
+  rel="stylesheet"
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum.css">
+
+<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-loader.js"></script>
+```
+
+The public repository intentionally keeps `__SITE_ASSETS__` as a placeholder. Replace it with the target SharePoint server-relative `SiteAssets` path only when pasting into the target environment.
+
+Summernote image insertion is available for MVP validation. This version preserves small sanitized images, including `data:image` values, but production scenarios should store images in a SharePoint library and persist URLs in the rich text.
+
 ## 5. Validate the MVP
 
 On the published page:

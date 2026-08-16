@@ -43,3 +43,27 @@ The smoke test validates the local demo in narrow and desktop widths.
 ## SharePoint test
 
 Use [`USAGE.md`](USAGE.md) to publish the assets, provision the lists and paste the Modern Script Editor snippet.
+
+## Editor configuration
+
+The forum delegates rich-text editing to the core editor selector.
+
+In Modern Script Editor markup:
+
+```html
+<div
+  data-mse-module="forum"
+  data-config-key="forum-home"
+  data-editor="Summernote">
+</div>
+```
+
+Accepted values:
+
+- `Quill`
+- `Summernote`
+- `default`
+
+The same setting can be supplied through instance configuration as `forum.editor` or `forum.Editor`.
+
+Use `Summernote` for MVP tests that require image insertion. For production use, prefer storing images in a SharePoint library and inserting URLs instead of persisting large base64 images in list fields.

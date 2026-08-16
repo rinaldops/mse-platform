@@ -16,6 +16,20 @@ Current version: `0.13.0`.
 - Safe rich-text sanitization and rendering.
 - Shared rich-text editor selector with Quill, Summernote Lite and native fallback support.
 
+## Rich-text editor selector
+
+`editor.js` centralizes editor selection for consumers:
+
+```js
+selectRichTextEditor("Quill")
+selectRichTextEditor("Summernote")
+selectRichTextEditor("default")
+```
+
+The `default` option returns no external adapter so the consuming module can use its native editor. Quill and Summernote assets are published locally with their licenses and are loaded on demand.
+
+See [`../docs/EDITORES-RICOS.md`](../docs/EDITORES-RICOS.md).
+
 ## Local tests
 
 ```powershell

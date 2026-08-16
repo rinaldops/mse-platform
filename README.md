@@ -35,3 +35,17 @@ Use immutable version folders. Do not overwrite an already published version.
 ## Forum quick start
 
 See [`modules/forum/USAGE.md`](modules/forum/USAGE.md) for the first SharePoint Modern Script Editor test.
+
+## Rich-text editors
+
+The shared core supports configurable rich-text editors through `core/editor.js`.
+
+Supported values:
+
+- `Quill`
+- `Summernote`
+- `default`
+
+See [`docs/EDITORES-RICOS.md`](docs/EDITORES-RICOS.md) for implementation notes, security decisions and known limits.
+
+Public snippets use placeholders such as `__SITE_ASSETS__`. Environment-specific URLs should be substituted only in the target SharePoint site or in private operational documentation.
