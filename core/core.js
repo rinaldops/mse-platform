@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.13.0";
+export const CORE_VERSION = "0.13.2";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
@@ -382,16 +382,15 @@ function applyPresentation(root, config) {
   const documentElement = root.ownerDocument?.documentElement || globalThis.document?.documentElement;
   if (config.layout.mode === "fullBleed" && documentElement?.clientWidth) {
     update = () => {
-      root.style.setProperty("--mse-full-bleed-width", `${documentElement.clientWidth}px`);
-      root.style.setProperty("--mse-full-bleed-margin", "0px");
-      root.style.setProperty(
-        "--mse-full-bleed-margin",
-        `${-root.getBoundingClientRect().left}px`
-      );
+      root.style.setProperty("--mse-full-bleed-margin-left", "0px");
+      root.style.setProperty("--mse-full-bleed-margin-right", "0px");
+      const rect = root.getBoundingClientRect();
+      root.style.setProperty("--mse-full-bleed-margin-left", `${-Math.max(0, rect.left)}px`);
+      root.style.setProperty("--mse-full-bleed-margin-right", `${-Math.max(0, documentElement.clientWidth - rect.right)}px`);
     };
 
     update();
-    properties.push("--mse-full-bleed-width", "--mse-full-bleed-margin");
+    properties.push("--mse-full-bleed-margin-left", "--mse-full-bleed-margin-right");
 
     const cleanups = [];
     if (typeof globalThis.addEventListener === "function") {

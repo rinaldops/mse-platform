@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-A partir do `core/0.13.0`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor.
+A partir do `core/0.13.2`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor.
 
 Editores suportados:
 
@@ -15,7 +15,7 @@ Editores suportados:
 O seletor público fica em:
 
 ```text
-core/0.13.0/editor.js
+core/0.13.2/editor.js
 ```
 
 API principal:
@@ -36,17 +36,17 @@ selectRichTextEditor("default")
 - O tema visual usa tokens `--mse-*` para aproximar o editor do host SharePoint.
 - Pastas publicadas são imutáveis; correção exige nova versão.
 
-## Assets do core `0.13.0`
+## Assets do core `0.13.2`
 
 ```text
-core/0.13.0/editor.js
-core/0.13.0/editor-quill.js
-core/0.13.0/editor-quill.css
-core/0.13.0/editor-summernote.js
-core/0.13.0/editor-summernote.css
-core/0.13.0/vendor/quill/2.0.3/
-core/0.13.0/vendor/jquery/3.7.1/
-core/0.13.0/vendor/summernote/0.9.0/
+core/0.13.2/editor.js
+core/0.13.2/editor-quill.js
+core/0.13.2/editor-quill.css
+core/0.13.2/editor-summernote.js
+core/0.13.2/editor-summernote.css
+core/0.13.2/vendor/quill/2.0.3/
+core/0.13.2/vendor/jquery/3.7.1/
+core/0.13.2/vendor/summernote/0.9.0/
 ```
 
 ## Quill
@@ -102,7 +102,7 @@ Essa decisão é suficiente para MVP e teste funcional. Para produto definitivo,
 
 ## Configuração no fórum
 
-O fórum `0.18.0` aceita:
+O fórum `0.18.2` aceita:
 
 ```html
 data-editor="Quill"
