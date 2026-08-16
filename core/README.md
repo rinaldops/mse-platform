@@ -11,6 +11,7 @@ Current version: `0.13.5`.
 - Contained and full-bleed layout helpers.
 - SharePoint REST client with digest, ETag and typed HTTP errors.
 - Paged reads using `@odata.nextLink`.
+- Binary file upload to SharePoint document libraries using resolved list GUIDs.
 - Declarative list/library provisioning.
 - Cross-site data source registry using explicit allowlists.
 - Safe rich-text sanitization and rendering.
@@ -48,6 +49,10 @@ SiteAssets/mse-platform/core/0.13.5/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.
+
+## Binary uploads
+
+Core `0.13.5` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
 
 ## Full-bleed layout note
 
