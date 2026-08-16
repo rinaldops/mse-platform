@@ -40,10 +40,10 @@
 
     const [{ createSharePointDataSourceRegistry }, { sanitizeRichText }, { createForumReadService }, { mountForum }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.12.2/data-sources.js`),
-        import(`${assetBase}/mse-platform/core/0.12.2/rich-text.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.17.2/forum-data.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.17.2/forum.js`)
+        import(`${assetBase}/mse-platform/core/0.13.0/data-sources.js`),
+        import(`${assetBase}/mse-platform/core/0.13.0/rich-text.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.18.0/forum-data.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.18.0/forum.js`)
       ]);
 
     const response = await fetch(
@@ -70,7 +70,10 @@
         root.dataset.configKey || root.id || "forum-home",
         {
           layout: { mode: root.dataset.layoutMode || "contained" },
-          forum: { pageSize: Number(root.dataset.pageSize || 12) }
+          forum: {
+            editor: root.dataset.editor || undefined,
+            pageSize: Number(root.dataset.pageSize || 12)
+          }
         }
       ]))
     });

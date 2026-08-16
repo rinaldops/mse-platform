@@ -1,0 +1,33 @@
+.mse-summernote .note-editor.note-frame {
+  border: 1px solid var(--mse-color-border, #d1d1d1);
+  border-radius: var(--mse-radius, 0.5rem);
+  color: var(--mse-color-text, #242424);
+  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+  overflow: hidden;
+}
+
+.mse-summernote .note-toolbar {
+  background: var(--mse-color-subtle-background, #f3f2f1);
+  border-bottom: 1px solid var(--mse-color-border, #d1d1d1);
+}
+
+.mse-summernote .note-editable {
+  background: var(--mse-color-input-background, #fff);
+  color: var(--mse-color-text, #242424);
+  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+  font-size: var(--mse-font-size-body, 1rem);
+  min-height: 12rem;
+}
+
+.mse-summernote .note-btn {
+  border-color: transparent;
+  color: var(--mse-color-text, #242424);
+  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+}
+
+.mse-summernote .note-btn:hover,
+.mse-summernote .note-btn:focus {
+  background: var(--mse-color-primary-soft, #eef6fc);
+  border-color: var(--mse-color-primary, #0f6cbd);
+  color: var(--mse-color-text, #242424);
+}
