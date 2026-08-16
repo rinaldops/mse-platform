@@ -35,8 +35,10 @@
 }
 
 .mse-forum__title {
-  font-size: clamp(1.35rem, 3vw, 2rem);
-  line-height: 1.2;
+  color: var(--mse-color-primary-hover, #00773c);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .mse-forum__description,
