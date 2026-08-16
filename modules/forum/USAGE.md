@@ -24,6 +24,7 @@ __SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-data.js
 __SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-editor.js
 __SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-view.js
 __SITE_ASSETS__/mse-platform/modules/forum/0.15.0/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.15.0/provision-forum.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -41,7 +42,7 @@ Before saving, replace:
 
 Copy the returned `listId` values. They are required by the runtime snippet.
 
-If the panel stays on `Starting...`, the Modern Script Editor did not execute the script tag. Confirm that script execution is enabled in the webpart settings. If it changes to `Loading modules...` and then fails, verify the asset URLs and open the browser console for the import error.
+If the panel stays on `Starting...`, the Modern Script Editor did not execute the external script tag. Confirm that script execution is enabled in the webpart settings and that `provision-forum.js` was published. If it changes to `Loading modules...` and then fails, verify the asset URLs and open the browser console for the import error.
 
 ## 3. Add one category
 
