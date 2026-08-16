@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.13.5";
+export const CORE_VERSION = "0.13.6";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
@@ -381,7 +381,8 @@ function applyPresentation(root, config) {
 
   const documentElement = root.ownerDocument?.documentElement || globalThis.document?.documentElement;
   if (config.layout.mode === "fullBleed" && documentElement?.clientWidth) {
-    const layoutHost = root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
+    const layoutHost = root.ownerDocument?.querySelector?.('[data-automation-id="contentScrollRegion"]')
+      || root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
     update = () => {
       root.style.setProperty("--mse-full-bleed-margin-left", "0px");
       root.style.setProperty("--mse-full-bleed-margin-right", "0px");
