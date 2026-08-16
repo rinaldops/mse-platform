@@ -18,14 +18,14 @@ __SITE_ASSETS__/mse-platform/core/0.11.0/rich-text.js
 __SITE_ASSETS__/mse-platform/core/0.11.0/list-provisioning.js
 __SITE_ASSETS__/mse-platform/core/0.11.0/theme-adapter.js
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.0/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.16.1/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
