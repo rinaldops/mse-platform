@@ -2,7 +2,7 @@
 
 Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
 
-Current version: `0.13.5`.
+Current version: `0.13.6`.
 
 ## What it provides
 
@@ -45,14 +45,16 @@ The Edge smoke test serves the repository locally and validates the demo pages w
 When uploaded to SharePoint, keep assets versioned:
 
 ```text
-SiteAssets/mse-platform/core/0.13.5/
+SiteAssets/mse-platform/core/0.13.6/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.
 
+**Never overwrite a published version folder.** SharePoint's own Service Worker cache (`SPClient-*`) serves `SiteAssets` files from Cache Storage per browser profile, independent of normal HTTP cache-clearing, and does not expire on its own. Overwriting a file in place can leave some users permanently stuck on the old version while others get the fix — see [`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação). Every fix, no matter how small, publishes a new version folder.
+
 ## Binary uploads
 
-Core `0.13.5` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
+Core `0.13.6` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
 
 ## Full-bleed layout note
 
