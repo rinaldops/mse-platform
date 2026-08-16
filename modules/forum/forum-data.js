@@ -35,9 +35,9 @@ const ANSWER_FIELDS = [
 const MAX_TAG_SCAN_PAGES = 10;
 const TOPIC_DRAFT_VERSION = 2;
 const MAX_CONTENT_LENGTH = 20000;
-const MAX_RICH_INPUT_LENGTH = 10000000;
+const MAX_RICH_INPUT_LENGTH = 15000000;
 const MAX_INLINE_IMAGES = 10;
-const MAX_IMAGE_BYTES = 5000000;
+const MAX_IMAGE_BYTES = 1024 * 1024;
 const CONTENT_FORMATS = new Set(["TextoSimples", "HtmlSeguroV1"]);
 const PUBLICATION_TYPES = new Set(["Topico", "Resposta"]);
 const REACTION_TYPES = new Set(["Gostei", "Util", "Excelente"]);
@@ -174,7 +174,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       const [tag, quote, dataUrl, subtype, base64] = match;
       const bytes = decodeBase64(base64);
       if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) {
-        throw new TypeError("Cada imagem deve possuir no máximo 5 MB.");
+        throw new TypeError("Cada imagem deve possuir no máximo 1 MB.");
       }
       const normalizedSubtype = subtype.toLowerCase() === "jpg" ? "jpeg" : subtype.toLowerCase();
       const extension = normalizedSubtype === "jpeg" ? "jpg" : normalizedSubtype;

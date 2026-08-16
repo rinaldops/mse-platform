@@ -1,6 +1,7 @@
 export const RICH_TEXT_POLICY_VERSION = 1;
 
-const MAX_INPUT_LENGTH = 500000;
+const MAX_INPUT_LENGTH = 15000000;
+const MAX_INLINE_IMAGE_BYTES = 1024 * 1024;
 const ALLOWED_TAGS = new Set([
   "A", "BLOCKQUOTE", "BR", "CAPTION", "CODE", "DEL", "EM", "H2", "H3", "H4", "HR",
   "IMG", "LI", "OL", "P", "PRE", "S", "STRONG", "SUB", "SUP", "TABLE", "TBODY", "TD",
@@ -40,7 +41,11 @@ function safeImageSrc(value, baseUrl) {
   const src = value.trim();
   if (!src || /[\u0000-\u001f\u007f]/.test(src)) return null;
   if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src)) {
-    return src.length <= 250000 ? src.replace(/\s/g, "") : null;
+    const normalized = src.replace(/\s/g, "");
+    const base64 = normalized.slice(normalized.indexOf(",") + 1);
+    const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+    const byteLength = Math.floor(base64.length * 3 / 4) - padding;
+    return byteLength <= MAX_INLINE_IMAGE_BYTES ? normalized : null;
   }
   try {
     const url = new URL(src, baseUrl);

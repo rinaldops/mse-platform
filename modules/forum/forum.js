@@ -1,9 +1,9 @@
-import { mountModule } from "../../../core/0.13.4/core.js";
-import { selectRichTextEditor } from "../../../core/0.13.4/editor.js";
-import { renderRichText, sanitizeRichText } from "../../../core/0.13.4/rich-text.js";
+import { mountModule } from "../../../core/0.13.5/core.js";
+import { selectRichTextEditor } from "../../../core/0.13.5/editor.js";
+import { renderRichText, sanitizeRichText } from "../../../core/0.13.5/rich-text.js";
 import { createForumView } from "./forum-view.js";
 
-export const FORUM_VERSION = "0.18.7";
+export const FORUM_VERSION = "0.18.8";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 export function mountForum({ service, globalConfig = {}, instances = {} } = {}) {

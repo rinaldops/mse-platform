@@ -89,7 +89,7 @@ const moduleDefaults = { title: "module" };
 const instanceConfig = { title: "instance", layout: { mode: "fullBleed" } };
 const resolved = resolveConfig({ globalConfig, moduleDefaults, instanceConfig });
 
-assert.equal(CORE_VERSION, "0.13.4");
+assert.equal(CORE_VERSION, "0.13.5");
 assert.equal(resolved.title, "instance");
 assert.equal(resolved.layout.mode, "fullBleed");
 assert.equal(resolved.theme.tokens.colorPrimary, "#123456");
