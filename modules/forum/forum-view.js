@@ -79,6 +79,7 @@ export function createForumView({
   root,
   service,
   pageSize = 12,
+  createRichTextEditor,
   renderRichText,
   sanitizeRichText,
   historyImpl = globalThis.history,
@@ -117,6 +118,9 @@ export function createForumView({
   if (sanitizeRichText !== undefined && typeof sanitizeRichText !== "function") {
     throw new TypeError("sanitizeRichText deve ser uma função.");
   }
+  if (createRichTextEditor !== undefined && typeof createRichTextEditor !== "function") {
+    throw new TypeError("createRichTextEditor deve ser uma função.");
+  }
 
   const document = root.ownerDocument;
   let renderSequence = 0;
@@ -145,6 +149,43 @@ export function createForumView({
       renderRichText(node, value || "");
     } else node.textContent = value || "Sem conteúdo.";
     return node;
+  }
+
+  async function richTextEditor(initialContent = "", placeholder = "Escreva o conteúdo...") {
+    if (typeof createRichTextEditor === "function") {
+      try {
+        const editorRoot = element(document, "div");
+        const editor = await createRichTextEditor({
+          root: editorRoot,
+          initialHtml: initialContent,
+          placeholder,
+          sanitizeRichText
+        });
+        return {
+          root: editorRoot,
+          contentFormat: editor.contentFormat,
+          getValue: editor.getValue,
+          focus: editor.focus,
+          clear: editor.clear
+        };
+      } catch (error) {
+        console.warn("Quill indisponível; usando editor rico nativo.", error);
+      }
+    }
+    const editor = createForumRichTextEditor({
+      document,
+      value: initialContent,
+      renderRichText,
+      sanitizeRichText,
+      promptImpl: windowImpl?.prompt?.bind(windowImpl)
+    });
+    return {
+      root: editor.root,
+      contentFormat: editor.contentFormat,
+      getValue: editor.getValue,
+      focus: () => editor.editor.focus(),
+      clear: editor.clear
+    };
   }
 
   function topicCard(topic) {
@@ -442,13 +483,7 @@ export function createForumView({
         if (!renderRichText || !sanitizeRichText) {
           throw new TypeError("O editor HTML exige renderRichText e sanitizeRichText.");
         }
-        richEditor = createForumRichTextEditor({
-          document,
-          value: initialContent,
-          renderRichText,
-          sanitizeRichText,
-          promptImpl: windowImpl?.prompt?.bind(windowImpl)
-        });
+        richEditor = await richTextEditor(initialContent, "Escreva o conteúdo do tópico...");
         contentLabel.append(richEditor.root);
       } else {
         body = element(document, "textarea", "mse-forum__textarea");
@@ -719,17 +754,10 @@ export function createForumView({
       const answers = element(document, "div", "mse-forum__answers");
       let nextAnswers = answerPage.next;
 
-      const answerEditor = (initialContent = "", contentFormat = "HtmlSeguroV1") => {
+      const answerEditor = async (initialContent = "", contentFormat = "HtmlSeguroV1") => {
         if (contentFormat === "HtmlSeguroV1") {
           if (!renderRichText || !sanitizeRichText) throw new TypeError("O editor HTML exige renderRichText e sanitizeRichText.");
-          const editor = createForumRichTextEditor({
-            document,
-            value: initialContent,
-            renderRichText,
-            sanitizeRichText,
-            promptImpl: windowImpl?.prompt?.bind(windowImpl)
-          });
-          return { root: editor.root, contentFormat, getValue: editor.getValue, focus: () => editor.editor.focus() };
+          return richTextEditor(initialContent, "Escreva sua resposta...");
         }
         const textarea = element(document, "textarea", "mse-forum__textarea");
         textarea.required = true;
@@ -792,7 +820,7 @@ export function createForumView({
             try {
               const editableAnswer = await service.getAnswerForEdit(answer.Id);
               if (!editableAnswer || disposed || sequence !== renderSequence) return;
-              const editor = answerEditor(editableAnswer.answer.Conteudo || "", editableAnswer.answer.FormatoConteudo || "TextoSimples");
+              const editor = await answerEditor(editableAnswer.answer.Conteudo || "", editableAnswer.answer.FormatoConteudo || "TextoSimples");
               const form = element(document, "form", "mse-forum__answer-form");
               const feedback = element(document, "div", "mse-forum__compose-feedback");
               feedback.setAttribute("aria-live", "polite");
@@ -881,7 +909,7 @@ export function createForumView({
 
       const reply = element(document, "form", "mse-forum__answer-form");
       const replyTitle = element(document, "h3", "mse-forum__answers-title", "Responder");
-      const replyEditor = answerEditor();
+      const replyEditor = await answerEditor();
       const replyFeedback = element(document, "div", "mse-forum__compose-feedback");
       replyFeedback.setAttribute("aria-live", "polite");
       const replySubmit = element(document, "button", "mse-forum__button", "Publicar resposta");

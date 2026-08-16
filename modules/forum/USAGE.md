@@ -10,22 +10,29 @@ This guide uses placeholders. Replace:
 Upload these files preserving the version folders:
 
 ```text
-__SITE_ASSETS__/mse-platform/core/0.11.0/core.js
-__SITE_ASSETS__/mse-platform/core/0.11.0/core.css
-__SITE_ASSETS__/mse-platform/core/0.11.0/rest.js
-__SITE_ASSETS__/mse-platform/core/0.11.0/data-sources.js
-__SITE_ASSETS__/mse-platform/core/0.11.0/rich-text.js
-__SITE_ASSETS__/mse-platform/core/0.11.0/list-provisioning.js
-__SITE_ASSETS__/mse-platform/core/0.11.0/theme-adapter.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/core.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/core.css
+__SITE_ASSETS__/mse-platform/core/0.12.2/rest.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/data-sources.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/rich-text.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/list-provisioning.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/theme-adapter.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/editor-quill.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/editor-quill.css
+__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.js
+__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.js.LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.core.css
+__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.snow.css
+__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/LICENSE
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.16.4/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
