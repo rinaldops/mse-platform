@@ -107,6 +107,34 @@ Decisão inicial recomendada:
 - O editor respeita os tokens de tema do núcleo.
 - O fallback nativo continua disponível.
 
+## Atualização após implementação
+
+O plano começou como avaliação do Quill, mas a entrega consolidada virou uma estratégia de editores ricos configuráveis no núcleo.
+
+Entregas acumuladas:
+
+- `core/0.12.2`: Quill local validado em SharePoint, incluindo contorno para páginas que expõem `define.amd`.
+- `core/0.13.0`: seletor `editor.js`, Summernote Lite, jQuery local, CSS/fontes/licenças locais e sanitização de imagens pequenas.
+- `forum/0.18.0`: seleção por `data-editor`, `forum.editor` ou `forum.Editor`.
+
+Valores aceitos:
+
+- `Quill`;
+- `Summernote`;
+- `default`.
+
+Aprendizados principais:
+
+- dependências de editor devem ficar no núcleo, não dentro do módulo consumidor;
+- o módulo não deve importar fornecedor diretamente, apenas receber uma função de criação de editor;
+- SharePoint pode interferir com bundles UMD por causa de AMD;
+- Summernote Lite evita Bootstrap, mas ainda exige jQuery;
+- o CSS do Summernote exige publicar as fontes junto dos estilos;
+- imagem base64 é útil para MVP, mas não é recomendável como solução definitiva em listas;
+- o sanitizador continua sendo a fronteira de segurança, inclusive quando o editor possui code view.
+
+Documento consolidado: [`EDITORES-RICOS.md`](EDITORES-RICOS.md).
+
 ## Referências
 
 - Quill API: https://quilljs.com/docs/api
