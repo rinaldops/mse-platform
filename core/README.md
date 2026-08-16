@@ -2,7 +2,7 @@
 
 Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
 
-Current version: `0.11.0`.
+Current version: `0.12.2`.
 
 ## What it provides
 
@@ -14,6 +14,7 @@ Current version: `0.11.0`.
 - Declarative list/library provisioning.
 - Cross-site data source registry using explicit allowlists.
 - Safe rich-text sanitization and rendering.
+- Shared Quill rich-text editor adapter with local vendor assets.
 
 ## Local tests
 
@@ -29,7 +30,7 @@ The Edge smoke test serves the repository locally and validates the demo pages w
 When uploaded to SharePoint, keep assets versioned:
 
 ```text
-SiteAssets/mse-platform/core/0.11.0/
+SiteAssets/mse-platform/core/0.12.2/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.

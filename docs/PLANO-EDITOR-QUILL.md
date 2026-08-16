@@ -18,9 +18,9 @@ O editor nativo atual permanece como fallback leve até o adaptador Quill estar 
 Adicionar um pacote versionado:
 
 ```text
-core/0.12.0/editor-quill.js
-core/0.12.0/editor-quill.css
-core/0.12.0/vendor/quill/
+core/0.12.2/editor-quill.js
+core/0.12.2/editor-quill.css
+core/0.12.2/vendor/quill/
 ```
 
 O adaptador público deve expor uma API pequena:
@@ -43,6 +43,11 @@ Contrato mínimo:
 - `setHtml(html)`;
 - `focus()`;
 - `destroy()`.
+
+## Status de implementacao
+
+- `core/0.12.2`: adaptador Quill local entregue no nucleo.
+- `forum/0.17.2`: primeiro consumo do adaptador iniciado no modulo de forum, com fallback nativo.
 
 ## Fases
 
@@ -80,7 +85,7 @@ Decisão inicial recomendada:
 
 ### Q5 — Validação SharePoint
 
-- Publicar o núcleo `0.12.0` e o módulo consumidor em pastas versionadas.
+- Publicar o núcleo `0.12.2` e o módulo consumidor em pastas versionadas.
 - Testar em Modern Script Editor com scripts externos.
 - Medir tamanho dos ativos e tempo de carregamento.
 - Confirmar ausência de erros no console.

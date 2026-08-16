@@ -1,8 +1,9 @@
-import { mountModule } from "../../../core/0.11.0/core.js";
-import { renderRichText, sanitizeRichText } from "../../../core/0.11.0/rich-text.js";
+import { mountModule } from "../../../core/0.12.2/core.js";
+import { createRichTextEditor } from "../../../core/0.12.2/editor-quill.js";
+import { renderRichText, sanitizeRichText } from "../../../core/0.12.2/rich-text.js";
 import { createForumView } from "./forum-view.js";
 
-export const FORUM_VERSION = "0.16.4";
+export const FORUM_VERSION = "0.17.2";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 export function mountForum({ service, globalConfig = {}, instances = {} } = {}) {
@@ -19,6 +20,7 @@ export function mountForum({ service, globalConfig = {}, instances = {} } = {}) 
       return createForumView({
         root,
         service,
+        createRichTextEditor,
         renderRichText,
         sanitizeRichText,
         pageSize: config.forum?.pageSize ?? 12
