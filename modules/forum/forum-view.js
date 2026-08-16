@@ -308,8 +308,8 @@ export function createForumView({
       for (const contributor of contributors) {
         const item = element(document, "li", "mse-forum__contributor");
         item.append(
-          element(document, "strong", null, contributor.name),
-          element(document, "span", null, `${contributor.score} pts · ${contributor.topics} tópico${contributor.topics === 1 ? "" : "s"} · ${contributor.answers} resposta${contributor.answers === 1 ? "" : "s"}`)
+          element(document, "span", "mse-forum__contributor-name", contributor.name),
+          element(document, "span", "mse-forum__contributor-meta", `${contributor.score} pts · ${contributor.topics} tópico${contributor.topics === 1 ? "" : "s"} · ${contributor.answers} resposta${contributor.answers === 1 ? "" : "s"}`)
         );
         contributorList.append(item);
       }

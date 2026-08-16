@@ -15,7 +15,7 @@
 .mse-forum__status,
 .mse-forum__answers-title {
   color: var(--mse-color-primary-hover, #00773c);
-  font-weight: 600;
+  font-weight: 400;
   margin: 0;
 }
 
@@ -244,12 +244,15 @@
 
 .mse-forum__contributor {
   color: var(--mse-color-primary-hover, #00773c);
-  font-weight: 600;
   padding-left: 0.25rem;
 }
 
-.mse-forum__contributor span {
+.mse-forum__contributor-name,
+.mse-forum__contributor-meta {
   display: block;
+}
+
+.mse-forum__contributor-meta {
   color: var(--mse-color-muted, #616161);
   font-size: 0.875rem;
 }
@@ -358,7 +361,7 @@
 .mse-forum__topic-link {
   color: var(--mse-color-primary-hover, #00773c);
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: none;
 }
 
