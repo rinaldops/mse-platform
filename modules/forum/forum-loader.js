@@ -9,16 +9,25 @@
     ["forum-media", "ForumMidia"]
   ];
 
-  const roots = [...document.querySelectorAll('[data-mse-module="forum"]')];
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/forum/"));
+  const roots = [...document.querySelectorAll('[data-mse-module="forum"]')];
+  if (!roots.length && script?.parentNode) {
+    const root = document.createElement("div");
+    root.id = "mse-forum-home";
+    root.dataset.mseModule = "forum";
+    root.dataset.configKey = "forum-home";
+    root.textContent = "Carregando fórum...";
+    script.parentNode.insertBefore(root, script);
+    roots.push(root);
+  }
 
   function write(message) {
     for (const root of roots) root.textContent = message;
   }
 
   try {
-    if (!roots.length) return;
+    if (!roots.length) throw new Error("Missing forum root element.");
 
     const scriptPath = script?.src ? new URL(script.src, window.location.href).pathname : "";
     const assetBase = scriptPath.includes("/SiteAssets/")
@@ -33,8 +42,8 @@
       await Promise.all([
         import(`${assetBase}/mse-platform/core/0.11.0/data-sources.js`),
         import(`${assetBase}/mse-platform/core/0.11.0/rich-text.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.16.2/forum-data.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.16.2/forum.js`)
+        import(`${assetBase}/mse-platform/modules/forum/0.16.3/forum-data.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.16.3/forum.js`)
       ]);
 
     const response = await fetch(
