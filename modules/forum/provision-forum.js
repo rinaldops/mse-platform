@@ -54,8 +54,8 @@
     write("Loading modules...");
 
     const [{ provisionLists }, { FORUM_LIST_SCHEMAS }] = await Promise.all([
-      import(`${assetBase}/mse-platform/core/0.13.4/list-provisioning.js`),
-      import(`${assetBase}/mse-platform/modules/forum/0.18.7/forum-schema.js`)
+      import(`${assetBase}/mse-platform/core/0.13.5/list-provisioning.js`),
+      import(`${assetBase}/mse-platform/modules/forum/0.18.8/forum-schema.js`)
     ]);
 
     write("Inspecting SharePoint lists...");

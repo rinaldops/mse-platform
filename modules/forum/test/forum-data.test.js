@@ -260,7 +260,7 @@ assert.equal(richTopic.topicId, 2);
 const richTopicCall = calls.find((call) => call.method === "create" && call.values.Title === "Tópico formatado");
 assert.equal(richTopicCall.values.Conteudo, "<p><strong>Conteúdo</strong></p>");
 assert.equal(richTopicCall.values.FormatoConteudo, "HtmlSeguroV1");
-const largeImageBase64 = "a".repeat(24000);
+const largeImageBase64 = Buffer.alloc(637 * 1024, 0x61).toString("base64");
 const imageTopic = await service.createTopic({
   title: "Tópico com imagem",
   content: `<p>Mensagem curta com imagem.</p><img src="data:image/png;base64,${largeImageBase64}" alt="Diagrama">`,
@@ -270,11 +270,35 @@ const imageTopic = await service.createTopic({
 assert.equal(imageTopic.topicId, 2);
 const uploadCall = calls.find((call) => call.method === "upload" && call.source.key === "forum-media");
 assert.equal(uploadCall.options.contentType, "image/png");
-assert.equal(uploadCall.options.content.length, 18000);
+assert.equal(uploadCall.options.content.length, 637 * 1024);
 const imageTopicCall = calls.find((call) => call.method === "create" && call.values.Title === "Tópico com imagem");
 assert.match(imageTopicCall.values.Conteudo, /src="\/teams\/forum\/ForumMidia\/forum-.+\.png"/);
 assert.doesNotMatch(imageTopicCall.values.Conteudo, /data:image|base64/);
 assert.ok(imageTopicCall.values.Conteudo.length < 20000);
+
+const oneMiBBase64 = Buffer.alloc(1024 * 1024, 0x62).toString("base64");
+await service.createTopic({
+  title: "Tópico com imagem de 1 MiB",
+  content: `<p>Imagem no limite.</p><img src="data:image/jpeg;base64,${oneMiBBase64}">`,
+  contentFormat: "HtmlSeguroV1",
+  categoryId: 10
+});
+const oneMiBUpload = calls.find((call) => call.method === "upload"
+  && call.options.contentType === "image/jpeg");
+assert.equal(oneMiBUpload.options.content.length, 1024 * 1024);
+
+const uploadsBeforeOversize = calls.filter((call) => call.method === "upload").length;
+const oversizedBase64 = Buffer.alloc(1024 * 1024 + 1, 0x63).toString("base64");
+await assert.rejects(
+  service.createTopic({
+    title: "Tópico com imagem acima do limite",
+    content: `<p>Imagem acima do limite.</p><img src="data:image/png;base64,${oversizedBase64}">`,
+    contentFormat: "HtmlSeguroV1",
+    categoryId: 10
+  }),
+  /no máximo 1 MB/
+);
+assert.equal(calls.filter((call) => call.method === "upload").length, uploadsBeforeOversize);
 assert.ok(sanitizeCalls >= 3);
 await assert.rejects(
   createForumReadService({ dataSources }).createTopic({

@@ -174,7 +174,7 @@ export function createForumRichTextEditor({
       const template = document.createElement("template");
       template.innerHTML = safeHtml;
       const hasContent = Boolean(template.content.textContent.trim()
-        || template.content.querySelector("table, hr"));
+        || template.content.querySelector("img, table, hr"));
       return hasContent ? safeHtml : "";
     }
   });

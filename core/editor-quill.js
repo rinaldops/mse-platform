@@ -64,7 +64,7 @@ function loadScript(src) {
 function hasContent(html, documentImpl) {
   const template = documentImpl.createElement("template");
   template.innerHTML = html;
-  return Boolean(template.content.textContent.trim() || template.content.querySelector("table, hr, pre, blockquote"));
+  return Boolean(template.content.textContent.trim() || template.content.querySelector("img, table, hr, pre, blockquote"));
 }
 
 export async function createRichTextEditor({

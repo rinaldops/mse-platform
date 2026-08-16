@@ -2,7 +2,7 @@
 
 Forum module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
 
-Current version: `0.18.7`.
+Current version: `0.18.8`.
 
 ## Features in this MVP
 
@@ -66,4 +66,4 @@ Accepted values:
 
 The same setting can be supplied through instance configuration as `forum.editor` or `forum.Editor`.
 
-Images embedded by the editor are uploaded to `ForumMidia` before the publication is saved. The persisted rich text references the server-relative file URL instead of storing Base64 in list fields. Each message accepts up to 10 embedded images of 5 MB each.
+Images embedded by the editor are uploaded to `ForumMidia` before the publication is saved. The persisted rich text references the server-relative file URL instead of storing Base64 in list fields. Each message accepts up to 10 embedded images of 1 MB each.
