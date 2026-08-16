@@ -30,9 +30,9 @@
 .mse-core__error {
   margin: 0;
   padding: var(--mse-space-3, 1rem);
-  border-left: 0.25rem solid #c50f1f;
-  color: #8a0a14;
-  background: #fde7e9;
+  border-left: 0.25rem solid var(--mse-color-danger, #a4262c);
+  color: var(--mse-color-danger, #a4262c);
+  background: var(--mse-color-danger-background, #fde7e9);
 }
 
 @media (prefers-reduced-motion: reduce) {

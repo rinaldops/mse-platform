@@ -2,7 +2,7 @@
 
 Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
 
-Current version: `0.10.0`.
+Current version: `0.11.0`.
 
 ## What it provides
 
@@ -29,7 +29,7 @@ The Edge smoke test serves the repository locally and validates the demo pages w
 When uploaded to SharePoint, keep assets versioned:
 
 ```text
-SiteAssets/mse-platform/core/0.10.0/
+SiteAssets/mse-platform/core/0.11.0/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.

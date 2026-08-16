@@ -1,8 +1,8 @@
-import { mountModule } from "../../../core/0.10.0/core.js";
-import { renderRichText, sanitizeRichText } from "../../../core/0.10.0/rich-text.js";
+import { mountModule } from "../../../core/0.11.0/core.js";
+import { renderRichText, sanitizeRichText } from "../../../core/0.11.0/rich-text.js";
 import { createForumView } from "./forum-view.js";
 
-export const FORUM_VERSION = "0.15.3";
+export const FORUM_VERSION = "0.16.0";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 export function mountForum({ service, globalConfig = {}, instances = {} } = {}) {

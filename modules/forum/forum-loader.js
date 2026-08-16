@@ -31,10 +31,10 @@
 
     const [{ createSharePointDataSourceRegistry }, { sanitizeRichText }, { createForumReadService }, { mountForum }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.10.0/data-sources.js`),
-        import(`${assetBase}/mse-platform/core/0.10.0/rich-text.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.15.3/forum-data.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.15.3/forum.js`)
+        import(`${assetBase}/mse-platform/core/0.11.0/data-sources.js`),
+        import(`${assetBase}/mse-platform/core/0.11.0/rich-text.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.16.0/forum-data.js`),
+        import(`${assetBase}/mse-platform/modules/forum/0.16.0/forum.js`)
       ]);
 
     const response = await fetch(

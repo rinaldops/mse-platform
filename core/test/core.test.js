@@ -7,6 +7,7 @@ import {
   mountModule,
   resolveConfig
 } from "../core.js";
+import { createSharePointThemeConfig } from "../theme-adapter.js";
 
 class FakeClassList {
   constructor() {
@@ -88,7 +89,7 @@ const moduleDefaults = { title: "module" };
 const instanceConfig = { title: "instance", layout: { mode: "fullBleed" } };
 const resolved = resolveConfig({ globalConfig, moduleDefaults, instanceConfig });
 
-assert.equal(CORE_VERSION, "0.10.0");
+assert.equal(CORE_VERSION, "0.11.0");
 assert.equal(resolved.title, "instance");
 assert.equal(resolved.layout.mode, "fullBleed");
 assert.equal(resolved.theme.tokens.colorPrimary, "#123456");
@@ -138,6 +139,7 @@ assert.equal(renderCount, 1);
 assert.equal(root.dataset.mseState, "ready");
 assert.ok(root.classList.contains("mse-app--full-bleed"));
 assert.equal(root.style.getPropertyValue("--mse-color-primary"), "#123456");
+assert.equal(root.style.getPropertyValue("--mse-color-muted"), "#616161");
 
 const duplicateMount = await mountModule(options);
 assert.equal(duplicateMount.skipped.length, 1);
@@ -148,6 +150,23 @@ assert.equal(cleanupCount, 1);
 assert.equal(root.dataset.mseInitialized, undefined);
 assert.ok(!root.classList.contains("mse-app--full-bleed"));
 assert.equal(root.style.getPropertyValue("--mse-color-primary"), "");
+
+const sharePointThemeConfig = createSharePointThemeConfig({
+  themePrimary: "#008542",
+  themeDarkAlt: "#00773c",
+  themeLighterAlt: "#f0faf5",
+  bodyText: "#323130",
+  bodySubtext: "#605e5c",
+  bodyBackground: "#ffffff",
+  neutralQuaternary: "#d0d0d0",
+  mediumFontFamily: "'Segoe UI'",
+  mediumFontSize: "14px",
+  elevation4: "0 1px 2px rgba(0,0,0,.14)",
+  roundedCorner6: "6px"
+});
+assert.equal(sharePointThemeConfig.theme.tokens.colorPrimary, "#008542");
+assert.equal(sharePointThemeConfig.theme.tokens.colorMuted, "#605e5c");
+assert.equal(sharePointThemeConfig.theme.tokens.fontFamily, "'Segoe UI'");
 
 await mountModule(options);
 assert.equal(renderCount, 2);

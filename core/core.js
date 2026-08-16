@@ -1,4 +1,6 @@
-export const CORE_VERSION = "0.10.0";
+import { createSharePointThemeConfig } from "./theme-adapter.js";
+
+export const CORE_VERSION = "0.11.0";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
@@ -9,8 +11,19 @@ const CORE_DEFAULTS = {
       fontFamily: '"Segoe UI", Arial, sans-serif',
       fontSizeBody: "1rem",
       colorPrimary: "#0f6cbd",
+      colorPrimaryHover: "#115ea3",
+      colorPrimarySoft: "#eef6fc",
+      colorOnPrimary: "#ffffff",
       colorSurface: "#ffffff",
+      colorSubtleBackground: "#f3f2f1",
       colorText: "#242424",
+      colorMuted: "#616161",
+      colorBorder: "#d1d1d1",
+      colorInputBackground: "#ffffff",
+      colorDanger: "#a4262c",
+      colorDangerBackground: "#fde7e9",
+      colorSuccess: "#107c10",
+      colorSuccessBackground: "#dff6dd",
       space1: "0.25rem",
       space2: "0.5rem",
       space3: "1rem",
@@ -24,8 +37,19 @@ const TOKEN_PROPERTIES = {
   fontFamily: "--mse-font-family",
   fontSizeBody: "--mse-font-size-body",
   colorPrimary: "--mse-color-primary",
+  colorPrimaryHover: "--mse-color-primary-hover",
+  colorPrimarySoft: "--mse-color-primary-soft",
+  colorOnPrimary: "--mse-color-on-primary",
   colorSurface: "--mse-color-surface",
+  colorSubtleBackground: "--mse-color-subtle-background",
   colorText: "--mse-color-text",
+  colorMuted: "--mse-color-muted",
+  colorBorder: "--mse-color-border",
+  colorInputBackground: "--mse-color-input-background",
+  colorDanger: "--mse-color-danger",
+  colorDangerBackground: "--mse-color-danger-background",
+  colorSuccess: "--mse-color-success",
+  colorSuccessBackground: "--mse-color-success-background",
   space1: "--mse-space-1",
   space2: "--mse-space-2",
   space3: "--mse-space-3",
@@ -106,11 +130,12 @@ function validateConfig(config) {
 }
 
 export function resolveConfig({
+  hostConfig = {},
   globalConfig = {},
   moduleDefaults = {},
   instanceConfig = {}
 } = {}) {
-  const config = [CORE_DEFAULTS, globalConfig, moduleDefaults, instanceConfig]
+  const config = [CORE_DEFAULTS, hostConfig, globalConfig, moduleDefaults, instanceConfig]
     .reduce((result, layer) => mergeObjects(result, layer), {});
 
   validateConfig(config);
@@ -421,6 +446,7 @@ export async function mountModule({
     try {
       const key = root.dataset.configKey || root.id;
       const config = resolveConfig({
+        hostConfig: createSharePointThemeConfig(),
         globalConfig,
         moduleDefaults,
         instanceConfig: instances[key] || {}
