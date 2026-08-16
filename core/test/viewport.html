@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MSE Core — viewport de teste</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #e5e5e5;
+      }
+
+      iframe {
+        display: block;
+        height: 1400px;
+        border: 0;
+        background: #fff;
+      }
+
+      output {
+        display: block;
+        padding: 0.5rem;
+        font: 0.875rem "Segoe UI", sans-serif;
+      }
+    </style>
+  </head>
+  <body data-mse-test-status="running">
+    <iframe title="Preview responsivo do MSE Core" src="../demo/"></iframe>
+    <output>Executando…</output>
+
+    <script>
+      const width = Number(new URLSearchParams(location.search).get("width")) || 320;
+      const frame = document.querySelector("iframe");
+      const output = document.querySelector("output");
+      frame.style.width = `${width}px`;
+
+      frame.addEventListener("load", () => {
+        let attempts = 0;
+        const timer = setInterval(() => {
+          attempts += 1;
+          const documentElement = frame.contentDocument.documentElement;
+          const testsPassed = Boolean(frame.contentDocument.querySelector(".mse-demo__summary--passed"));
+          const noOverflow = documentElement.scrollWidth <= documentElement.clientWidth;
+
+          if (testsPassed || attempts >= 40) {
+            clearInterval(timer);
+            const passed = testsPassed && noOverflow;
+            document.body.dataset.mseTestStatus = passed ? "passed" : "failed";
+            const fullBleed = frame.contentDocument.querySelector(".mse-app--full-bleed");
+            const rectangle = fullBleed?.getBoundingClientRect();
+            const failedChecks = [...frame.contentDocument.querySelectorAll(".mse-demo__test--failed")]
+              .map((item) => item.textContent)
+              .join(" | ");
+            output.textContent = passed
+              ? `Viewport de ${width}px validado sem overflow horizontal.`
+              : `Falha no viewport de ${width}px: client=${documentElement.clientWidth}, ` +
+                `scroll=${documentElement.scrollWidth}, left=${rectangle?.left}, ` +
+                `right=${rectangle?.right}, width=${rectangle?.width}, checks=${failedChecks || "incompletos"}.`;
+          }
+        }, 100);
+      });
+    </script>
+  </body>
+</html>

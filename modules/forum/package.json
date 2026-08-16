@@ -1,0 +1,9 @@
+{
+  "name": "mse-forum",
+  "version": "0.15.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/schema.test.js && node test/forum-data.test.js && node test/forum-view.test.js"
+  }
+}

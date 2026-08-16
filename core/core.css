@@ -1,0 +1,47 @@
+.mse-app {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  color: var(--mse-color-text, #242424);
+  background: var(--mse-color-surface, #fff);
+  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+  font-size: var(--mse-font-size-body, 1rem);
+  line-height: 1.5;
+}
+
+.mse-app *,
+.mse-app *::before,
+.mse-app *::after {
+  box-sizing: border-box;
+}
+
+.mse-app--contained {
+  width: 100%;
+  max-width: 100%;
+}
+
+.mse-app--full-bleed {
+  width: var(--mse-full-bleed-width, 100vw);
+  max-width: none;
+  margin-left: var(--mse-full-bleed-margin, calc(50% - 50vw));
+}
+
+.mse-core__error {
+  margin: 0;
+  padding: var(--mse-space-3, 1rem);
+  border-left: 0.25rem solid #c50f1f;
+  color: #8a0a14;
+  background: #fde7e9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-app *,
+  .mse-app *::before,
+  .mse-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
