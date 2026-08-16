@@ -14,6 +14,8 @@
 .mse-forum__meta,
 .mse-forum__status,
 .mse-forum__answers-title {
+  color: var(--mse-color-primary-hover, #00773c);
+  font-weight: 600;
   margin: 0;
 }
 
@@ -241,6 +243,8 @@
 }
 
 .mse-forum__contributor {
+  color: var(--mse-color-primary-hover, #00773c);
+  font-weight: 600;
   padding-left: 0.25rem;
 }
 
@@ -352,9 +356,9 @@
 }
 
 .mse-forum__topic-link {
-  color: inherit;
+  color: var(--mse-color-primary-hover, #00773c);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 
