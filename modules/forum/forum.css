@@ -475,6 +475,11 @@
   color: var(--mse-color-primary, #0f6cbd);
 }
 
+.mse-forum__body img {
+  max-width: 100%;
+  height: auto;
+}
+
 .mse-forum__body pre {
   max-width: 100%;
   overflow-x: auto;

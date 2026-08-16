@@ -1,10 +1,10 @@
 {
   "name": "mse-core",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/core.test.js && node test/provisioning.test.js && node test/rest.test.js && node test/data-sources.test.js && node test/list-provisioning.test.js && node test/editor-quill.test.js && node ../modules/forum/test/schema.test.js && node ../modules/forum/test/forum-data.test.js && node ../modules/forum/test/forum-view.test.js",
+    "test": "node test/core.test.js && node test/provisioning.test.js && node test/rest.test.js && node test/data-sources.test.js && node test/list-provisioning.test.js && node test/rich-text.test.js && node test/editor.test.js && node test/editor-quill.test.js && node test/editor-summernote.test.js && node ../modules/forum/test/schema.test.js && node ../modules/forum/test/forum-data.test.js && node ../modules/forum/test/forum-view.test.js",
     "test:edge": "powershell -NoProfile -ExecutionPolicy Bypass -File test/edge-smoke.ps1"
   }
 }

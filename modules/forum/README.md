@@ -2,7 +2,7 @@
 
 Forum module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
 
-Current version: `0.17.2`.
+Current version: `0.18.0`.
 
 ## Features in this MVP
 
@@ -10,7 +10,7 @@ Current version: `0.17.2`.
 - Categories and tags.
 - Topic listing, detail view, filters and search by title.
 - Topic creation, editing, archiving and drafts.
-- Safe rich-text editor and preview before publishing.
+- Configurable safe rich-text editor: Quill, Summernote Lite or native fallback.
 - Answers with pagination, editing and archiving.
 - Reactions.
 - Accepted answer / solved topic flow.

@@ -10,29 +10,41 @@ This guide uses placeholders. Replace:
 Upload these files preserving the version folders:
 
 ```text
-__SITE_ASSETS__/mse-platform/core/0.12.2/core.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/core.css
-__SITE_ASSETS__/mse-platform/core/0.12.2/rest.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/data-sources.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/rich-text.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/list-provisioning.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/theme-adapter.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/editor-quill.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/editor-quill.css
-__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.js
-__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.js.LICENSE.txt
-__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.core.css
-__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/quill.snow.css
-__SITE_ASSETS__/mse-platform/core/0.12.2/vendor/quill/2.0.3/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.13.0/core.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/core.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/rest.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/data-sources.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/rich-text.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/list-provisioning.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/theme-adapter.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/editor.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/editor-quill.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/editor-quill.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/editor-summernote.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/editor-summernote.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/jquery/3.7.1/jquery.min.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/jquery/3.7.1/LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/quill/2.0.3/quill.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/quill/2.0.3/quill.js.LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/quill/2.0.3/quill.core.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/quill/2.0.3/quill.snow.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/quill/2.0.3/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/summernote-lite.min.js
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/summernote-lite.min.css
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/font/summernote.eot
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/font/summernote.woff2
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/font/summernote.woff
+__SITE_ASSETS__/mse-platform/core/0.13.0/vendor/summernote/0.9.0/font/summernote.ttf
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.17.2/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.0/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -87,6 +99,12 @@ Before saving, replace:
 - `__SITE_ASSETS__`
 
 The runtime snippet does not require list GUIDs. It resolves the provisioned lists by their stable internal names.
+
+To choose the editor, set `data-editor` in the snippet:
+
+- `data-editor="Quill"` loads Quill.
+- `data-editor="Summernote"` loads Summernote Lite.
+- `data-editor="default"` uses the native forum editor.
 
 ## 5. Validate the MVP
 

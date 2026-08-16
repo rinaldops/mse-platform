@@ -1,9 +1,9 @@
 export const RICH_TEXT_POLICY_VERSION = 1;
 
-const MAX_INPUT_LENGTH = 100000;
+const MAX_INPUT_LENGTH = 500000;
 const ALLOWED_TAGS = new Set([
   "A", "BLOCKQUOTE", "BR", "CAPTION", "CODE", "DEL", "EM", "H2", "H3", "H4", "HR",
-  "LI", "OL", "P", "PRE", "S", "STRONG", "SUB", "SUP", "TABLE", "TBODY", "TD",
+  "IMG", "LI", "OL", "P", "PRE", "S", "STRONG", "SUB", "SUP", "TABLE", "TBODY", "TD",
   "TFOOT", "TH", "THEAD", "TR", "UL"
 ]);
 const DROP_WITH_CONTENT = new Set([
@@ -36,6 +36,21 @@ function safeHref(value, baseUrl) {
   }
 }
 
+function safeImageSrc(value, baseUrl) {
+  const src = value.trim();
+  if (!src || /[\u0000-\u001f\u007f]/.test(src)) return null;
+  if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src)) {
+    return src.length <= 250000 ? src.replace(/\s/g, "") : null;
+  }
+  try {
+    const url = new URL(src, baseUrl);
+    if (!new Set(["http:", "https:"]).has(url.protocol) || url.username || url.password) return null;
+    return src;
+  } catch {
+    return null;
+  }
+}
+
 function boundedSpan(value) {
   return /^(?:[1-9]|1[0-9]|20)$/.test(value) ? value : null;
 }
@@ -47,6 +62,18 @@ function sanitizeAttributes(element, baseUrl) {
   if (element.tagName === "A") {
     const href = safeHref(source.get("href") ?? "", baseUrl);
     if (href) element.setAttribute("href", href);
+    const title = source.get("title")?.trim();
+    if (title) element.setAttribute("title", title.slice(0, 255));
+  }
+  if (element.tagName === "IMG") {
+    const src = safeImageSrc(source.get("src") ?? "", baseUrl);
+    if (!src) {
+      element.remove();
+      return;
+    }
+    element.setAttribute("src", src);
+    const alt = source.get("alt")?.trim();
+    element.setAttribute("alt", alt ? alt.slice(0, 255) : "");
     const title = source.get("title")?.trim();
     if (title) element.setAttribute("title", title.slice(0, 255));
   }
