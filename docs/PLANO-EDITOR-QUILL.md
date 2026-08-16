@@ -116,6 +116,8 @@ Entregas acumuladas:
 - `core/0.12.2`: Quill local validado em SharePoint, incluindo contorno para páginas que expõem `define.amd`.
 - `core/0.13.2`: seletor `editor.js`, Summernote Lite, jQuery local, CSS/fontes/licenças locais e sanitização de imagens pequenas.
 - `forum/0.18.2`: seleção por `data-editor`, `forum.editor` ou `forum.Editor`.
+- `core/0.13.5`: sanitização de imagens incorporadas até 1 MiB e upload binário para bibliotecas SharePoint.
+- `forum/0.18.8`: externalização automática de Base64 para `ForumMidia` antes da persistência.
 
 Valores aceitos:
 
@@ -130,7 +132,7 @@ Aprendizados principais:
 - SharePoint pode interferir com bundles UMD por causa de AMD;
 - Summernote Lite evita Bootstrap, mas ainda exige jQuery;
 - o CSS do Summernote exige publicar as fontes junto dos estilos;
-- imagem base64 é útil para MVP, mas não é recomendável como solução definitiva em listas;
+- Base64 é apenas o formato temporário do editor; a persistência deve usar a URL do arquivo enviado à biblioteca;
 - o sanitizador continua sendo a fronteira de segurança, inclusive quando o editor possui code view.
 
 Documento consolidado: [`EDITORES-RICOS.md`](EDITORES-RICOS.md).

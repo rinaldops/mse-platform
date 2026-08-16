@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-A partir do `core/0.13.2`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor.
+A partir do `core/0.13.2`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor. O `core/0.13.5` amplia o sanitizador e o cliente REST para processar imagens incorporadas de até 1 MiB e enviá-las a bibliotecas SharePoint.
 
 Editores suportados:
 
@@ -15,7 +15,7 @@ Editores suportados:
 O seletor público fica em:
 
 ```text
-core/0.13.2/editor.js
+core/0.13.5/editor.js
 ```
 
 API principal:
@@ -36,17 +36,17 @@ selectRichTextEditor("default")
 - O tema visual usa tokens `--mse-*` para aproximar o editor do host SharePoint.
 - Pastas publicadas são imutáveis; correção exige nova versão.
 
-## Assets do core `0.13.2`
+## Assets do core `0.13.5`
 
 ```text
-core/0.13.2/editor.js
-core/0.13.2/editor-quill.js
-core/0.13.2/editor-quill.css
-core/0.13.2/editor-summernote.js
-core/0.13.2/editor-summernote.css
-core/0.13.2/vendor/quill/2.0.3/
-core/0.13.2/vendor/jquery/3.7.1/
-core/0.13.2/vendor/summernote/0.9.0/
+core/0.13.5/editor.js
+core/0.13.5/editor-quill.js
+core/0.13.5/editor-quill.css
+core/0.13.5/editor-summernote.js
+core/0.13.5/editor-summernote.css
+core/0.13.5/vendor/quill/2.0.3/
+core/0.13.5/vendor/jquery/3.7.1/
+core/0.13.5/vendor/summernote/0.9.0/
 ```
 
 ## Quill
@@ -76,7 +76,7 @@ Aprendizado importante:
 
 - Summernote Lite ainda depende de jQuery;
 - o CSS referencia fontes próprias, então as fontes precisam ser publicadas junto do CSS;
-- o botão de imagem funciona, mas imagens base64 aumentam rapidamente o tamanho do HTML.
+- o botão de imagem gera Base64 no HTML do editor; o módulo consumidor deve externalizar esses bytes antes de persistir o conteúdo.
 
 ## Imagens
 
@@ -95,10 +95,11 @@ Restrições:
 - `javascript:` é rejeitado;
 - `style` inline é removido;
 - `alt` é preservado e limitado;
-- imagens base64 são limitadas;
-- o HTML total sanitizado aceita até `500 KB`.
+- cada imagem Base64 aceita pelo sanitizador possui no máximo 1 MiB binário;
+- a entrada HTML temporária aceita até 15 milhões de caracteres para comportar até dez imagens codificadas;
+- o limite do campo textual deve ser aplicado depois da externalização das imagens.
 
-Essa decisão é suficiente para MVP e teste funcional. Para produto definitivo, o caminho recomendado é upload para biblioteca SharePoint e inserção da URL da imagem no conteúdo, evitando armazenar blobs base64 em listas.
+O fórum `0.18.8` implementa o fluxo definitivo: localiza imagens Base64, valida formato e tamanho, envia os bytes para `ForumMidia` pelo `uploadFile` do Core e substitui o `src` pela URL server-relative retornada. O campo `Conteudo` recebe somente HTML sanitizado com URLs, nunca o blob Base64.
 
 ## Configuração no fórum
 
@@ -129,14 +130,18 @@ Também aceita configuração de instância:
 - Summernote carrega com jQuery local.
 - Summernote mostra toolbar e botão de imagem.
 - O fórum carrega Quill, Summernote ou editor nativo conforme configuração.
-- Imagem base64 pequena é preservada.
+- Imagens Base64 de até 1 MiB atravessam o editor e o sanitizador.
+- O fórum envia imagens incorporadas à `ForumMidia` antes de persistir tópico, resposta ou rascunho.
+- O HTML persistido contém URL server-relative e permanece dentro do limite textual.
 - Handler/script/URLs inseguras são removidos.
 - O `forum-loader.js` repassa `data-editor`.
 
 ## Limites conhecidos
 
-- Imagens base64 não são recomendadas para produção.
-- Não há upload automático para biblioteca SharePoint nesta versão.
+- Cada mensagem aceita até dez imagens incorporadas.
+- Cada imagem incorporada aceita até 1 MiB binário.
+- Formatos aceitos: PNG, JPEG, GIF e WebP.
+- O upload ocorre no salvamento; imagens inseridas no editor ainda ocupam memória como Base64 até essa etapa.
 - O editor nativo continua mais leve, mas tem menos recursos.
 - Summernote aumenta o volume de assets do core por trazer jQuery, CSS e fontes.
 - O botão de code view do Summernote não dispensa sanitização; o HTML continua passando pelo sanitizador.
