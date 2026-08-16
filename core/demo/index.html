@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MSE Core 0.10.0 — Preview</title>
+    <link rel="stylesheet" href="../core.css">
+    <link rel="stylesheet" href="demo.css">
+  </head>
+  <body class="mse-demo">
+    <header class="mse-demo__header">
+      <p class="mse-demo__eyebrow">Modern Script Editor</p>
+      <h1>Prova do núcleo compartilhado</h1>
+      <p>Dois módulos independentes, uma única API de ciclo de vida.</p>
+    </header>
+
+    <main class="mse-demo__canvas">
+      <section aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="mse-demo__section-title">Módulo contido</h2>
+        <div
+          id="summary-demo"
+          data-mse-module="demo-summary"
+          data-config-key="summary-demo">
+        </div>
+      </section>
+
+      <section aria-labelledby="banner-heading">
+        <h2 id="banner-heading" class="mse-demo__section-title">Módulo full bleed</h2>
+        <div
+          id="banner-demo"
+          data-mse-module="demo-banner"
+          data-config-key="banner-demo">
+        </div>
+      </section>
+
+      <section class="mse-demo__tests" aria-labelledby="tests-heading">
+        <h2 id="tests-heading">Verificações locais</h2>
+        <ol id="test-results"></ol>
+        <p id="test-summary" role="status">Executando…</p>
+      </section>
+    </main>
+
+    <script type="module" src="demo.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# Local tool/runtime state
+.tmp/
+.vscode/
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
