@@ -7,7 +7,8 @@ const ids = {
   "forum-topic-tags": "00000000-0000-4000-8000-000000000003",
   "forum-answers": "00000000-0000-4000-8000-000000000004",
   "forum-preferences": "00000000-0000-4000-8000-000000000005",
-  "forum-reactions": "00000000-0000-4000-8000-000000000006"
+  "forum-reactions": "00000000-0000-4000-8000-000000000006",
+  "forum-media": "00000000-0000-4000-8000-000000000007"
 };
 const calls = [];
 let draftRecord = null;
@@ -94,6 +95,13 @@ const client = {
   async request(path) {
     calls.push({ method: "request", path });
     return { data: { Id: 7 } };
+  },
+  async uploadFile(source, options) {
+    calls.push({ method: "upload", source, options });
+    return {
+      serverRelativeUrl: `/teams/forum/ForumMidia/${options.fileName}`,
+      status: 201
+    };
   }
 };
 const dataSources = {
@@ -252,6 +260,21 @@ assert.equal(richTopic.topicId, 2);
 const richTopicCall = calls.find((call) => call.method === "create" && call.values.Title === "Tópico formatado");
 assert.equal(richTopicCall.values.Conteudo, "<p><strong>Conteúdo</strong></p>");
 assert.equal(richTopicCall.values.FormatoConteudo, "HtmlSeguroV1");
+const largeImageBase64 = "a".repeat(24000);
+const imageTopic = await service.createTopic({
+  title: "Tópico com imagem",
+  content: `<p>Mensagem curta com imagem.</p><img src="data:image/png;base64,${largeImageBase64}" alt="Diagrama">`,
+  contentFormat: "HtmlSeguroV1",
+  categoryId: 10
+});
+assert.equal(imageTopic.topicId, 2);
+const uploadCall = calls.find((call) => call.method === "upload" && call.source.key === "forum-media");
+assert.equal(uploadCall.options.contentType, "image/png");
+assert.equal(uploadCall.options.content.length, 18000);
+const imageTopicCall = calls.find((call) => call.method === "create" && call.values.Title === "Tópico com imagem");
+assert.match(imageTopicCall.values.Conteudo, /src="\/teams\/forum\/ForumMidia\/forum-.+\.png"/);
+assert.doesNotMatch(imageTopicCall.values.Conteudo, /data:image|base64/);
+assert.ok(imageTopicCall.values.Conteudo.length < 20000);
 assert.ok(sanitizeCalls >= 3);
 await assert.rejects(
   createForumReadService({ dataSources }).createTopic({

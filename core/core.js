@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.13.3";
+export const CORE_VERSION = "0.13.4";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 

@@ -183,6 +183,19 @@ function itemValues(value) {
   return Object.fromEntries(entries);
 }
 
+function binaryBody(value) {
+  return value instanceof ArrayBuffer
+    || ArrayBuffer.isView(value)
+    || (typeof Blob !== "undefined" && value instanceof Blob);
+}
+
+function fileName(value) {
+  if (typeof value !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value)) {
+    throw new TypeError("fileName deve conter somente letras, números, ponto, hífen ou sublinhado.");
+  }
+  return value;
+}
+
 export function createSharePointRestClient({
   webUrl,
   fetchImpl = globalThis.fetch,
@@ -290,8 +303,11 @@ export function createSharePointRestClient({
     if (!readOnly) {
       requestHeaders["X-RequestDigest"] = await getDigest();
       if (body !== undefined) {
-        requestHeaders["Content-Type"] ||= DEFAULT_ACCEPT;
-        body = typeof body === "string" ? body : JSON.stringify(body);
+        if (binaryBody(body)) requestHeaders["Content-Type"] ||= "application/octet-stream";
+        else {
+          requestHeaders["Content-Type"] ||= DEFAULT_ACCEPT;
+          body = typeof body === "string" ? body : JSON.stringify(body);
+        }
       }
       if (requiresEtag) requestHeaders["If-Match"] = etag.trim();
       if (requestedMethod === "MERGE" || requestedMethod === "DELETE") {
@@ -432,6 +448,29 @@ export function createSharePointRestClient({
     return Object.freeze({ etag: result.etag, status: result.status });
   }
 
+  async function uploadFile(list, { fileName: requestedFileName, content, contentType } = {}) {
+    const normalizedFileName = fileName(requestedFileName);
+    if (!binaryBody(content)) {
+      throw new TypeError("content deve ser ArrayBuffer, TypedArray ou Blob.");
+    }
+    if (contentType !== undefined && (typeof contentType !== "string"
+      || !/^[a-z0-9][a-z0-9.+-]*\/[a-z0-9][a-z0-9.+-]*$/i.test(contentType))) {
+      throw new TypeError("contentType deve ser um MIME type válido.");
+    }
+    const escapedName = normalizedFileName.replaceAll("'", "''");
+    const result = await runRequest(`${listApiPath(list)}/RootFolder/Files/add(url='${escapedName}',overwrite=false)`, {
+      method: "POST",
+      headers: { "Content-Type": contentType || "application/octet-stream" },
+      body: content
+    });
+    const file = result.data?.d ?? result.data;
+    const serverRelativeUrl = file?.ServerRelativeUrl ?? file?.serverRelativeUrl;
+    if (typeof serverRelativeUrl !== "string" || !serverRelativeUrl.startsWith("/")) {
+      throw restError("invalid-response", "O SharePoint não retornou a URL do arquivo enviado.");
+    }
+    return Object.freeze({ file, serverRelativeUrl, etag: result.etag, status: result.status });
+  }
+
   return Object.freeze({
     webUrl: normalizedWebUrl,
     request: runRequest,
@@ -441,6 +480,7 @@ export function createSharePointRestClient({
     getListItem,
     createListItem,
     updateListItem,
-    deleteListItem
+    deleteListItem,
+    uploadFile
   });
 }
