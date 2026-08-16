@@ -184,6 +184,9 @@ const crudClient = createSharePointRestClient({
     if (options.method === "GET") return response(200, { Id: 7, Title: "Novo" }, { ETag: '"item-7"' });
     if (options.headers["X-HTTP-Method"] === "DELETE") return response(204);
     if (options.headers["X-HTTP-Method"] === "MERGE") return response(204, null, { ETag: '"item-8"' });
+    if (url.includes("/RootFolder/Files/add")) {
+      return response(201, { ServerRelativeUrl: "/teams/core-test/ForumMidia/forum-123.png" });
+    }
     return response(201, { Id: 7, Title: "Novo" }, { ETag: '"item-7"' });
   }
 });
@@ -198,6 +201,21 @@ assert.match(crudCalls[0].url, /getbytitle\('Topicos'\)\/items$/);
 assert.match(crudCalls[1].url, /items\(7\)\?\$select=Id,Title$/);
 assert.equal(crudCalls[2].options.headers["X-HTTP-Method"], "MERGE");
 assert.equal(crudCalls[3].options.headers["X-HTTP-Method"], "DELETE");
+
+const imageBytes = Uint8Array.from([137, 80, 78, 71]);
+const uploaded = await crudClient.uploadFile(
+  { listId: "550E8400-E29B-41D4-A716-446655440000" },
+  { fileName: "forum-123.png", content: imageBytes, contentType: "image/png" }
+);
+const uploadCall = crudCalls.at(-1);
+assert.equal(uploaded.serverRelativeUrl, "/teams/core-test/ForumMidia/forum-123.png");
+assert.match(uploadCall.url, /RootFolder\/Files\/add\(url='forum-123\.png',overwrite=false\)$/);
+assert.equal(uploadCall.options.body, imageBytes);
+assert.equal(uploadCall.options.headers["Content-Type"], "image/png");
+await assert.rejects(
+  crudClient.uploadFile("Midia", { fileName: "../invalido.png", content: imageBytes }),
+  /fileName/
+);
 await assert.rejects(crudClient.createListItem("Topicos", {}), /objeto não vazio|nomes internos/);
 await assert.rejects(
   crudClient.updateListItem("Topicos", 7, { Title: "Sem ETag" }),

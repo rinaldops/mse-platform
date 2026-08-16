@@ -102,7 +102,7 @@ Essa decisão é suficiente para MVP e teste funcional. Para produto definitivo,
 
 ## Configuração no fórum
 
-O fórum `0.18.6` aceita:
+O fórum `0.18.7` aceita:
 
 ```html
 data-editor="Quill"

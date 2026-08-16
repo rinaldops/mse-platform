@@ -34,6 +34,10 @@ const ANSWER_FIELDS = [
 
 const MAX_TAG_SCAN_PAGES = 10;
 const TOPIC_DRAFT_VERSION = 2;
+const MAX_CONTENT_LENGTH = 20000;
+const MAX_RICH_INPUT_LENGTH = 10000000;
+const MAX_INLINE_IMAGES = 10;
+const MAX_IMAGE_BYTES = 5000000;
 const CONTENT_FORMATS = new Set(["TextoSimples", "HtmlSeguroV1"]);
 const PUBLICATION_TYPES = new Set(["Topico", "Resposta"]);
 const REACTION_TYPES = new Set(["Gostei", "Util", "Excelente"]);
@@ -64,6 +68,25 @@ function optionalText(value, label, maxLength) {
   if (typeof value !== "string") throw new TypeError(`${label} deve ser texto.`);
   if (value.length > maxLength) throw new TypeError(`${label} deve possuir até ${maxLength} caracteres.`);
   return value;
+}
+
+function decodeBase64(value) {
+  const normalized = value.replace(/\s/g, "");
+  let decoded;
+  try {
+    decoded = globalThis.atob(normalized);
+  } catch {
+    throw new TypeError("A mensagem contém uma imagem Base64 inválida.");
+  }
+  const bytes = new Uint8Array(decoded.length);
+  for (let index = 0; index < decoded.length; index += 1) bytes[index] = decoded.charCodeAt(index);
+  return bytes;
+}
+
+function mediaFileName(extension) {
+  const id = globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `forum-${id}.${extension}`;
 }
 
 function validateCursor(source, cursor) {
@@ -134,6 +157,49 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
   let taxonomyPromise;
   let currentUserPromise;
   const topicIdsByTag = new Map();
+
+  async function externalizeInlineImages(input) {
+    const imagePattern = /<img\b[^>]*\bsrc\s*=\s*(["'])(data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+))\1[^>]*>/gi;
+    const matches = [...input.matchAll(imagePattern)];
+    if (matches.length > MAX_INLINE_IMAGES) {
+      throw new TypeError(`A mensagem deve possuir no máximo ${MAX_INLINE_IMAGES} imagens incorporadas.`);
+    }
+    if (!matches.length) return input;
+
+    const source = dataSources.get("forum-media");
+    const client = dataSources.getClient("forum-media");
+    let result = "";
+    let cursor = 0;
+    for (const match of matches) {
+      const [tag, quote, dataUrl, subtype, base64] = match;
+      const bytes = decodeBase64(base64);
+      if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) {
+        throw new TypeError("Cada imagem deve possuir no máximo 5 MB.");
+      }
+      const normalizedSubtype = subtype.toLowerCase() === "jpg" ? "jpeg" : subtype.toLowerCase();
+      const extension = normalizedSubtype === "jpeg" ? "jpg" : normalizedSubtype;
+      const uploaded = await client.uploadFile(source, {
+        fileName: mediaFileName(extension),
+        content: bytes,
+        contentType: `image/${normalizedSubtype}`
+      });
+      const updatedTag = tag.replace(`${quote}${dataUrl}${quote}`, `${quote}${uploaded.serverRelativeUrl}${quote}`);
+      result += input.slice(cursor, match.index) + updatedTag;
+      cursor = match.index + tag.length;
+    }
+    return result + input.slice(cursor);
+  }
+
+  async function normalizeContent(content, contentFormat, { required = true } = {}) {
+    const validate = required ? requiredText : optionalText;
+    if (contentFormat === "TextoSimples") return validate(content, "content", MAX_CONTENT_LENGTH);
+    if (typeof sanitizeRichText !== "function") {
+      throw new TypeError("sanitizeRichText é obrigatório para HtmlSeguroV1.");
+    }
+    const source = validate(content, "content", MAX_RICH_INPUT_LENGTH);
+    const externalized = await externalizeInlineImages(source);
+    return validate(sanitizeRichText(externalized), "content", MAX_CONTENT_LENGTH);
+  }
   async function taxonomy() {
     taxonomyPromise ??= (async () => {
       const source = dataSources.get("forum-taxonomy");
@@ -382,14 +448,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     if (!CONTENT_FORMATS.has(contentFormat)) {
       throw new TypeError("contentFormat deve ser TextoSimples ou HtmlSeguroV1.");
     }
-    const sourceContent = requiredText(content, "content", 20000);
-    let normalizedContent = sourceContent;
-    if (contentFormat === "HtmlSeguroV1") {
-      if (typeof sanitizeRichText !== "function") {
-        throw new TypeError("sanitizeRichText é obrigatório para HtmlSeguroV1.");
-      }
-      normalizedContent = requiredText(sanitizeRichText(sourceContent), "content", 20000);
-    }
+    const normalizedContent = await normalizeContent(content, contentFormat);
     return {
       normalizedContent,
       normalizedContentFormat: contentFormat,
@@ -628,14 +687,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     if (!CONTENT_FORMATS.has(contentFormat)) {
       throw new TypeError("contentFormat deve ser TextoSimples ou HtmlSeguroV1.");
     }
-    const sourceContent = requiredText(content, "content", 20000);
-    let normalizedContent = sourceContent;
-    if (contentFormat === "HtmlSeguroV1") {
-      if (typeof sanitizeRichText !== "function") {
-        throw new TypeError("sanitizeRichText é obrigatório para HtmlSeguroV1.");
-      }
-      normalizedContent = requiredText(sanitizeRichText(sourceContent), "content", 20000);
-    }
+    const normalizedContent = await normalizeContent(content, contentFormat);
     const normalizedCategoryId = positiveInteger(categoryId, "categoryId");
     if (!Array.isArray(tagIds)) throw new TypeError("tagIds deve ser uma lista.");
     const normalizedTagIds = [...new Set(tagIds.map((id) => positiveInteger(id, "tagId")))];
@@ -666,14 +718,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     if (!CONTENT_FORMATS.has(contentFormat)) {
       throw new TypeError("contentFormat deve ser TextoSimples ou HtmlSeguroV1.");
     }
-    const sourceContent = optionalText(content, "content", 20000);
-    let normalizedContent = sourceContent;
-    if (contentFormat === "HtmlSeguroV1") {
-      if (typeof sanitizeRichText !== "function") {
-        throw new TypeError("sanitizeRichText é obrigatório para HtmlSeguroV1.");
-      }
-      normalizedContent = sanitizeRichText(sourceContent);
-    }
+    const normalizedContent = await normalizeContent(content, contentFormat, { required: false });
     const normalizedCategoryId = categoryId === undefined || categoryId === null || categoryId === ""
       ? null
       : positiveInteger(categoryId, "categoryId");

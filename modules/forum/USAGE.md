@@ -10,41 +10,41 @@ This guide uses placeholders. Replace:
 Upload these files preserving the version folders:
 
 ```text
-__SITE_ASSETS__/mse-platform/core/0.13.3/core.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/core.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/rest.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/data-sources.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/rich-text.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/list-provisioning.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/theme-adapter.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/editor.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/editor-quill.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/editor-quill.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/editor-summernote.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/editor-summernote.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/jquery/3.7.1/jquery.min.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/jquery/3.7.1/LICENSE.txt
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/quill/2.0.3/quill.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/quill/2.0.3/quill.js.LICENSE.txt
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/quill/2.0.3/quill.core.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/quill/2.0.3/quill.snow.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/quill/2.0.3/LICENSE
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/summernote-lite.min.js
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/summernote-lite.min.css
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/LICENSE
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/font/summernote.eot
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/font/summernote.woff2
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/font/summernote.woff
-__SITE_ASSETS__/mse-platform/core/0.13.3/vendor/summernote/0.9.0/font/summernote.ttf
+__SITE_ASSETS__/mse-platform/core/0.13.4/core.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/core.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/rest.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/data-sources.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/rich-text.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/list-provisioning.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/theme-adapter.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/editor.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/editor-quill.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/editor-quill.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/editor-summernote.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/editor-summernote.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/jquery/3.7.1/jquery.min.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/jquery/3.7.1/LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/quill/2.0.3/quill.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/quill/2.0.3/quill.js.LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/quill/2.0.3/quill.core.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/quill/2.0.3/quill.snow.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/quill/2.0.3/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/summernote-lite.min.js
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/summernote-lite.min.css
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/font/summernote.eot
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/font/summernote.woff2
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/font/summernote.woff
+__SITE_ASSETS__/mse-platform/core/0.13.4/vendor/summernote/0.9.0/font/summernote.ttf
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes.
@@ -119,18 +119,18 @@ Example:
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/core/0.13.3/core.css">
+  href="__SITE_ASSETS__/mse-platform/core/0.13.4/core.css">
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum.css">
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum.css">
 
-<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.6/forum-loader.js"></script>
+<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.7/forum-loader.js"></script>
 ```
 
 The public repository intentionally keeps `__SITE_ASSETS__` as a placeholder. Replace it with the target SharePoint server-relative `SiteAssets` path only when pasting into the target environment.
 
-Summernote image insertion is available for MVP validation. This version preserves small sanitized images, including `data:image` values, but production scenarios should store images in a SharePoint library and persist URLs in the rich text.
+Images embedded by Quill, Summernote or the native editor are uploaded automatically to `ForumMidia` when the message is saved. The list field stores only the resulting server-relative URL, so Base64 data does not consume the 20,000-character content limit. Each message accepts up to 10 embedded images of 5 MB each.
 
 To render the forum from one side of the page to the other, set:
 

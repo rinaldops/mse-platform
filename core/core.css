@@ -28,7 +28,7 @@
   margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
 }
 
-.mse-app[data-mse-core-version="0.13.3"].mse-app--full-bleed {
+.mse-app[data-mse-core-version="0.13.4"].mse-app--full-bleed {
   width: auto;
   max-width: none;
   margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
