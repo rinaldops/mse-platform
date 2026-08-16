@@ -3,7 +3,7 @@ import { selectRichTextEditor } from "../../../core/0.13.2/editor.js";
 import { renderRichText, sanitizeRichText } from "../../../core/0.13.2/rich-text.js";
 import { createForumView } from "./forum-view.js";
 
-export const FORUM_VERSION = "0.18.2";
+export const FORUM_VERSION = "0.18.3";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 export function mountForum({ service, globalConfig = {}, instances = {} } = {}) {
