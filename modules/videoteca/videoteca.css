@@ -1,0 +1,206 @@
+[data-mse-module="videoteca"] {
+  --vt-void: #1a1704;
+  --vt-void-2: #142a1f;
+  --vt-surface: #1c2410;
+  --vt-line: rgb(255 255 255 / 12%);
+  --vt-text: #f4faf8;
+  --vt-text-muted: #c9c9a9;
+
+  background: linear-gradient(180deg, var(--vt-void) 0%, var(--vt-void-2) 60%, var(--vt-void) 100%);
+  color: var(--vt-text);
+  font-family: "Segoe UI", Arial, sans-serif;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem);
+  border-radius: 0.75rem;
+}
+
+.mse-videoteca__status {
+  color: var(--vt-text-muted);
+  margin: 0;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.mse-videoteca__status--error {
+  color: #ffb4a9;
+}
+
+.mse-videoteca {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* Carousel */
+
+.mse-videoteca__carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  aspect-ratio: 21 / 9;
+  min-height: 14rem;
+}
+
+.mse-videoteca__carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.mse-videoteca__slide {
+  flex: 0 0 100%;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem;
+  background-color: color-mix(in srgb, var(--accent) 25%, #0b0f08);
+  background-image:
+    linear-gradient(0deg, rgb(0 0 0 / 65%), transparent 60%),
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 18%, transparent) 0 2px, transparent 2px 14px);
+  background-size: cover, auto;
+  background-position: center;
+  color: var(--vt-text);
+  text-decoration: none;
+}
+
+.mse-videoteca__slide-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mse-videoteca__slide-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.mse-videoteca__slide-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.mse-videoteca__slide-sub {
+  color: var(--vt-text-muted);
+  font-size: 0.85rem;
+}
+
+.mse-videoteca__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--vt-line);
+  background: rgb(0 0 0 / 40%);
+  color: var(--vt-text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mse-videoteca__nav--prev {
+  left: 1rem;
+}
+
+.mse-videoteca__nav--next {
+  right: 1rem;
+}
+
+.mse-videoteca__carousel-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mse-videoteca__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: none;
+  background: rgb(255 255 255 / 35%);
+  cursor: pointer;
+  padding: 0;
+}
+
+.mse-videoteca__dot--active {
+  background: var(--vt-text);
+}
+
+/* Category rows */
+
+.mse-videoteca__row-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.mse-videoteca__row-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.mse-videoteca__card {
+  flex: 0 0 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.6rem;
+  background-color: color-mix(in srgb, var(--accent) 20%, #0b0f08);
+  background-image:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%),
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 2px, transparent 2px 14px);
+  background-size: cover, auto;
+  background-position: center;
+  border: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__duration {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  background: rgb(0 0 0 / 65%);
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.7rem;
+}
+
+.mse-videoteca__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.mse-videoteca__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.mse-videoteca__sub {
+  color: var(--vt-text-muted);
+  font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-videoteca__carousel-track {
+    transition: none;
+  }
+}
