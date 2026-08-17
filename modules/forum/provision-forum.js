@@ -1,6 +1,6 @@
 (async function provisionForum() {
   const CORE_VERSION = "0.13.6";
-  const FORUM_VERSION = "0.18.9";
+  const FORUM_VERSION = "0.18.10";
   const TAXONOMY_LIST_TITLE = "Fórum — Taxonomia";
 
   const script = document.currentScript

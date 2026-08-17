@@ -929,8 +929,44 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     return freezeResult({ topicId: editable.topic.Id, status: "Arquivado" });
   }
 
+  async function listCategorySummaries({ recentLimit = 3 } = {}) {
+    const categories = await listTaxonomy({ type: "Categoria" });
+    const source = dataSources.get("forum-topics");
+    const topics = await dataSources.getClient("forum-topics").getListItems(source, {
+      select: ["Id", "Title", "CategoriaId", "Author/Id", "Author/Title", "UltimaAtividade"],
+      expand: "Author",
+      filter: "Status ne 'Arquivado'",
+      orderBy: "UltimaAtividade desc,Id desc",
+      top: 500
+    });
+
+    const byCategory = new Map();
+    for (const topic of topics) {
+      const list = byCategory.get(topic.CategoriaId) ?? [];
+      list.push(topic);
+      byCategory.set(topic.CategoriaId, list);
+    }
+
+    return freezeResult(categories.map((category) => {
+      const items = byCategory.get(category.Id) ?? [];
+      return {
+        id: category.Id,
+        title: category.Title,
+        color: category.Cor || "",
+        count: items.length,
+        recentTopics: items.slice(0, recentLimit).map((topic) => ({
+          id: topic.Id,
+          title: topic.Title,
+          author: topic.Author?.Title || "Autor não informado",
+          date: topic.UltimaAtividade
+        }))
+      };
+    }));
+  }
+
   return Object.freeze({
     listTaxonomy,
+    listCategorySummaries,
     listTopics,
     listContributors,
     getTopic,

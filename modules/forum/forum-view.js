@@ -90,6 +90,7 @@ export function createForumView({
   if (!service || typeof service.listTopics !== "function"
     || typeof service.listContributors !== "function"
     || typeof service.listTaxonomy !== "function"
+    || typeof service.listCategorySummaries !== "function"
     || typeof service.getTopic !== "function"
     || typeof service.listAnswers !== "function"
     || typeof service.createAnswer !== "function"
@@ -189,6 +190,52 @@ export function createForumView({
     };
   }
 
+  function categorySummaryPanel(summaries) {
+    const panel = element(document, "section", "mse-forum__categories");
+    panel.append(element(document, "h3", "mse-forum__answers-title", "Tecnologias"));
+    const grid = element(document, "div", "mse-forum__category-grid");
+    for (const summary of summaries) {
+      const card = element(document, "a", "mse-forum__category-card");
+      if (summary.color) card.style.setProperty("--accent", summary.color);
+      card.href = forumRouteUrl(currentHref(), { categoryId: summary.id, topicId: null });
+      card.addEventListener("click", (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        navigate({ categoryId: summary.id, topicId: null });
+      });
+
+      const heading = element(document, "div", "mse-forum__category-heading");
+      heading.append(
+        element(document, "span", "mse-forum__category-title", summary.title),
+        element(document, "span", "mse-forum__category-count", String(summary.count))
+      );
+      card.append(heading);
+
+      const recent = element(document, "ul", "mse-forum__category-recent");
+      if (summary.recentTopics.length) {
+        for (const topic of summary.recentTopics) {
+          const item = element(document, "li", "mse-forum__category-recent-item");
+          const link = element(document, "a", "mse-forum__category-recent-link", topic.title || "Tópico sem título");
+          link.href = forumRouteUrl(currentHref(), { topicId: topic.id, answerId: null });
+          link.addEventListener("click", (event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            event.stopPropagation();
+            navigate({ topicId: topic.id, answerId: null });
+          });
+          item.append(link, element(document, "span", "mse-forum__category-recent-meta", `${topic.author} · ${formattedDate(topic.date)}`));
+          recent.append(item);
+        }
+      } else {
+        recent.append(element(document, "li", "mse-forum__category-recent-item mse-forum__category-recent-item--empty", "Nenhum tópico ainda."));
+      }
+      card.append(recent);
+      grid.append(card);
+    }
+    panel.append(grid);
+    return panel;
+  }
+
   function topicCard(topic) {
     const article = element(document, "article", "mse-forum__topic");
     const main = element(document, "div", "mse-forum__topic-main");
@@ -258,6 +305,8 @@ export function createForumView({
     });
     header.append(heading, description, createLink);
 
+    const categoriesPlaceholder = element(document, "div", "mse-forum__categories-placeholder");
+
     const tabs = element(document, "nav", "mse-forum__tabs");
     tabs.setAttribute("aria-label", "Visões do fórum");
     for (const [view, label] of Object.entries(VIEW_LABELS)) {
@@ -313,11 +362,11 @@ export function createForumView({
 
     const content = element(document, "div", "mse-forum__content");
     content.append(status("Carregando tópicos…"));
-    shell.append(header, tabs, filters, content);
+    shell.append(header, categoriesPlaceholder, tabs, filters, content);
     root.replaceChildren(shell);
 
     try {
-      const [categories, tags, firstPage, contributors] = await Promise.all([
+      const [categories, tags, firstPage, contributors, categorySummaries] = await Promise.all([
         service.listTaxonomy({ type: "Categoria" }),
         service.listTaxonomy({ type: "Tag" }),
         service.listTopics({
@@ -327,9 +376,12 @@ export function createForumView({
           search: route.search,
           pageSize
         }),
-        service.listContributors({ limit: 5 })
+        service.listContributors({ limit: 5 }),
+        service.listCategorySummaries({ recentLimit: 3 })
       ]);
       if (disposed || sequence !== renderSequence) return;
+
+      categoriesPlaceholder.replaceChildren(categorySummaryPanel(categorySummaries));
 
       for (const item of categories) {
         const option = element(document, "option", null, item.Title);
