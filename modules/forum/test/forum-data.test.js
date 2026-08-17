@@ -428,4 +428,34 @@ await assert.rejects(
   /cursor não pertence/
 );
 
+{
+  const summaryDataSources = {
+    get: (key) => ({ key }),
+    getClient: () => ({
+      getListItems: async (source) => {
+        if (source.key === "forum-taxonomy") return [
+          { Id: 10, Title: "SAP", Tipo: "Categoria", Cor: "#006298", Ordem: 10 },
+          { Id: 11, Title: "Power Platform", Tipo: "Categoria", Cor: "#3DDAFF", Ordem: 20 }
+        ];
+        if (source.key === "forum-topics") return [
+          { Id: 1, Title: "Tópico A", CategoriaId: 10, Author: { Id: 1, Title: "Ana" }, UltimaAtividade: "2026-06-01T00:00:00Z" },
+          { Id: 2, Title: "Tópico B", CategoriaId: 10, Author: { Id: 2, Title: "Bruno" }, UltimaAtividade: "2026-05-01T00:00:00Z" }
+        ];
+        return [];
+      }
+    })
+  };
+  const summaryService = createForumReadService({ dataSources: summaryDataSources });
+  const summaries = await summaryService.listCategorySummaries({ recentLimit: 1 });
+  assert.equal(summaries.length, 2);
+  assert.equal(summaries[0].title, "SAP");
+  assert.equal(summaries[0].color, "#006298");
+  assert.equal(summaries[0].count, 2);
+  assert.equal(summaries[0].recentTopics.length, 1);
+  assert.equal(summaries[0].recentTopics[0].title, "Tópico A");
+  assert.equal(summaries[1].title, "Power Platform");
+  assert.equal(summaries[1].count, 0);
+  assert.equal(summaries[1].recentTopics.length, 0);
+}
+
 console.log("forum-data.test.js: verificações concluídas com sucesso.");

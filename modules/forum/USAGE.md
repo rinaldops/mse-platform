@@ -37,14 +37,14 @@ __SITE_ASSETS__/mse-platform/core/0.13.6/vendor/summernote/0.9.0/font/summernote
 __SITE_ASSETS__/mse-platform/core/0.13.6/vendor/summernote/0.9.0/font/summernote.woff
 __SITE_ASSETS__/mse-platform/core/0.13.6/vendor/summernote/0.9.0/font/summernote.ttf
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes. This is not just a rollback convenience: SharePoint's own Service Worker caches `SiteAssets` files per browser profile and does not expire that cache on its own, so overwriting a file in place can leave some users stuck on the old code indefinitely while others get the fix. See [`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).
@@ -123,9 +123,9 @@ Example:
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum.css">
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum.css">
 
-<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.9/forum-loader.js"></script>
+<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.18.10/forum-loader.js"></script>
 ```
 
 The public repository intentionally keeps `__SITE_ASSETS__` as a placeholder. Replace it with the target SharePoint server-relative `SiteAssets` path only when pasting into the target environment.
