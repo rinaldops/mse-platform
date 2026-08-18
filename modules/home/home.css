@@ -1,4 +1,7 @@
-[data-mse-module="home"] {
+/* doubled selector: each module loader injects its own <link> to core.css,
+   so core's .mse-app background can land after this rule in the cascade;
+   matching specificity (0,1,0) alone loses that tiebreak on some pages */
+[data-mse-module="home"][data-mse-module="home"] {
   --home-void: #041520;
   --home-void-2: #062a40;
   --home-azul-claro: #3ddaff;
