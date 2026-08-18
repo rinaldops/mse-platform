@@ -1,4 +1,6 @@
-[data-mse-module="videoteca"] {
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="videoteca"][data-mse-module="videoteca"] {
   --vt-void: #1a1704;
   --vt-void-2: #142a1f;
   --vt-surface: #1c2410;

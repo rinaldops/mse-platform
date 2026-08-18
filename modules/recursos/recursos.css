@@ -1,4 +1,6 @@
-[data-mse-module="recursos"] {
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="recursos"][data-mse-module="recursos"] {
   --recursos-void: #041a12;
   --recursos-void-2: #0a2e1f;
   --recursos-surface: #0d3524;
