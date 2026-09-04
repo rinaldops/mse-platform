@@ -10,13 +10,13 @@ This guide uses placeholders. Replace:
 Upload preserving version folders (core `0.13.6` must already be published):
 
 ```text
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca.css
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca-data.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca-view.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca-schema.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/videoteca-loader.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.0/provision-videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca.css
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca-data.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca-view.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca-schema.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/videoteca-loader.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.1.1/provision-videoteca.js
 ```
 
 Do not overwrite an existing version folder — publish a new one when the code changes.
