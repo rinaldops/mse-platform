@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-A partir do `core/0.13.2`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor. O `core/0.13.5` amplia o sanitizador e o cliente REST para processar imagens incorporadas de até 1 MiB e enviá-las a bibliotecas SharePoint.
+A partir do `core/0.1.0`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor. O `core/0.1.0` amplia o sanitizador e o cliente REST para processar imagens incorporadas de até 1 MiB e enviá-las a bibliotecas SharePoint.
 
 Editores suportados:
 
@@ -15,7 +15,7 @@ Editores suportados:
 O seletor público fica em:
 
 ```text
-core/0.13.5/editor.js
+core/0.1.0/editor.js
 ```
 
 API principal:
@@ -36,17 +36,17 @@ selectRichTextEditor("default")
 - O tema visual usa tokens `--mse-*` para aproximar o editor do host SharePoint.
 - Pastas publicadas são imutáveis; correção exige nova versão.
 
-## Assets do core `0.13.5`
+## Assets do core `0.1.0`
 
 ```text
-core/0.13.5/editor.js
-core/0.13.5/editor-quill.js
-core/0.13.5/editor-quill.css
-core/0.13.5/editor-summernote.js
-core/0.13.5/editor-summernote.css
-core/0.13.5/vendor/quill/2.0.3/
-core/0.13.5/vendor/jquery/3.7.1/
-core/0.13.5/vendor/summernote/0.9.0/
+core/0.1.0/editor.js
+core/0.1.0/editor-quill.js
+core/0.1.0/editor-quill.css
+core/0.1.0/editor-summernote.js
+core/0.1.0/editor-summernote.css
+core/0.1.0/vendor/quill/2.0.3/
+core/0.1.0/vendor/jquery/3.7.1/
+core/0.1.0/vendor/summernote/0.9.0/
 ```
 
 ## Quill
@@ -99,11 +99,11 @@ Restrições:
 - a entrada HTML temporária aceita até 15 milhões de caracteres para comportar até dez imagens codificadas;
 - o limite do campo textual deve ser aplicado depois da externalização das imagens.
 
-O fórum `0.18.8` implementa o fluxo definitivo: localiza imagens Base64, valida formato e tamanho, envia os bytes para `ForumMidia` pelo `uploadFile` do Core e substitui o `src` pela URL server-relative retornada. O campo `Conteudo` recebe somente HTML sanitizado com URLs, nunca o blob Base64.
+O fórum `0.1.0` implementa o fluxo definitivo: localiza imagens Base64, valida formato e tamanho, envia os bytes para `ForumMidia` pelo `uploadFile` do Core e substitui o `src` pela URL server-relative retornada. O campo `Conteudo` recebe somente HTML sanitizado com URLs, nunca o blob Base64.
 
 ## Configuração no fórum
 
-O fórum `0.18.8` aceita:
+O fórum `0.1.0` aceita:
 
 ```html
 data-editor="Quill"

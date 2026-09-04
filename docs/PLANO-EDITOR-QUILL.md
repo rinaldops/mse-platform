@@ -18,9 +18,9 @@ O editor nativo atual permanece como fallback leve até o adaptador Quill estar 
 Adicionar um pacote versionado:
 
 ```text
-core/0.13.2/editor-quill.js
-core/0.13.2/editor-quill.css
-core/0.13.2/vendor/quill/
+core/0.1.0/editor-quill.js
+core/0.1.0/editor-quill.css
+core/0.1.0/vendor/quill/
 ```
 
 O adaptador público deve expor uma API pequena:
@@ -46,8 +46,8 @@ Contrato mínimo:
 
 ## Status de implementacao
 
-- `core/0.13.2`: adaptador Quill local entregue no nucleo.
-- `forum/0.18.2`: primeiro consumo do adaptador iniciado no modulo de forum, com fallback nativo.
+- `core/0.1.0`: adaptador Quill local entregue no nucleo.
+- `forum/0.1.0`: primeiro consumo do adaptador iniciado no modulo de forum, com fallback nativo.
 
 ## Fases
 
@@ -85,7 +85,7 @@ Decisão inicial recomendada:
 
 ### Q5 — Validação SharePoint
 
-- Publicar o núcleo `0.13.2` e o módulo consumidor em pastas versionadas.
+- Publicar o núcleo `0.1.0` e o módulo consumidor em pastas versionadas.
 - Testar em Modern Script Editor com scripts externos.
 - Medir tamanho dos ativos e tempo de carregamento.
 - Confirmar ausência de erros no console.
@@ -113,11 +113,11 @@ O plano começou como avaliação do Quill, mas a entrega consolidada virou uma 
 
 Entregas acumuladas:
 
-- `core/0.12.2`: Quill local validado em SharePoint, incluindo contorno para páginas que expõem `define.amd`.
-- `core/0.13.2`: seletor `editor.js`, Summernote Lite, jQuery local, CSS/fontes/licenças locais e sanitização de imagens pequenas.
-- `forum/0.18.2`: seleção por `data-editor`, `forum.editor` ou `forum.Editor`.
-- `core/0.13.5`: sanitização de imagens incorporadas até 1 MiB e upload binário para bibliotecas SharePoint.
-- `forum/0.18.8`: externalização automática de Base64 para `ForumMidia` antes da persistência.
+- `core/0.1.0`: Quill local validado em SharePoint, incluindo contorno para páginas que expõem `define.amd`.
+- `core/0.1.0`: seletor `editor.js`, Summernote Lite, jQuery local, CSS/fontes/licenças locais e sanitização de imagens pequenas.
+- `forum/0.1.0`: seleção por `data-editor`, `forum.editor` ou `forum.Editor`.
+- `core/0.1.0`: sanitização de imagens incorporadas até 1 MiB e upload binário para bibliotecas SharePoint.
+- `forum/0.1.0`: externalização automática de Base64 para `ForumMidia` antes da persistência.
 
 Valores aceitos:
 

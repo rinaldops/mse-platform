@@ -7,7 +7,7 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core `0.13.6` must already be published — see the forum module's `USAGE.md` if not):
+Upload preserving version folders (core `0.1.0` must already be published — see the forum module's `USAGE.md` if not):
 
 ```text
 __SITE_ASSETS__/mse-platform/modules/recursos/0.1.0/recursos.js
