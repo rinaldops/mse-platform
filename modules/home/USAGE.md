@@ -7,7 +7,7 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core `0.13.6` must already be published):
+Upload preserving version folders (core `0.1.0` must already be published):
 
 ```text
 __SITE_ASSETS__/mse-platform/modules/home/0.1.0/home.js

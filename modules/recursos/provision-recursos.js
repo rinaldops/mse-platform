@@ -1,5 +1,5 @@
 (async function provisionRecursos() {
-  const CORE_VERSION = "0.13.6";
+  const CORE_VERSION = "0.1.0";
   const RECURSOS_VERSION = "0.1.0";
 
   const script = document.currentScript

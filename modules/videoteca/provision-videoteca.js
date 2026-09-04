@@ -1,6 +1,6 @@
 (async function provisionVideoteca() {
-  const CORE_VERSION = "0.13.6";
-  const VIDEOTECA_VERSION = "0.1.1";
+  const CORE_VERSION = "0.1.0";
+  const VIDEOTECA_VERSION = "0.1.0";
 
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/videoteca/"));

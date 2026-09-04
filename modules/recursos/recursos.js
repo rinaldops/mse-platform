@@ -1,4 +1,4 @@
-import { mountModule } from "../../../core/0.13.6/core.js";
+import { mountModule } from "../../../core/0.1.0/core.js";
 import { createRecursosView } from "./recursos-view.js";
 
 export const RECURSOS_VERSION = "0.1.0";

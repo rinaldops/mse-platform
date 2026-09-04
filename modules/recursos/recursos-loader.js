@@ -32,7 +32,7 @@
 
     const [{ createSharePointDataSourceRegistry }, { createRecursosReadService }, { mountRecursos }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.13.6/data-sources.js`),
+        import(`${assetBase}/mse-platform/core/0.1.0/data-sources.js`),
         import(`${assetBase}/mse-platform/modules/recursos/0.1.0/recursos-data.js`),
         import(`${assetBase}/mse-platform/modules/recursos/0.1.0/recursos.js`)
       ]);

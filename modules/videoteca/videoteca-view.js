@@ -1,5 +1,5 @@
-// Paleta de apoio Petrobras (ver docs/petrobras_identidade_visual.pdf). Fixa por design:
-// não é conteúdo do site, é a marca da plataforma. Nomes de categoria vêm da lista
+// Paleta de apoio visual da plataforma. Fixa por design: não é conteúdo do site.
+// Nomes de categoria vêm da lista
 // SharePoint de cada site e nunca são hardcoded aqui — accentFor() só escolhe uma cor
 // determinística da paleta a partir do nome, para o módulo continuar reutilizável em
 // qualquer site sem editar código por categoria.

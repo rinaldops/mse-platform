@@ -32,9 +32,9 @@
 
     const [{ createSharePointDataSourceRegistry }, { createVideotecaReadService }, { mountVideoteca }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.13.6/data-sources.js`),
-        import(`${assetBase}/mse-platform/modules/videoteca/0.1.1/videoteca-data.js`),
-        import(`${assetBase}/mse-platform/modules/videoteca/0.1.1/videoteca.js`)
+        import(`${assetBase}/mse-platform/core/0.1.0/data-sources.js`),
+        import(`${assetBase}/mse-platform/modules/videoteca/0.1.0/videoteca-data.js`),
+        import(`${assetBase}/mse-platform/modules/videoteca/0.1.0/videoteca.js`)
       ]);
 
     const response = await fetch(
