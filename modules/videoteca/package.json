@@ -1,9 +1,9 @@
 {
   "name": "mse-videoteca",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/schema.test.js && node test/videoteca-data.test.js"
+    "test": "node test/schema.test.js && node test/videoteca-data.test.js && node test/videoteca-view.test.js"
   }
 }

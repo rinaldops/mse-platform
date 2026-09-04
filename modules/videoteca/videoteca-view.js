@@ -1,13 +1,12 @@
-const CATEGORY_ACCENT = Object.freeze({
-  "Power Platform": "#3DDAFF",
-  "Microsoft 365": "#00B2A9",
-  "SAP": "#006298",
-  "Azure e APIs": "#ED8B00",
-  "KNIME": "#C4D600",
-  "Automation Anywhere": "#EBFF00",
-  "IA e Machine Learning": "#008542",
-  "Outros": "#75787B"
-});
+// Paleta de apoio Petrobras (ver docs/petrobras_identidade_visual.pdf). Fixa por design:
+// não é conteúdo do site, é a marca da plataforma. Nomes de categoria vêm da lista
+// SharePoint de cada site e nunca são hardcoded aqui — accentFor() só escolhe uma cor
+// determinística da paleta a partir do nome, para o módulo continuar reutilizável em
+// qualquer site sem editar código por categoria.
+const ACCENT_PALETTE = Object.freeze([
+  "#3DDAFF", "#00B2A9", "#006298", "#ED8B00",
+  "#C4D600", "#EBFF00", "#008542", "#75787B"
+]);
 
 const CAROUSEL_INTERVAL_MS = 6000;
 
@@ -18,8 +17,11 @@ function element(document, tag, className, text) {
   return node;
 }
 
-function accentFor(category) {
-  return CATEGORY_ACCENT[category] || CATEGORY_ACCENT.Outros;
+export function accentFor(category) {
+  if (!category) return ACCENT_PALETTE[ACCENT_PALETTE.length - 1];
+  let hash = 0;
+  for (let i = 0; i < category.length; i += 1) hash = (hash * 31 + category.charCodeAt(i)) | 0;
+  return ACCENT_PALETTE[Math.abs(hash) % ACCENT_PALETTE.length];
 }
 
 function formattedDate(value) {
