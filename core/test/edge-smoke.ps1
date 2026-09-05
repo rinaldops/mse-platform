@@ -18,12 +18,25 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $coreRoot)
 $outputRoot = Join-Path ([System.IO.Path]::GetTempPath()) "mse-core-edge-smoke"
 $stdoutLog = Join-Path $outputRoot "server.out.log"
 $stderrLog = Join-Path $outputRoot "server.err.log"
-$domPath = Join-Path $outputRoot "rendered.html"
-$url = "http://127.0.0.1:$Port/mse-platform/core/demo/"
+$domPath = Join-Path $outputRoot "rendered.txt"
+$webRoot = Join-Path $outputRoot "webroot"
+$url = "http://127.0.0.1:$Port/mse-platform/core/demo/index.html"
 $viewportUrl = "http://127.0.0.1:$Port/mse-platform/core/test/viewport.html?width=320"
-$forumUrl = "http://127.0.0.1:$Port/mse-platform/modules/forum/demo/"
+$forumUrl = "http://127.0.0.1:$Port/mse-platform/modules/forum/demo/index.html"
 
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+if (Test-Path -LiteralPath $webRoot) {
+    $resolvedWebRoot = (Resolve-Path -LiteralPath $webRoot).Path
+    if (-not $resolvedWebRoot.StartsWith($outputRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Pasta temporária inesperada: $resolvedWebRoot"
+    }
+    Remove-Item -LiteralPath $resolvedWebRoot -Recurse -Force
+}
+New-Item -ItemType Directory -Path $webRoot -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $repositoryRoot "mse-platform") -Destination (Join-Path $webRoot "mse-platform") -Recurse -Force
+Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/core/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/core/demo/index.html") -Force
+Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/core/test/viewport.txt") -Destination (Join-Path $webRoot "mse-platform/core/test/viewport.html") -Force
+Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/modules/forum/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/modules/forum/demo/index.html") -Force
 
 function Invoke-EdgeCapture(
     [string[]]$arguments,
@@ -77,7 +90,7 @@ function Invoke-EdgeCapture(
 
 $server = Start-Process python `
     -ArgumentList "-m", "http.server", $Port, "--bind", "127.0.0.1" `
-    -WorkingDirectory $repositoryRoot `
+    -WorkingDirectory $webRoot `
     -RedirectStandardOutput $stdoutLog `
     -RedirectStandardError $stderrLog `
     -WindowStyle Hidden `
@@ -121,7 +134,7 @@ try {
         throw "As verificações registradas no DOM não foram concluídas com sucesso."
     }
 
-    $mobileDomPath = Join-Path $outputRoot "viewport-320.html"
+    $mobileDomPath = Join-Path $outputRoot "viewport-320.txt"
     $mobileProfile = Join-Path $outputRoot "profile-$PID-mobile-dom"
     Invoke-EdgeCapture `
         -Arguments @(
@@ -143,7 +156,7 @@ try {
         throw "O viewport real de 320px apresentou falha ou overflow horizontal."
     }
 
-    $forumDomPath = Join-Path $outputRoot "forum-rendered.html"
+    $forumDomPath = Join-Path $outputRoot "forum-rendered.txt"
     $forumProfile = Join-Path $outputRoot "profile-$PID-forum-dom"
     Invoke-EdgeCapture `
         -Arguments @(
