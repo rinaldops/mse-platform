@@ -23,7 +23,9 @@ Do not overwrite an existing version folder — publish a new one when the code 
 
 ## 2. Provision the SharePoint list
 
-Create a temporary Modern Script Editor webpart and paste [`snippets/provision-videoteca.html`](snippets/provision-videoteca.html), replacing `__WEB_URL__` and `__SITE_ASSETS__`.
+The runtime loader provisions `VideotecaVideos` automatically when the page loads.
+
+Optional: create a temporary Modern Script Editor webpart and paste [`snippets/provision-videoteca.html`](snippets/provision-videoteca.html), replacing `__WEB_URL__` and `__SITE_ASSETS__`, to validate the list before publishing the visible webpart.
 
 ## 3. Add a few videos
 

@@ -1,5 +1,6 @@
 (async function loadVideoteca() {
-  const LISTS = [["videoteca-videos", "VideotecaVideos"]];
+  const CORE_VERSION = "0.1.0";
+  const VIDEOTECA_VERSION = "0.1.0";
 
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/videoteca/"));
@@ -30,24 +31,26 @@
 
     write("Carregando videoteca...");
 
-    const [{ createSharePointDataSourceRegistry }, { createVideotecaReadService }, { mountVideoteca }] =
+    const [
+      { createSharePointDataSourceRegistry },
+      { provisionLists },
+      { createVideotecaReadService },
+      { mountVideoteca },
+      { VIDEOTECA_LIST_SCHEMAS }
+    ] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.1.0/data-sources.js`),
-        import(`${assetBase}/mse-platform/modules/videoteca/0.1.0/videoteca-data.js`),
-        import(`${assetBase}/mse-platform/modules/videoteca/0.1.0/videoteca.js`)
+        import(`${assetBase}/mse-platform/core/${CORE_VERSION}/data-sources.js`),
+        import(`${assetBase}/mse-platform/core/${CORE_VERSION}/list-provisioning.js`),
+        import(`${assetBase}/mse-platform/modules/videoteca/${VIDEOTECA_VERSION}/videoteca-data.js`),
+        import(`${assetBase}/mse-platform/modules/videoteca/${VIDEOTECA_VERSION}/videoteca.js`),
+        import(`${assetBase}/mse-platform/modules/videoteca/${VIDEOTECA_VERSION}/videoteca-schema.js`)
       ]);
 
-    const response = await fetch(
-      `${webUrl}/_api/web/lists?$select=Id,RootFolder/Name&$expand=RootFolder&$top=5000`,
-      { headers: { Accept: "application/json;odata=nometadata" }, cache: "no-store" }
-    );
-    if (!response.ok) throw new Error(`Unable to read videoteca lists: HTTP ${response.status}`);
-
-    const lists = new Map((await response.json()).value.map((list) => [list.RootFolder?.Name, list.Id]));
-    const sources = LISTS.map(([key, internalName]) => {
-      const listId = lists.get(internalName);
-      if (!listId) throw new Error(`Missing SharePoint list: ${internalName}`);
-      return { key, webUrl, listId };
+    write("Preparando videoteca...");
+    const { lists: sources } = await provisionLists({
+      webUrl,
+      schemas: VIDEOTECA_LIST_SCHEMAS,
+      confirm: () => true
     });
 
     const dataSources = createSharePointDataSourceRegistry({
