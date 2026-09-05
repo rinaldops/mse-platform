@@ -7,6 +7,7 @@ Current version: `0.1.0`.
 ## Features in this MVP
 
 - Declarative SharePoint list schema (single list, admin-curated).
+- Runtime auto-provisioning of the required SharePoint list/schema before rendering.
 - Auto-advancing carousel of featured videos (`Destaque` = yes), pausing on hover/focus, no
   autoplay under `prefers-reduced-motion`.
 - Videos grouped by category into horizontal rows.
@@ -27,7 +28,7 @@ npm test
 
 ## SharePoint test
 
-Use [`USAGE.md`](USAGE.md) to publish the assets, provision the list and paste the Modern Script Editor snippet.
+Use [`USAGE.md`](USAGE.md) to publish the assets and paste the Modern Script Editor snippet.
 
 Versioning policy: never overwrite a published version folder in place — see
 [`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).
