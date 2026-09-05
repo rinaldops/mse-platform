@@ -53,7 +53,7 @@ Do not overwrite an existing version folder. Publish a new version folder when t
 
 Create a temporary Modern Script Editor webpart, or run this as an administrator from a controlled test page.
 
-Paste the visible provisioning snippet from [`snippets/provision-forum.txt`](snippets/provision-forum.txt).
+Paste the visible provisioning snippet from [`snippets/provision-forum.html`](snippets/provision-forum.html).
 
 Before saving, replace:
 
@@ -92,7 +92,7 @@ Without an active category, the forum can render but users cannot publish a vali
 
 ## 4. Insert the forum webpart
 
-Add a Modern Script Editor webpart and paste the snippet from [`snippets/modern-script-editor.txt`](snippets/modern-script-editor.txt).
+Add a Modern Script Editor webpart and paste the snippet from [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html).
 
 Before saving, replace:
 

@@ -34,9 +34,6 @@ if (Test-Path -LiteralPath $webRoot) {
 }
 New-Item -ItemType Directory -Path $webRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $repositoryRoot "mse-platform") -Destination (Join-Path $webRoot "mse-platform") -Recurse -Force
-Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/core/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/core/demo/index.html") -Force
-Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/core/test/viewport.txt") -Destination (Join-Path $webRoot "mse-platform/core/test/viewport.html") -Force
-Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/modules/forum/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/modules/forum/demo/index.html") -Force
 
 function Invoke-EdgeCapture(
     [string[]]$arguments,

@@ -27,7 +27,6 @@ if (Test-Path -LiteralPath $webRoot) {
 }
 New-Item -ItemType Directory -Path $webRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $repository "mse-platform") -Destination (Join-Path $webRoot "mse-platform") -Recurse -Force
-Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/modules/forum/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/modules/forum/demo/index.html") -Force
 
 $server = Start-Process python `
     -ArgumentList "-m", "http.server", $Port, "--bind", "127.0.0.1" `

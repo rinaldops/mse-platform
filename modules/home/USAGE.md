@@ -23,7 +23,7 @@ changes.
 
 No list to provision — this module has no SharePoint dependency. Add a
 Modern Script Editor webpart (as the first section of the page, above Fórum)
-and paste [`snippets/modern-script-editor.txt`](snippets/modern-script-editor.txt),
+and paste [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html),
 replacing `__SITE_ASSETS__`.
 
 ## 3. Validate the MVP
