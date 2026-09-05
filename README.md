@@ -4,6 +4,10 @@ Reusable JavaScript modules for SharePoint Modern Script Editor.
 
 This repository contains a small shared core and modules that can be published as versioned assets under SharePoint `SiteAssets`.
 
+HTML snippets, demos and previews are stored as `.txt` files to prevent
+SharePoint/OneDrive from injecting Office document metadata into source files.
+Smoke tests may create temporary `.html` copies outside the repository.
+
 ## Structure
 
 ```text

@@ -23,7 +23,7 @@ Do not overwrite an existing version folder — publish a new one when the code 
 
 ## 2. Provision the SharePoint list
 
-Create a temporary Modern Script Editor webpart and paste [`snippets/provision-recursos.html`](snippets/provision-recursos.html), replacing `__WEB_URL__` and `__SITE_ASSETS__`.
+Create a temporary Modern Script Editor webpart and paste [`snippets/provision-recursos.txt`](snippets/provision-recursos.txt), replacing `__WEB_URL__` and `__SITE_ASSETS__`.
 
 ## 3. Add a few links
 
@@ -41,7 +41,7 @@ Without at least one active item the module renders "Nenhum recurso publicado ai
 
 ## 4. Insert the recursos webpart
 
-Add a Modern Script Editor webpart and paste [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html), replacing `__SITE_ASSETS__`.
+Add a Modern Script Editor webpart and paste [`snippets/modern-script-editor.txt`](snippets/modern-script-editor.txt), replacing `__SITE_ASSETS__`.
 
 ## 5. Validate the MVP
 

@@ -12,15 +12,26 @@ if (-not $edge) { throw "Microsoft Edge não encontrado." }
 $forumRoot = Split-Path -Parent $PSScriptRoot
 $repository = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $forumRoot))
 $output = Join-Path ([IO.Path]::GetTempPath()) "mse-forum-edge-smoke"
+$webRoot = Join-Path $output "webroot"
 $edgeError = Join-Path $output "edge.err.log"
 $serverOutput = Join-Path $output "server.out.log"
 $serverError = Join-Path $output "server.err.log"
-$url = "http://127.0.0.1:$Port/mse-platform/modules/forum/demo/"
+$url = "http://127.0.0.1:$Port/mse-platform/modules/forum/demo/index.html"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
+if (Test-Path -LiteralPath $webRoot) {
+    $resolvedWebRoot = (Resolve-Path -LiteralPath $webRoot).Path
+    if (-not $resolvedWebRoot.StartsWith($output, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Pasta temporária inesperada: $resolvedWebRoot"
+    }
+    Remove-Item -LiteralPath $resolvedWebRoot -Recurse -Force
+}
+New-Item -ItemType Directory -Path $webRoot -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $repository "mse-platform") -Destination (Join-Path $webRoot "mse-platform") -Recurse -Force
+Move-Item -LiteralPath (Join-Path $webRoot "mse-platform/modules/forum/demo/index.txt") -Destination (Join-Path $webRoot "mse-platform/modules/forum/demo/index.html") -Force
 
 $server = Start-Process python `
     -ArgumentList "-m", "http.server", $Port, "--bind", "127.0.0.1" `
-    -WorkingDirectory $repository `
+    -WorkingDirectory $webRoot `
     -RedirectStandardOutput $serverOutput `
     -RedirectStandardError $serverError `
     -WindowStyle Hidden `
@@ -36,7 +47,7 @@ try {
 
     foreach ($width in 600, 1366) {
         $profile = Join-Path $output "profile-$PID-$width"
-        $dom = Join-Path $output "forum-$width.html"
+        $dom = Join-Path $output "forum-$width.txt"
         if (Test-Path -LiteralPath $dom) { Remove-Item -LiteralPath $dom -Force }
         $process = Start-Process $edge `
             -ArgumentList @(

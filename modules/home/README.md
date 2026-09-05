@@ -18,7 +18,7 @@ ler contagens reais via REST depois que Fórum/Videoteca estiverem em produção
 ## Uso
 
 Veja [`USAGE.md`](USAGE.md) para o passo a passo de publicação e o snippet em
-[`snippets/modern-script-editor.html`](snippets/modern-script-editor.html).
+[`snippets/modern-script-editor.txt`](snippets/modern-script-editor.txt).
 
 ## Testes
 
