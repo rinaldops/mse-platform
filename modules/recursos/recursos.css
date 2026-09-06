@@ -71,7 +71,7 @@
   order: -1;
 }
 
-.mse-recursos__group[open] > .mse-recursos__group-title::before {
+.mse-recursos__group--open > .mse-recursos__group-title::before {
   transform: rotate(45deg);
 }
 

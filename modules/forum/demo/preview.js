@@ -134,6 +134,25 @@ const service = {
     });
     return [...scores.values()].sort((left, right) => right.score - left.score).slice(0, limit);
   },
+  async listCategorySummaries({ recentLimit = 3 } = {}) {
+    return taxonomy
+      .filter((item) => item.Tipo === "Categoria")
+      .map((category) => {
+        const categoryTopics = topics.filter((topic) => topic.CategoriaId === category.Id);
+        return {
+          id: category.Id,
+          title: category.Title,
+          count: categoryTopics.length,
+          color: category.Title === "SharePoint" ? "#3DDAFF" : "#00B2A9",
+          recentTopics: categoryTopics.slice(0, recentLimit).map((topic) => ({
+            id: topic.Id,
+            title: topic.Title,
+            author: topic.Author?.Title || "Autor não informado",
+            date: topic.UltimaAtividade || topic.Created
+          }))
+        };
+      });
+  },
   async getTopic(id) { return topics.find((topic) => topic.Id === Number(id)) ?? null; },
   async listAnswers(topicId) {
     return { answers: answers.filter((answer) => answer.TopicoId === Number(topicId) && answer.Status === "Publicada"), next: null };
@@ -305,10 +324,11 @@ checks.push(result.mounted.length === 1);
 checks.push(await waitFor(() => document.querySelectorAll(".mse-forum__topic").length === 3));
 const forumRoot = document.querySelector('[data-mse-module="forum"]');
 const forumShellStyle = getComputedStyle(document.querySelector(".mse-forum"));
+const forumRootStyle = getComputedStyle(forumRoot);
 checks.push(forumRoot.classList.contains("mse-app--full-bleed"));
 checks.push(forumShellStyle.borderLeftWidth === "0px" && forumShellStyle.borderRightWidth === "0px");
 checks.push(forumShellStyle.borderRadius === "0px" && forumShellStyle.boxShadow === "none");
-checks.push(parseFloat(forumShellStyle.paddingLeft) >= 16 && parseFloat(forumShellStyle.paddingRight) >= 16);
+checks.push(parseFloat(forumRootStyle.paddingLeft) >= 16 && parseFloat(forumRootStyle.paddingRight) >= 16);
 checks.push(document.querySelectorAll(".mse-forum__tab").length === 4);
 checks.push(document.querySelector(".mse-forum__contributors")?.textContent.includes("Bruno Costa"));
 
@@ -421,7 +441,7 @@ checks.push(await waitFor(() => document.querySelector(".mse-forum__title")?.tex
 history.pushState({}, "", location.pathname);
 dispatchEvent(new PopStateEvent("popstate"));
 checks.push(await waitFor(() => document.querySelectorAll(".mse-forum__topic").length === 4));
-checks.push(document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+checks.push(await waitFor(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth));
 document.querySelector(".mse-forum__topic-link").click();
 checks.push(await waitFor(() => document.querySelector(".mse-forum__title")?.textContent === "Como editar um tópico?"));
 document.querySelector(".mse-forum__topic-actions .mse-forum__button").click();
@@ -443,5 +463,6 @@ const passed = checks.every(Boolean);
 const failedChecks = checks.flatMap((result, index) => result ? [] : [index + 1]);
 status.textContent = passed
   ? `${checks.length} verificações concluídas.`
-  : `O preview apresentou falhas nas verificações: ${failedChecks.join(", ")}.`;
+  : `O preview apresentou falhas nas verificações: ${failedChecks.join(", ")}. `
+    + `scroll=${document.documentElement.scrollWidth}/${document.documentElement.clientWidth}.`;
 status.dataset.mseTestStatus = passed ? "passed" : "failed";

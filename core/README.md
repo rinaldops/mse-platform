@@ -16,6 +16,8 @@ Current version: `0.1.0`.
 - Cross-site data source registry using explicit allowlists.
 - Safe rich-text sanitization and rendering.
 - Shared rich-text editor selector with Quill, Summernote Lite and native fallback support.
+- Accessibility helpers for reduced motion, announcements, disclosures and focus traps.
+- Hash navigation and accessible breadcrumb helpers.
 
 ## Rich-text editor selector
 
@@ -30,6 +32,14 @@ selectRichTextEditor("default")
 The `default` option returns no external adapter so the consuming module can use its native editor. Quill and Summernote assets are published locally with their licenses and are loaded on demand.
 
 See [`../docs/EDITORES-RICOS.md`](../docs/EDITORES-RICOS.md).
+
+## UI primitives
+
+Domain-free components live in [`../modules/ui/`](../modules/ui/README.md):
+accordion and carousel. They receive already-resolved data, do not access
+SharePoint and return an explicit `destroy()` controller. This keeps the same
+visual and accessibility patterns reusable by `CAMAP-AGP`, `TD` and future
+modules without coupling their content models.
 
 ## Local tests
 

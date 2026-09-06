@@ -93,6 +93,8 @@ assert.equal(CORE_VERSION, "0.1.0");
 assert.equal(resolved.title, "instance");
 assert.equal(resolved.layout.mode, "fullBleed");
 assert.equal(resolved.theme.tokens.colorPrimary, "#123456");
+assert.equal(resolved.theme.tokens.colorAccent, "#00a69c");
+assert.equal(resolved.theme.tokens.colorWarning, "#f6c800");
 assert.ok(Object.isFrozen(resolved));
 assert.ok(Object.isFrozen(resolved.layout));
 assert.deepEqual(globalConfig, {
@@ -165,6 +167,7 @@ const sharePointThemeConfig = createSharePointThemeConfig({
   roundedCorner6: "6px"
 });
 assert.equal(sharePointThemeConfig.theme.tokens.colorPrimary, "#008542");
+assert.equal(sharePointThemeConfig.theme.tokens.colorAccent, "#008542");
 assert.equal(sharePointThemeConfig.theme.tokens.colorMuted, "#605e5c");
 assert.equal(sharePointThemeConfig.theme.tokens.fontFamily, "'Segoe UI'");
 

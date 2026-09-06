@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/schema.test.js && node test/recursos-data.test.js"
+    "test": "node test/schema.test.js && node test/recursos-data.test.js && node test/recursos-view.test.js"
   }
 }
