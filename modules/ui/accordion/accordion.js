@@ -1,4 +1,9 @@
-import { setDisclosure } from "../../../core/accessibility.js";
+const currentModuleUrl = new URL(import.meta.url);
+const publishedVersion = currentModuleUrl.pathname.match(/\/modules\/ui\/([^/]+)\/accordion\//)?.[1];
+const accessibilityUrl = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(publishedVersion || "")
+  ? new URL(`../../../../core/${publishedVersion}/accessibility.js`, currentModuleUrl)
+  : new URL("../../../core/accessibility.js", currentModuleUrl);
+const { setDisclosure } = await import(accessibilityUrl.href);
 
 function assertRoot(root) {
   if (!root || typeof root.replaceChildren !== "function") {

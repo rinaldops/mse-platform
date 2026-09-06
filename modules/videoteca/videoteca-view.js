@@ -1,4 +1,9 @@
-import { mountCarousel } from "../ui/carousel/carousel.js";
+const currentModuleUrl = new URL(import.meta.url);
+const publishedVersion = currentModuleUrl.pathname.match(/\/modules\/videoteca\/([^/]+)\//)?.[1];
+const carouselUrl = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(publishedVersion || "")
+  ? new URL(`../../ui/${publishedVersion}/carousel/carousel.js`, currentModuleUrl)
+  : new URL("../ui/carousel/carousel.js", currentModuleUrl);
+const { mountCarousel } = await import(carouselUrl.href);
 
 // Paleta de apoio visual da plataforma. Fixa por design: não é conteúdo do site.
 // Nomes de categoria vêm da lista

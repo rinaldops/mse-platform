@@ -1,4 +1,6 @@
 (async function loadRecursos() {
+  const CORE_VERSION = "0.2.0";
+  const RECURSOS_VERSION = "0.2.0";
   const LISTS = [["recursos-links", "RecursosLinks"]];
 
   const script = document.currentScript
@@ -32,9 +34,9 @@
 
     const [{ createSharePointDataSourceRegistry }, { createRecursosReadService }, { mountRecursos }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.1.0/data-sources.js`),
-        import(`${assetBase}/mse-platform/modules/recursos/0.1.0/recursos-data.js`),
-        import(`${assetBase}/mse-platform/modules/recursos/0.1.0/recursos.js`)
+        import(`${assetBase}/mse-platform/core/${CORE_VERSION}/data-sources.js`),
+        import(`${assetBase}/mse-platform/modules/recursos/${RECURSOS_VERSION}/recursos-data.js`),
+        import(`${assetBase}/mse-platform/modules/recursos/${RECURSOS_VERSION}/recursos.js`)
       ]);
 
     const response = await fetch(
