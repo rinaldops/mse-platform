@@ -2,7 +2,7 @@
 
 Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
 
-Current version: `0.1.0`.
+Current version: `0.2.0`.
 
 ## What it provides
 
@@ -55,7 +55,7 @@ The Edge smoke test serves the repository locally and validates the demo pages w
 When uploaded to SharePoint, keep assets versioned:
 
 ```text
-SiteAssets/mse-platform/core/0.1.0/
+SiteAssets/mse-platform/core/0.2.0/
 ```
 
 Modules should import a fixed core version instead of a mutable `latest` path.
@@ -64,7 +64,7 @@ Modules should import a fixed core version instead of a mutable `latest` path.
 
 ## Binary uploads
 
-Core `0.1.0` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
+Core `0.2.0` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
 
 ## Full-bleed layout note
 

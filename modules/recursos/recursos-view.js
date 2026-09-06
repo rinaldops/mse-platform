@@ -1,4 +1,9 @@
-import { mountAccordion } from "../ui/accordion/accordion.js";
+const currentModuleUrl = new URL(import.meta.url);
+const publishedVersion = currentModuleUrl.pathname.match(/\/modules\/recursos\/([^/]+)\//)?.[1];
+const accordionUrl = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(publishedVersion || "")
+  ? new URL(`../../ui/${publishedVersion}/accordion/accordion.js`, currentModuleUrl)
+  : new URL("../ui/accordion/accordion.js", currentModuleUrl);
+const { mountAccordion } = await import(accordionUrl.href);
 
 function element(document, tag, className, text) {
   const node = document.createElement(tag);
