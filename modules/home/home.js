@@ -1,7 +1,7 @@
-import { mountModule } from "../../../core/0.1.0/core.js";
+import { mountModule } from "../../../core/0.3.0/core.js";
 import { createHomeView } from "./home-view.js";
 
-export const HOME_VERSION = "0.1.0";
+export const HOME_VERSION = "0.3.0";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 export function mountHome({ stats, globalConfig = {}, instances = {} } = {}) {

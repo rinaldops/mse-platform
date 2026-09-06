@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.2.0";
+export const CORE_VERSION = "0.3.0";
 
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
@@ -30,6 +30,7 @@ const CORE_DEFAULTS = {
       space1: "0.25rem",
       space2: "0.5rem",
       space3: "1rem",
+      sectionRadius: "0",
       radius: "0.5rem",
       shadow: "0 0.25rem 1rem rgb(0 0 0 / 12%)"
     }
@@ -59,6 +60,7 @@ const TOKEN_PROPERTIES = {
   space1: "--mse-space-1",
   space2: "--mse-space-2",
   space3: "--mse-space-3",
+  sectionRadius: "--mse-section-radius",
   radius: "--mse-radius",
   shadow: "--mse-shadow"
 };

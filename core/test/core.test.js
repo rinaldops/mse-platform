@@ -89,12 +89,13 @@ const moduleDefaults = { title: "module" };
 const instanceConfig = { title: "instance", layout: { mode: "fullBleed" } };
 const resolved = resolveConfig({ globalConfig, moduleDefaults, instanceConfig });
 
-assert.equal(CORE_VERSION, "0.2.0");
+assert.equal(CORE_VERSION, "0.3.0");
 assert.equal(resolved.title, "instance");
 assert.equal(resolved.layout.mode, "fullBleed");
 assert.equal(resolved.theme.tokens.colorPrimary, "#123456");
 assert.equal(resolved.theme.tokens.colorAccent, "#00a69c");
 assert.equal(resolved.theme.tokens.colorWarning, "#f6c800");
+assert.equal(resolved.theme.tokens.sectionRadius, "0");
 assert.ok(Object.isFrozen(resolved));
 assert.ok(Object.isFrozen(resolved.layout));
 assert.deepEqual(globalConfig, {

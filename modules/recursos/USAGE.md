@@ -7,16 +7,16 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core and UI `0.2.0` must already be published):
+Upload preserving version folders (core and UI `0.3.0` must already be published):
 
 ```text
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos.css
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos-data.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos-view.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos-schema.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/recursos-loader.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.2.0/provision-recursos.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos.css
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos-data.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos-view.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos-schema.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/recursos-loader.js
+__SITE_ASSETS__/mse-platform/modules/recursos/0.3.0/provision-recursos.js
 ```
 
 Do not overwrite an existing version folder — publish a new one when the code changes.

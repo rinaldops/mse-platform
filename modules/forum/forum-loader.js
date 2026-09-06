@@ -1,4 +1,6 @@
 (async function loadForum() {
+  const CORE_VERSION = "0.3.0";
+  const FORUM_VERSION = "0.3.0";
   const LISTS = [
     ["forum-taxonomy", "ForumTaxonomia"],
     ["forum-topics", "ForumTopicos"],
@@ -40,10 +42,10 @@
 
     const [{ createSharePointDataSourceRegistry }, { sanitizeRichText }, { createForumReadService }, { mountForum }] =
       await Promise.all([
-        import(`${assetBase}/mse-platform/core/0.1.0/data-sources.js`),
-        import(`${assetBase}/mse-platform/core/0.1.0/rich-text.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.1.0/forum-data.js`),
-        import(`${assetBase}/mse-platform/modules/forum/0.1.0/forum.js`)
+        import(`${assetBase}/mse-platform/core/${CORE_VERSION}/data-sources.js`),
+        import(`${assetBase}/mse-platform/core/${CORE_VERSION}/rich-text.js`),
+        import(`${assetBase}/mse-platform/modules/forum/${FORUM_VERSION}/forum-data.js`),
+        import(`${assetBase}/mse-platform/modules/forum/${FORUM_VERSION}/forum.js`)
       ]);
 
     const response = await fetch(

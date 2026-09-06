@@ -1,4 +1,5 @@
 (async function loadHome() {
+  const HOME_VERSION = "0.3.0";
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/home/"));
   const roots = [...document.querySelectorAll('[data-mse-module="home"]')];
@@ -25,7 +26,7 @@
       : "";
     if (!assetBase) throw new Error("Unable to infer SiteAssets path.");
 
-    const { mountHome } = await import(`${assetBase}/mse-platform/modules/home/0.1.0/home.js`);
+    const { mountHome } = await import(`${assetBase}/mse-platform/modules/home/${HOME_VERSION}/home.js`);
 
     mountHome({
       instances: Object.fromEntries(roots.map((root) => [
