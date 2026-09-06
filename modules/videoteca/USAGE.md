@@ -7,16 +7,16 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core and UI `0.3.0` must already be published):
+Upload preserving version folders (core and UI `0.4.0` must already be published):
 
 ```text
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca.css
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca-data.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca-view.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca-schema.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/videoteca-loader.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.3.0/provision-videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca.css
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-data.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-view.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-schema.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-loader.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/provision-videoteca.js
 ```
 
 Do not overwrite an existing version folder — publish a new one when the code changes.

@@ -1,6 +1,6 @@
 # UI compartilhada
 
-Versão atual: `0.3.0`.
+Versão atual: `0.4.0`.
 
 Componentes visuais pequenos e sem domínio para módulos MSE.
 

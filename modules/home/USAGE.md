@@ -7,13 +7,13 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core `0.3.0` must already be published):
+Upload preserving version folders (core `0.4.0` must already be published):
 
 ```text
-__SITE_ASSETS__/mse-platform/modules/home/0.3.0/home.js
-__SITE_ASSETS__/mse-platform/modules/home/0.3.0/home-view.js
-__SITE_ASSETS__/mse-platform/modules/home/0.3.0/home.css
-__SITE_ASSETS__/mse-platform/modules/home/0.3.0/home-loader.js
+__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home.js
+__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home-view.js
+__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home.css
+__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home-loader.js
 ```
 
 Do not overwrite an existing version folder — publish a new one when the code

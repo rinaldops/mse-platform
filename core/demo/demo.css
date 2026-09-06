@@ -1,8 +1,8 @@
 .mse-demo {
   margin: 0;
-  color: #242424;
-  background: #f5f5f5;
-  font-family: "Segoe UI", Arial, sans-serif;
+  color: #000000;
+  background: #FFFFFF;
+  font-family: "Petrobras Sans", Arial, sans-serif;
 }
 
 .mse-demo__header,
@@ -22,7 +22,7 @@
 }
 
 .mse-demo__eyebrow {
-  color: #0f6cbd;
+  color: #008542;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -43,8 +43,7 @@
   display: grid;
   gap: var(--mse-space-3);
   padding: calc(var(--mse-space-3) * 1.5);
-  border-radius: var(--mse-radius);
-  box-shadow: var(--mse-shadow);
+  border-radius: 0;
 }
 
 .mse-summary__label,
@@ -62,21 +61,21 @@
   justify-self: start;
   padding: 0.65rem 1rem;
   border: 0;
-  border-radius: var(--mse-radius);
-  color: #fff;
+  border-radius: 0;
+  color: #FFFFFF;
   background: var(--mse-color-primary);
   font: inherit;
   cursor: pointer;
 }
 
 .mse-summary__button:focus-visible {
-  outline: 0.2rem solid #242424;
+  outline: 0.2rem solid #006298;
   outline-offset: 0.2rem;
 }
 
 .mse-banner {
   padding: clamp(2rem, 6vw, 5rem) max(1rem, calc((100vw - 68rem) / 2));
-  color: #fff;
+  color: #FFFFFF;
   background: var(--mse-color-primary);
 }
 
@@ -92,9 +91,9 @@
 
 .mse-demo__tests {
   padding: 1.5rem;
-  border: 1px solid #d1d1d1;
-  border-radius: 0.5rem;
-  background: #fff;
+  border: 1px solid #75787B;
+  border-radius: 0;
+  background: #FFFFFF;
 }
 
 .mse-demo__tests h2 {
@@ -102,16 +101,17 @@
 }
 
 .mse-demo__test--passed {
-  color: #107c10;
+  color: #008542;
 }
 
 .mse-demo__test--failed,
 .mse-demo__summary--failed {
-  color: #c50f1f;
+  color: #000000;
+  border-left: 0.25rem solid #ED8B00;
   font-weight: 700;
 }
 
 .mse-demo__summary--passed {
-  color: #107c10;
+  color: #008542;
   font-weight: 700;
 }

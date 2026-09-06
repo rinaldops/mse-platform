@@ -36,9 +36,9 @@ SiteAssets/mse-platform/modules/<module>/<version>/
 Use immutable version folders. Do not overwrite an already published version.
 
 Structural sections and module roots are square by default through
-`--mse-section-radius: 0`. A consumer may opt into rounded structural corners
-only in page- or instance-scoped configuration. Internal controls may continue
-to use `--mse-radius` when shape provides useful affordance.
+`--mse-section-radius: 0`. Boxes, cards and controls are also square through
+`--mse-radius: 0`. Brand-governed consumers must not override these shared
+tokens; an approved brand graphic exception belongs only to local CSS.
 
 ## Forum quick start
 

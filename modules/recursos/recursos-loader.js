@@ -1,6 +1,6 @@
 (async function loadRecursos() {
-  const CORE_VERSION = "0.3.0";
-  const RECURSOS_VERSION = "0.3.0";
+  const CORE_VERSION = "0.4.0";
+  const RECURSOS_VERSION = "0.4.0";
   const LISTS = [["recursos-links", "RecursosLinks"]];
 
   const script = document.currentScript

@@ -83,24 +83,24 @@ globalThis.document = {
 
 const globalConfig = {
   title: "global",
-  theme: { tokens: { colorPrimary: "#123456" } }
+  theme: { tokens: { colorPrimary: "#006298" } }
 };
 const moduleDefaults = { title: "module" };
 const instanceConfig = { title: "instance", layout: { mode: "fullBleed" } };
 const resolved = resolveConfig({ globalConfig, moduleDefaults, instanceConfig });
 
-assert.equal(CORE_VERSION, "0.3.0");
+assert.equal(CORE_VERSION, "0.4.0");
 assert.equal(resolved.title, "instance");
 assert.equal(resolved.layout.mode, "fullBleed");
-assert.equal(resolved.theme.tokens.colorPrimary, "#123456");
-assert.equal(resolved.theme.tokens.colorAccent, "#00a69c");
-assert.equal(resolved.theme.tokens.colorWarning, "#f6c800");
+assert.equal(resolved.theme.tokens.colorPrimary, "#006298");
+assert.equal(resolved.theme.tokens.colorAccent, "#00B2A9");
+assert.equal(resolved.theme.tokens.colorWarning, "#FDC82F");
 assert.equal(resolved.theme.tokens.sectionRadius, "0");
 assert.ok(Object.isFrozen(resolved));
 assert.ok(Object.isFrozen(resolved.layout));
 assert.deepEqual(globalConfig, {
   title: "global",
-  theme: { tokens: { colorPrimary: "#123456" } }
+  theme: { tokens: { colorPrimary: "#006298" } }
 });
 assert.throws(
   () => resolveConfig({ instanceConfig: { layout: { mode: "invalid" } } }),
@@ -109,6 +109,18 @@ assert.throws(
 assert.throws(
   () => resolveConfig({ instanceConfig: { theme: { tokens: { unknown: "x" } } } }),
   /Token de tema desconhecido/
+);
+assert.throws(
+  () => resolveConfig({ instanceConfig: { theme: { tokens: { colorPrimary: "#123456" } } } }),
+  /paleta Petrobras/
+);
+assert.throws(
+  () => resolveConfig({ instanceConfig: { theme: { tokens: { radius: "0.5rem" } } } }),
+  /radius deve ser 0/
+);
+assert.throws(
+  () => resolveConfig({ instanceConfig: { theme: { tokens: { shadow: "0 1px 2px #000000" } } } }),
+  /shadow deve ser none/
 );
 assert.throws(
   () => resolveConfig({
@@ -141,8 +153,8 @@ assert.equal(firstMount.mounted.length, 1);
 assert.equal(renderCount, 1);
 assert.equal(root.dataset.mseState, "ready");
 assert.ok(root.classList.contains("mse-app--full-bleed"));
-assert.equal(root.style.getPropertyValue("--mse-color-primary"), "#123456");
-assert.equal(root.style.getPropertyValue("--mse-color-muted"), "#616161");
+assert.equal(root.style.getPropertyValue("--mse-color-primary"), "#006298");
+assert.equal(root.style.getPropertyValue("--mse-color-muted"), "#006298");
 
 const duplicateMount = await mountModule(options);
 assert.equal(duplicateMount.skipped.length, 1);
@@ -169,8 +181,11 @@ const sharePointThemeConfig = createSharePointThemeConfig({
 });
 assert.equal(sharePointThemeConfig.theme.tokens.colorPrimary, "#008542");
 assert.equal(sharePointThemeConfig.theme.tokens.colorAccent, "#008542");
-assert.equal(sharePointThemeConfig.theme.tokens.colorMuted, "#605e5c");
-assert.equal(sharePointThemeConfig.theme.tokens.fontFamily, "'Segoe UI'");
+assert.equal(sharePointThemeConfig.theme.tokens.colorPrimaryHover, "#006298");
+assert.equal(sharePointThemeConfig.theme.tokens.colorMuted, "#006298");
+assert.equal(sharePointThemeConfig.theme.tokens.fontFamily, '"Petrobras Sans", Arial, sans-serif');
+assert.equal(sharePointThemeConfig.theme.tokens.radius, "0");
+assert.equal(sharePointThemeConfig.theme.tokens.shadow, "none");
 
 await mountModule(options);
 assert.equal(renderCount, 2);
