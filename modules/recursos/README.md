@@ -2,7 +2,7 @@
 
 Curated links/tips hub module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
 
-Current version: `0.3.0`.
+Current version: `0.4.0`.
 
 ## Features in this MVP
 

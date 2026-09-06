@@ -24,8 +24,7 @@ const localConfigurationFetch = async () => {
             ConfiguracaoJson: JSON.stringify({
               theme: {
                 tokens: {
-                  colorPrimary: "#0f6cbd",
-                  radius: "0.75rem"
+                  colorPrimary: "#008542"
                 }
               }
             }),
@@ -98,8 +97,8 @@ check("O banner recebeu full bleed sem alterar o outro módulo.",
   bannerRoot.classList.contains("mse-app--full-bleed") &&
   !summaryRoot.classList.contains("mse-app--full-bleed"));
 check("O token global foi aplicado nos dois roots.",
-  summaryRoot.style.getPropertyValue("--mse-color-primary") === "#0f6cbd" &&
-  bannerRoot.style.getPropertyValue("--mse-color-primary") === "#0f6cbd");
+  summaryRoot.style.getPropertyValue("--mse-color-primary") === "#008542" &&
+  bannerRoot.style.getPropertyValue("--mse-color-primary") === "#008542");
 
 const resolved = resolveConfig({
   globalConfig: { sample: "global" },

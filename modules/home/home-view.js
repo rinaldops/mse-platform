@@ -70,7 +70,7 @@ function drawGraph(ctx, nodes, maxDistance) {
     for (let j = i + 1; j < nodes.length; j += 1) {
       const distance = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
       if (distance < maxDistance) {
-        ctx.strokeStyle = `rgba(244,250,248,${0.16 * (1 - distance / maxDistance)})`;
+        ctx.strokeStyle = `rgba(255,255,255,${0.16 * (1 - distance / maxDistance)})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -82,7 +82,7 @@ function drawGraph(ctx, nodes, maxDistance) {
   for (const node of nodes) {
     ctx.beginPath();
     ctx.arc(node.x, node.y, 1.6, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(244,250,248,0.55)";
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fill();
   }
 }
@@ -163,10 +163,7 @@ function initConstellation(canvas, { reducedMotion, windowImpl }) {
       ctx.beginPath();
       ctx.arc(x, y, 2.4, 0, Math.PI * 2);
       ctx.fillStyle = pulse.color;
-      ctx.shadowColor = pulse.color;
-      ctx.shadowBlur = 8;
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
     if (Math.random() < PULSE_SPAWN_RATE) spawnPulse();
     frameId = windowImpl.requestAnimationFrame(step);

@@ -1,6 +1,6 @@
 (async function provisionRecursos() {
-  const CORE_VERSION = "0.3.0";
-  const RECURSOS_VERSION = "0.3.0";
+  const CORE_VERSION = "0.4.0";
+  const RECURSOS_VERSION = "0.4.0";
 
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/recursos/"));

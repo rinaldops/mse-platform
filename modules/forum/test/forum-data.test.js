@@ -435,7 +435,8 @@ await assert.rejects(
       getListItems: async (source) => {
         if (source.key === "forum-taxonomy") return [
           { Id: 10, Title: "SAP", Tipo: "Categoria", Cor: "#006298", Ordem: 10 },
-          { Id: 11, Title: "Power Platform", Tipo: "Categoria", Cor: "#3DDAFF", Ordem: 20 }
+          { Id: 11, Title: "Power Platform", Tipo: "Categoria", Cor: "#3DDAFF", Ordem: 20 },
+          { Id: 12, Title: "Legada", Tipo: "Categoria", Cor: "#123456", Ordem: 30 }
         ];
         if (source.key === "forum-topics") return [
           { Id: 1, Title: "Tópico A", CategoriaId: 10, Author: { Id: 1, Title: "Ana" }, UltimaAtividade: "2026-06-01T00:00:00Z" },
@@ -447,7 +448,7 @@ await assert.rejects(
   };
   const summaryService = createForumReadService({ dataSources: summaryDataSources });
   const summaries = await summaryService.listCategorySummaries({ recentLimit: 1 });
-  assert.equal(summaries.length, 2);
+  assert.equal(summaries.length, 3);
   assert.equal(summaries[0].title, "SAP");
   assert.equal(summaries[0].color, "#006298");
   assert.equal(summaries[0].count, 2);
@@ -456,6 +457,8 @@ await assert.rejects(
   assert.equal(summaries[1].title, "Power Platform");
   assert.equal(summaries[1].count, 0);
   assert.equal(summaries[1].recentTopics.length, 0);
+  assert.equal(summaries[2].title, "Legada");
+  assert.equal(summaries[2].color, "#006298");
 }
 
 console.log("forum-data.test.js: verificações concluídas com sucesso.");
