@@ -21,7 +21,7 @@
     radial-gradient(680px 520px at 88% 30%, rgb(0 178 169 / 14%), transparent 60%),
     linear-gradient(180deg, var(--home-void) 0%, var(--home-void-2) 55%, var(--home-void) 100%);
   color: var(--home-text);
-  border-radius: 0.75rem;
+  border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
 }
 

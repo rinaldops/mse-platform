@@ -12,7 +12,7 @@
   color: var(--vt-text);
   font-family: "Segoe UI", Arial, sans-serif;
   padding: 2rem clamp(1rem, 4vw, 2.5rem);
-  border-radius: 0.75rem;
+  border-radius: var(--mse-section-radius, 0);
 }
 
 .mse-videoteca__status {

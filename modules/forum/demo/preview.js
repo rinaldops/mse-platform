@@ -328,6 +328,7 @@ const forumRootStyle = getComputedStyle(forumRoot);
 checks.push(forumRoot.classList.contains("mse-app--full-bleed"));
 checks.push(forumShellStyle.borderLeftWidth === "0px" && forumShellStyle.borderRightWidth === "0px");
 checks.push(forumShellStyle.borderRadius === "0px" && forumShellStyle.boxShadow === "none");
+checks.push(forumRootStyle.borderRadius === "0px");
 checks.push(parseFloat(forumRootStyle.paddingLeft) >= 16 && parseFloat(forumRootStyle.paddingRight) >= 16);
 checks.push(document.querySelectorAll(".mse-forum__tab").length === 4);
 checks.push(document.querySelector(".mse-forum__contributors")?.textContent.includes("Bruno Costa"));

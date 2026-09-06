@@ -10,41 +10,43 @@ This guide uses placeholders. Replace:
 Upload these files preserving the version folders:
 
 ```text
-__SITE_ASSETS__/mse-platform/core/0.1.0/core.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/core.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/rest.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/data-sources.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/rich-text.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/list-provisioning.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/theme-adapter.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/editor.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/editor-quill.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/editor-quill.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/editor-summernote.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/editor-summernote.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/jquery/3.7.1/jquery.min.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/jquery/3.7.1/LICENSE.txt
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/quill/2.0.3/quill.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/quill/2.0.3/quill.js.LICENSE.txt
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/quill/2.0.3/quill.core.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/quill/2.0.3/quill.snow.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/quill/2.0.3/LICENSE
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/summernote-lite.min.js
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/summernote-lite.min.css
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/LICENSE
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/font/summernote.eot
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/font/summernote.woff2
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/font/summernote.woff
-__SITE_ASSETS__/mse-platform/core/0.1.0/vendor/summernote/0.9.0/font/summernote.ttf
+__SITE_ASSETS__/mse-platform/core/0.3.0/core.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/core.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/rest.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/data-sources.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/rich-text.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/list-provisioning.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/theme-adapter.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/accessibility.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/navigation.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/editor.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/editor-quill.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/editor-quill.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/editor-summernote.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/editor-summernote.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/jquery/3.7.1/jquery.min.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/jquery/3.7.1/LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.js.LICENSE.txt
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.core.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.snow.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/quill/2.0.3/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/summernote-lite.min.js
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/summernote-lite.min.css
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/LICENSE
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/font/summernote.eot
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/font/summernote.woff2
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/font/summernote.woff
+__SITE_ASSETS__/mse-platform/core/0.3.0/vendor/summernote/0.9.0/font/summernote.ttf
 
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum.css
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-data.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-editor.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-view.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-schema.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/provision-forum.js
-__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-loader.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum.css
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-data.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-editor.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-view.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-schema.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/provision-forum.js
+__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-loader.js
 ```
 
 Do not overwrite an existing version folder. Publish a new version folder when the code changes. This is not just a rollback convenience: SharePoint's own Service Worker caches `SiteAssets` files per browser profile and does not expire that cache on its own, so overwriting a file in place can leave some users stuck on the old code indefinitely while others get the fix. See [`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).
@@ -119,13 +121,13 @@ Example:
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/core/0.1.0/core.css">
+  href="__SITE_ASSETS__/mse-platform/core/0.3.0/core.css">
 
 <link
   rel="stylesheet"
-  href="__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum.css">
+  href="__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum.css">
 
-<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.1.0/forum-loader.js"></script>
+<script src="__SITE_ASSETS__/mse-platform/modules/forum/0.3.0/forum-loader.js"></script>
 ```
 
 The public repository intentionally keeps `__SITE_ASSETS__` as a placeholder. Replace it with the target SharePoint server-relative `SiteAssets` path only when pasting into the target environment.

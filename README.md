@@ -35,6 +35,11 @@ SiteAssets/mse-platform/modules/<module>/<version>/
 
 Use immutable version folders. Do not overwrite an already published version.
 
+Structural sections and module roots are square by default through
+`--mse-section-radius: 0`. A consumer may opt into rounded structural corners
+only in page- or instance-scoped configuration. Internal controls may continue
+to use `--mse-radius` when shape provides useful affordance.
+
 ## Forum quick start
 
 See [`modules/forum/USAGE.md`](modules/forum/USAGE.md) for the first SharePoint Modern Script Editor test.
