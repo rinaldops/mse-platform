@@ -1,3 +1,5 @@
+import { mountAccordion } from "../ui/accordion/accordion.js";
+
 function element(document, tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -10,15 +12,7 @@ function errorMessage(error) {
   return "Não foi possível carregar os recursos. Tente novamente em instantes.";
 }
 
-function renderGroup(document, group, { onToggle }) {
-  const details = element(document, "details", "mse-recursos__group");
-  const summary = element(document, "summary", "mse-recursos__group-title");
-  summary.append(
-    element(document, "span", null, group.category),
-    element(document, "span", "mse-recursos__group-count", String(group.links.length))
-  );
-  details.append(summary);
-
+function renderLinks(group, index, document) {
   const list = element(document, "ul", "mse-recursos__links");
   for (const link of group.links) {
     const item = element(document, "li", "mse-recursos__link");
@@ -35,13 +29,7 @@ function renderGroup(document, group, { onToggle }) {
     item.append(anchor);
     list.append(item);
   }
-  details.append(list);
-
-  details.addEventListener("toggle", () => {
-    if (details.open) onToggle(details);
-  });
-
-  return details;
+  return list;
 }
 
 export function createRecursosView({ root, service } = {}) {
@@ -53,11 +41,7 @@ export function createRecursosView({ root, service } = {}) {
   const document = root.ownerDocument;
   let disposed = false;
 
-  function closeOthers(openDetails) {
-    for (const details of root.querySelectorAll(".mse-recursos__group")) {
-      if (details !== openDetails) details.open = false;
-    }
-  }
+  let accordion = null;
 
   async function render() {
     root.replaceChildren(element(document, "p", "mse-recursos__status", "Carregando recursos..."));
@@ -77,10 +61,20 @@ export function createRecursosView({ root, service } = {}) {
     }
 
     const container = element(document, "div", "mse-recursos__accordion");
-    groups.forEach((group, index) => {
-      const details = renderGroup(document, group, { onToggle: closeOthers });
-      if (index === 0) details.open = true;
-      container.append(details);
+    accordion = mountAccordion({
+      root: container,
+      items: groups,
+      initiallyOpen: 0,
+      itemClass: "mse-recursos__group",
+      buttonClass: "mse-recursos__group-title",
+      panelClass: "mse-recursos__group-panel",
+      renderTitle(group, index, ownerDocument) {
+        return [
+          element(ownerDocument, "span", null, group.category),
+          element(ownerDocument, "span", "mse-recursos__group-count", String(group.links.length))
+        ];
+      },
+      renderContent: renderLinks
     });
     root.replaceChildren(container);
   }
@@ -89,5 +83,7 @@ export function createRecursosView({ root, service } = {}) {
 
   return () => {
     disposed = true;
+    accordion?.destroy();
+    root.replaceChildren();
   };
 }

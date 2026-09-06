@@ -1,3 +1,5 @@
+import { mountCarousel } from "../ui/carousel/carousel.js";
+
 // Paleta de apoio visual da plataforma. Fixa por design: não é conteúdo do site.
 // Nomes de categoria vêm da lista
 // SharePoint de cada site e nunca são hardcoded aqui — accentFor() só escolhe uma cor
@@ -60,76 +62,41 @@ function videoCard(document, video) {
 
 function renderCarousel(document, featured, { reducedMotion }) {
   const section = element(document, "div", "mse-videoteca__carousel");
-  const track = element(document, "div", "mse-videoteca__carousel-track");
-  const dotsWrap = element(document, "div", "mse-videoteca__carousel-dots");
-  const dots = [];
-  let index = 0;
-  let timer = null;
-
-  featured.forEach((video, i) => {
-    const slide = element(document, "a", "mse-videoteca__slide");
-    slide.href = video.URL;
-    slide.target = "_blank";
-    slide.rel = "noopener noreferrer";
-    slide.style.setProperty("--accent", accentFor(video.Categoria));
-    if (video.Miniatura) slide.style.backgroundImage = `url('${video.Miniatura}')`;
-    const info = element(document, "div", "mse-videoteca__slide-info");
-    info.append(element(document, "span", "mse-videoteca__slide-eyebrow", "Edição em destaque"));
-    info.append(element(document, "span", "mse-videoteca__slide-title", video.Title));
-    const sub = [video.Apresentador, formattedDate(video.Data)].filter(Boolean).join(" · ");
-    if (sub) info.append(element(document, "span", "mse-videoteca__slide-sub", sub));
-    slide.append(info);
-    track.append(slide);
-
-    const dot = element(document, "button", "mse-videoteca__dot");
-    dot.type = "button";
-    dot.setAttribute("aria-label", `Ir para o vídeo ${i + 1}`);
-    dot.addEventListener("click", () => goTo(i));
-    dots.push(dot);
-    dotsWrap.append(dot);
+  const carousel = mountCarousel({
+    root: section,
+    items: featured,
+    autoAdvance: CAROUSEL_INTERVAL_MS,
+    reducedMotion,
+    label: "Vídeos em destaque",
+    className: "mse-videoteca__carousel",
+    trackClass: "mse-videoteca__carousel-track",
+    slideClass: "mse-videoteca__slide",
+    controlClass: "mse-videoteca__nav",
+    previousClass: "mse-videoteca__nav--prev",
+    nextClass: "mse-videoteca__nav--next",
+    previousLabel: "Vídeo anterior",
+    nextLabel: "Próximo vídeo",
+    indicatorClass: "mse-videoteca__carousel-dots",
+    indicatorItemClass: "mse-videoteca__dot",
+    indicatorActiveClass: "mse-videoteca__dot--active",
+    renderItem(video, i, ownerDocument) {
+      const slide = element(ownerDocument, "a", "mse-videoteca__slide");
+      slide.href = video.URL;
+      slide.target = "_blank";
+      slide.rel = "noopener noreferrer";
+      slide.style.setProperty("--accent", accentFor(video.Categoria));
+      if (video.Miniatura) slide.style.backgroundImage = `url('${video.Miniatura}')`;
+      const info = element(ownerDocument, "div", "mse-videoteca__slide-info");
+      info.append(element(ownerDocument, "span", "mse-videoteca__slide-eyebrow", "Edição em destaque"));
+      info.append(element(ownerDocument, "span", "mse-videoteca__slide-title", video.Title));
+      const sub = [video.Apresentador, formattedDate(video.Data)].filter(Boolean).join(" · ");
+      if (sub) info.append(element(ownerDocument, "span", "mse-videoteca__slide-sub", sub));
+      slide.append(info);
+      return slide;
+    }
   });
 
-  function render() {
-    track.style.transform = `translateX(-${index * 100}%)`;
-    dots.forEach((dot, i) => dot.classList.toggle("mse-videoteca__dot--active", i === index));
-  }
-
-  function goTo(nextIndex) {
-    index = (nextIndex + featured.length) % featured.length;
-    render();
-  }
-
-  function stop() {
-    if (timer) clearInterval(timer);
-    timer = null;
-  }
-
-  function start() {
-    if (reducedMotion || featured.length < 2) return;
-    stop();
-    timer = setInterval(() => goTo(index + 1), CAROUSEL_INTERVAL_MS);
-  }
-
-  const prev = element(document, "button", "mse-videoteca__nav mse-videoteca__nav--prev", "‹");
-  prev.type = "button";
-  prev.setAttribute("aria-label", "Vídeo anterior");
-  prev.addEventListener("click", () => goTo(index - 1));
-
-  const next = element(document, "button", "mse-videoteca__nav mse-videoteca__nav--next", "›");
-  next.type = "button";
-  next.setAttribute("aria-label", "Próximo vídeo");
-  next.addEventListener("click", () => goTo(index + 1));
-
-  section.addEventListener("mouseenter", stop);
-  section.addEventListener("mouseleave", start);
-  section.addEventListener("focusin", stop);
-  section.addEventListener("focusout", start);
-
-  section.append(track, prev, next, dotsWrap);
-  render();
-  start();
-
-  return { element: section, dispose: stop };
+  return { element: section, dispose: carousel.destroy };
 }
 
 export function createVideotecaView({ root, service, reducedMotion } = {}) {
