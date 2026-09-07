@@ -1,0 +1,47 @@
+.mse-ui-carousel {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--mse-color-surface, #fff);
+}
+
+.mse-ui-carousel__track {
+  display: flex;
+  transition: transform 180ms ease;
+}
+
+.mse-ui-carousel__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.mse-ui-carousel__control {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  transform: translateY(-50%);
+  border: 1px solid var(--mse-color-border, #d1d1d1);
+  border-radius: 50%;
+  color: var(--mse-color-text, #242424);
+  background: var(--mse-color-surface, #fff);
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mse-ui-carousel__control--previous {
+  left: var(--mse-space-2, 0.5rem);
+}
+
+.mse-ui-carousel__control--next {
+  right: var(--mse-space-2, 0.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-ui-carousel__track {
+    transition: none;
+  }
+}

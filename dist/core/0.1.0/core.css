@@ -1,0 +1,55 @@
+.mse-app {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  color: var(--mse-color-text, #242424);
+  background: var(--mse-color-surface, #fff);
+  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+  font-size: var(--mse-font-size-body, 1rem);
+  line-height: 1.5;
+}
+
+.mse-app *,
+.mse-app *::before,
+.mse-app *::after {
+  box-sizing: border-box;
+}
+
+.mse-app--contained {
+  width: 100%;
+  max-width: 100%;
+}
+
+.mse-app--full-bleed {
+  width: auto;
+  max-width: none;
+  margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
+  margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
+}
+
+.mse-app[data-mse-core-version="0.1.0"].mse-app--full-bleed {
+  width: auto;
+  max-width: none;
+  margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
+  margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
+}
+
+.mse-core__error {
+  margin: 0;
+  padding: var(--mse-space-3, 1rem);
+  border-left: 0.25rem solid var(--mse-color-danger, #a4262c);
+  color: var(--mse-color-danger, #a4262c);
+  background: var(--mse-color-danger-background, #fde7e9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-app *,
+  .mse-app *::before,
+  .mse-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
