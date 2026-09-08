@@ -52,6 +52,45 @@ function renderStats(document, stats) {
   return wrap;
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Two thin accent strokes crossing the hero for balance/movement — each a single
+// "hill" (rise, plateau, fall; plateau ~2x the length of each end segment), but the
+// two hills use different slopes/plateau tilts so they actually cross rather than
+// running parallel. Every interior angle stays strictly between 90° and 180° (no
+// zigzag: each line only changes vertical direction once), and every fold is an
+// actual drawn arc (a short Q curve replacing the vertex), never a sharp/pointed
+// corner. Not a reproduction of the EGP mark. One line uses the same amarelo as the
+// heading accent.
+function renderLines(document) {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "mse-home__lines");
+  svg.setAttribute("viewBox", "0 0 1000 400");
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.setAttribute("aria-hidden", "true");
+
+  const lineA = document.createElementNS(SVG_NS, "path");
+  lineA.setAttribute("d", "M 420 400 L 587 47 Q 600 20 630 24 L 840 51 Q 870 55 892 76 L 1000 180");
+  lineA.setAttribute("fill", "none");
+  lineA.setAttribute("stroke", "var(--home-amarelo)");
+  lineA.setAttribute("stroke-width", "2");
+  lineA.setAttribute("stroke-linecap", "round");
+  lineA.setAttribute("stroke-linejoin", "round");
+  lineA.setAttribute("opacity", "0.9");
+
+  const lineB = document.createElementNS(SVG_NS, "path");
+  lineB.setAttribute("d", "M 470 395 L 670 163 Q 690 140 718 129 L 892 61 Q 920 50 939 73 L 1000 150");
+  lineB.setAttribute("fill", "none");
+  lineB.setAttribute("stroke", "var(--home-laranja)");
+  lineB.setAttribute("stroke-width", "1.5");
+  lineB.setAttribute("stroke-linecap", "round");
+  lineB.setAttribute("stroke-linejoin", "round");
+  lineB.setAttribute("opacity", "0.7");
+
+  svg.append(lineA, lineB);
+  return svg;
+}
+
 function renderFloaters(document) {
   const host = element(document, "div", "mse-home__floaters");
   host.setAttribute("aria-hidden", "true");
@@ -70,7 +109,7 @@ function drawGraph(ctx, nodes, maxDistance) {
     for (let j = i + 1; j < nodes.length; j += 1) {
       const distance = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
       if (distance < maxDistance) {
-        ctx.strokeStyle = `rgba(244,250,248,${0.16 * (1 - distance / maxDistance)})`;
+        ctx.strokeStyle = `rgba(255,255,255,${0.16 * (1 - distance / maxDistance)})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -82,7 +121,7 @@ function drawGraph(ctx, nodes, maxDistance) {
   for (const node of nodes) {
     ctx.beginPath();
     ctx.arc(node.x, node.y, 1.6, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(244,250,248,0.55)";
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fill();
   }
 }
@@ -163,10 +202,7 @@ function initConstellation(canvas, { reducedMotion, windowImpl }) {
       ctx.beginPath();
       ctx.arc(x, y, 2.4, 0, Math.PI * 2);
       ctx.fillStyle = pulse.color;
-      ctx.shadowColor = pulse.color;
-      ctx.shadowBlur = 8;
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
     if (Math.random() < PULSE_SPAWN_RATE) spawnPulse();
     frameId = windowImpl.requestAnimationFrame(step);
@@ -209,6 +245,7 @@ export function createHomeView({ root, stats } = {}) {
   canvas.className = "mse-home__constellation";
   canvas.setAttribute("aria-hidden", "true");
   shell.append(canvas);
+  shell.append(renderLines(document));
 
   if (!reducedMotion) shell.append(renderFloaters(document));
 

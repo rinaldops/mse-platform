@@ -6,8 +6,8 @@
 
 .mse-ui-accordion__item {
   overflow: hidden;
-  border: 1px solid var(--mse-color-border, #d1d1d1);
-  border-radius: var(--mse-radius, 0.5rem);
+  border: 1px solid var(--mse-color-border, #75787B);
+  border-radius: var(--mse-radius, 0);
   background: var(--mse-color-surface, #fff);
 }
 
@@ -19,7 +19,7 @@
   justify-content: space-between;
   padding: var(--mse-space-3, 1rem);
   border: 0;
-  color: var(--mse-color-text, #242424);
+  color: var(--mse-color-text, #000);
   background: transparent;
   font: inherit;
   font-weight: 600;
@@ -29,7 +29,7 @@
 
 .mse-ui-accordion__button:focus-visible,
 .mse-ui-carousel__control:focus-visible {
-  outline: 3px solid var(--mse-color-primary, #0f6cbd);
+  outline: 3px solid var(--mse-color-primary, #008542);
   outline-offset: -3px;
 }
 
