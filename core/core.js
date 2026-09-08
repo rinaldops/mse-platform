@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.4.0";
+export const CORE_VERSION = "0.3.0";
 
 const PETROBRAS_COLORS = new Set([
   "#008542", "#FDC82F", "#FFFFFF", "#00B2A9", "#C4D600",

@@ -22,9 +22,9 @@
   min-width: 2.75rem;
   min-height: 2.75rem;
   transform: translateY(-50%);
-  border: 1px solid var(--mse-color-border, #d1d1d1);
-  border-radius: 50%;
-  color: var(--mse-color-text, #242424);
+  border: 1px solid var(--mse-color-border, #75787B);
+  border-radius: 0;
+  color: var(--mse-color-text, #000);
   background: var(--mse-color-surface, #fff);
   font: inherit;
   font-size: 1.5rem;

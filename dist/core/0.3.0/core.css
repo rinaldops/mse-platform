@@ -3,9 +3,9 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  color: var(--mse-color-text, #242424);
+  color: var(--mse-color-text, #000);
   background: var(--mse-color-surface, #fff);
-  font-family: var(--mse-font-family, "Segoe UI", Arial, sans-serif);
+  font-family: var(--mse-font-family, "Petrobras Sans", Arial, sans-serif);
   font-size: var(--mse-font-size-body, 1rem);
   line-height: 1.5;
 }
@@ -28,7 +28,7 @@
   margin-right: var(--mse-full-bleed-margin-right, calc(50% - 50vw));
 }
 
-.mse-app[data-mse-core-version="0.3.0"].mse-app--full-bleed {
+.mse-app[data-mse-core-version="0.4.0"].mse-app--full-bleed {
   width: auto;
   max-width: none;
   margin-left: var(--mse-full-bleed-margin-left, calc(50% - 50vw));
@@ -38,9 +38,9 @@
 .mse-core__error {
   margin: 0;
   padding: var(--mse-space-3, 1rem);
-  border-left: 0.25rem solid var(--mse-color-danger, #a4262c);
-  color: var(--mse-color-danger, #a4262c);
-  background: var(--mse-color-danger-background, #fde7e9);
+  border-left: 0.25rem solid var(--mse-color-danger, #ED8B00);
+  color: var(--mse-color-text, #000);
+  background: var(--mse-color-danger-background, #fff);
 }
 
 .mse-sr-only {
@@ -68,11 +68,11 @@
 .mse-breadcrumb__item:not(:last-child)::after {
   content: "/";
   margin-left: 0.5rem;
-  color: var(--mse-color-muted, #616161);
+  color: var(--mse-color-muted, #006298);
 }
 
 .mse-breadcrumb__item a {
-  color: var(--mse-color-primary, #0f6cbd);
+  color: var(--mse-color-primary, #008542);
 }
 
 @media (prefers-reduced-motion: reduce) {

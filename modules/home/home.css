@@ -13,10 +13,33 @@
   --home-font-display: "Petrobras Sans", Arial, sans-serif;
   --home-font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Roboto Mono", monospace;
 
-  background: var(--home-azul-escuro);
+  /* three uneven light sources (an irregular triangle, not one centered blob) give the
+     hero depth: each stop is azul-escuro tinted lighter — 85/80/90% color-to-white mix —
+     fading to transparent over the flat azul-escuro base, so edges stay the darkest,
+     full-strength approved blue. The wide, very diffuse 5% black layer on top is a
+     documented local exception (IDENTIDADE-PETROBRAS.md secao 4: exceção local exige
+     justificativa e aprovação) — approved to draw focus toward the center; at 5% and
+     confined to the outer margin it never becomes a predominant off-palette color
+     against a page that otherwise stays strictly within the Petrobras palette. */
+  background:
+    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.05) 100%),
+    radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),
+    radial-gradient(56rem 50rem at 37% 68%, #3381AD, transparent 62%),
+    radial-gradient(62rem 54rem at 82% 52%, #1A72A2, transparent 64%),
+    var(--home-azul-escuro);
   color: var(--home-text);
   border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  [data-mse-module="home"][data-mse-module="home"] {
+    background:
+      radial-gradient(140% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.05) 100%),
+      radial-gradient(32rem 26rem at 62% 10%, #267AA7, transparent 60%),
+      radial-gradient(34rem 28rem at 28% 50%, #3381AD, transparent 58%),
+      var(--home-azul-escuro);
+  }
 }
 
 .mse-home {
@@ -31,6 +54,17 @@
   width: 100%;
   height: 100%;
   opacity: 0.6;
+}
+
+.mse-home__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 760px) {
+  .mse-home__lines { display: none; }
 }
 
 .mse-home__floaters {
@@ -66,7 +100,7 @@
 .mse-home__inner {
   position: relative;
   z-index: 2;
-  max-width: 62rem;
+  max-width: clamp(20rem, 32vw + 34rem, 90rem);
 }
 
 .mse-home__eyebrow {
@@ -91,7 +125,7 @@
   font-family: var(--home-font-display);
   font-weight: 700;
   letter-spacing: 0;
-  font-size: clamp(2.4rem, 4.6vw + 0.5rem, 4rem);
+  font-size: clamp(2.4rem, 2vw + 2.3rem, 5rem);
   line-height: 1.08;
   margin: 0.5em 0 0.42em;
   max-width: 17ch;
@@ -111,6 +145,7 @@
   max-width: 48ch;
   font-size: 1.08rem;
   color: var(--home-text);
+  opacity: 0.88;
   margin: 0;
 }
 
@@ -180,6 +215,7 @@
   font-family: var(--home-font-mono);
   font-size: 0.7rem;
   color: var(--home-text);
+  opacity: 0.82;
   letter-spacing: 0.03em;
 }
 

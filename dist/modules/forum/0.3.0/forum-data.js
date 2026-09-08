@@ -1,3 +1,14 @@
+const PETROBRAS_CATEGORY_COLORS = new Set([
+  "#008542", "#FDC82F", "#00B2A9", "#C4D600",
+  "#EBFF00", "#ED8B00", "#006298", "#3DDAFF", "#75787B"
+]);
+const DEFAULT_CATEGORY_COLOR = "#006298";
+
+function categoryColor(value) {
+  const normalized = typeof value === "string" ? value.trim().toUpperCase() : "";
+  return PETROBRAS_CATEGORY_COLORS.has(normalized) ? normalized : DEFAULT_CATEGORY_COLOR;
+}
+
 const TOPIC_FIELDS = [
   "Id",
   "Title",
@@ -952,7 +963,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       return {
         id: category.Id,
         title: category.Title,
-        color: category.Cor || "",
+        color: categoryColor(category.Cor),
         count: items.length,
         recentTopics: items.slice(0, recentLimit).map((topic) => ({
           id: topic.Id,
