@@ -1,16 +1,14 @@
 /* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
    regardless of which module's loader injects its core.css <link> last */
 [data-mse-module="videoteca"][data-mse-module="videoteca"] {
-  --vt-void: #1a1704;
-  --vt-void-2: #142a1f;
-  --vt-surface: #1c2410;
-  --vt-line: rgb(255 255 255 / 12%);
-  --vt-text: #f4faf8;
-  --vt-text-muted: #c9c9a9;
+  --vt-surface: #FFFFFF;
+  --vt-line: #75787B;
+  --vt-text: #000000;
+  --vt-text-muted: #006298;
 
-  background: linear-gradient(180deg, var(--vt-void) 0%, var(--vt-void-2) 60%, var(--vt-void) 100%);
+  background: #FFFFFF;
   color: var(--vt-text);
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Petrobras Sans", Arial, sans-serif;
   padding: 2rem clamp(1rem, 4vw, 2.5rem);
   border-radius: var(--mse-section-radius, 0);
 }
@@ -23,7 +21,8 @@
 }
 
 .mse-videoteca__status--error {
-  color: #ffb4a9;
+  color: #000000;
+  border-left: 0.25rem solid #ED8B00;
 }
 
 .mse-videoteca {
@@ -39,7 +38,8 @@
 .mse-videoteca__carousel {
   position: relative;
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: 0;
+  border: 1px solid var(--vt-line);
   aspect-ratio: 21 / 9;
   min-height: 14rem;
 }
@@ -57,11 +57,8 @@
   display: flex;
   align-items: flex-end;
   padding: 1.5rem;
-  background-color: color-mix(in srgb, var(--accent) 25%, #0b0f08);
-  background-image:
-    linear-gradient(0deg, rgb(0 0 0 / 65%), transparent 60%),
-    repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 18%, transparent) 0 2px, transparent 2px 14px);
-  background-size: cover, auto;
+  background-color: #006298;
+  background-size: cover;
   background-position: center;
   color: var(--vt-text);
   text-decoration: none;
@@ -71,13 +68,16 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  max-width: 38rem;
+  padding: 1rem;
+  background: #006298;
 }
 
 .mse-videoteca__slide-eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.7rem;
-  color: var(--accent);
+  color: #FDC82F;
   font-weight: 700;
 }
 
@@ -87,7 +87,7 @@
 }
 
 .mse-videoteca__slide-sub {
-  color: var(--vt-text-muted);
+  color: #FFFFFF;
   font-size: 0.85rem;
 }
 
@@ -97,10 +97,10 @@
   transform: translateY(-50%);
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
+  border-radius: 0;
   border: 1px solid var(--vt-line);
-  background: rgb(0 0 0 / 40%);
-  color: var(--vt-text);
+  background: #006298;
+  color: #FFFFFF;
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -126,15 +126,15 @@
 .mse-videoteca__dot {
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: 50%;
+  border-radius: 0;
   border: none;
-  background: rgb(255 255 255 / 35%);
+  background: #75787B;
   cursor: pointer;
   padding: 0;
 }
 
 .mse-videoteca__dot--active {
-  background: var(--vt-text);
+  background: #FDC82F;
 }
 
 /* Category rows */
@@ -143,7 +143,7 @@
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--accent);
+  color: #006298;
 }
 
 .mse-videoteca__row-track {
@@ -165,12 +165,9 @@
 .mse-videoteca__thumb {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 0.6rem;
-  background-color: color-mix(in srgb, var(--accent) 20%, #0b0f08);
-  background-image:
-    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%),
-    repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 2px, transparent 2px 14px);
-  background-size: cover, auto;
+  border-radius: 0;
+  background-color: #006298;
+  background-size: cover;
   background-position: center;
   border: 1px solid var(--vt-line);
 }
@@ -179,9 +176,10 @@
   position: absolute;
   right: 0.4rem;
   bottom: 0.4rem;
-  background: rgb(0 0 0 / 65%);
+  color: #000000;
+  background: #FDC82F;
   padding: 0.1rem 0.4rem;
-  border-radius: 0.3rem;
+  border-radius: 0;
   font-size: 0.7rem;
 }
 

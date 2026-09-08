@@ -2,37 +2,43 @@ import { createSharePointThemeConfig } from "./theme-adapter.js";
 
 export const CORE_VERSION = "0.3.0";
 
+const PETROBRAS_COLORS = new Set([
+  "#008542", "#FDC82F", "#FFFFFF", "#00B2A9", "#C4D600",
+  "#EBFF00", "#ED8B00", "#006298", "#3DDAFF", "#75787B", "#000000"
+]);
+const PETROBRAS_FONT_FAMILY = '"Petrobras Sans", Arial, sans-serif';
+
 const CONFIG_LIST_TITLE = "MSEConfiguracoes";
 
 const CORE_DEFAULTS = {
   layout: { mode: "contained" },
   theme: {
     tokens: {
-      fontFamily: '"Segoe UI", Arial, sans-serif',
+      fontFamily: PETROBRAS_FONT_FAMILY,
       fontSizeBody: "1rem",
-      colorPrimary: "#0f6cbd",
-      colorPrimaryHover: "#115ea3",
-      colorPrimarySoft: "#eef6fc",
-      colorAccent: "#00a69c",
-      colorWarning: "#f6c800",
-      colorOnPrimary: "#ffffff",
-      colorSurface: "#ffffff",
-      colorSurfaceDark: "#063944",
-      colorSubtleBackground: "#f3f2f1",
-      colorText: "#242424",
-      colorMuted: "#616161",
-      colorBorder: "#d1d1d1",
-      colorInputBackground: "#ffffff",
-      colorDanger: "#a4262c",
-      colorDangerBackground: "#fde7e9",
-      colorSuccess: "#107c10",
-      colorSuccessBackground: "#dff6dd",
+      colorPrimary: "#008542",
+      colorPrimaryHover: "#006298",
+      colorPrimarySoft: "#FFFFFF",
+      colorAccent: "#00B2A9",
+      colorWarning: "#FDC82F",
+      colorOnPrimary: "#FFFFFF",
+      colorSurface: "#FFFFFF",
+      colorSurfaceDark: "#006298",
+      colorSubtleBackground: "#FFFFFF",
+      colorText: "#000000",
+      colorMuted: "#006298",
+      colorBorder: "#75787B",
+      colorInputBackground: "#FFFFFF",
+      colorDanger: "#ED8B00",
+      colorDangerBackground: "#FFFFFF",
+      colorSuccess: "#008542",
+      colorSuccessBackground: "#FFFFFF",
       space1: "0.25rem",
       space2: "0.5rem",
       space3: "1rem",
       sectionRadius: "0",
-      radius: "0.5rem",
-      shadow: "0 0.25rem 1rem rgb(0 0 0 / 12%)"
+      radius: "0",
+      shadow: "none"
     }
   }
 };
@@ -122,6 +128,18 @@ function validateToken(name, value) {
   }
   if (/[;{}]|url\s*\(|expression\s*\(/i.test(value)) {
     throw new TypeError(`Valor inseguro para o token ${name}.`);
+  }
+  if (name.startsWith("color") && !PETROBRAS_COLORS.has(value.toUpperCase())) {
+    throw new TypeError(`Cor fora da paleta Petrobras no token ${name}.`);
+  }
+  if (name === "fontFamily" && value !== PETROBRAS_FONT_FAMILY) {
+    throw new TypeError("fontFamily deve usar Petrobras Sans com o fallback aprovado.");
+  }
+  if ((name === "radius" || name === "sectionRadius") && value !== "0") {
+    throw new TypeError(`${name} deve ser 0; exceções pertencem ao CSS local aprovado.`);
+  }
+  if (name === "shadow" && value !== "none") {
+    throw new TypeError("shadow deve ser none; sombras exigem exceção local aprovada.");
   }
 }
 

@@ -1,5 +1,5 @@
 (async function loadHome() {
-  const HOME_VERSION = "0.4.0";
+  const HOME_VERSION = "0.3.0";
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/home/"));
   const roots = [...document.querySelectorAll('[data-mse-module="home"]')];

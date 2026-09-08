@@ -1,6 +1,6 @@
 .mse-quill {
-  border: 1px solid var(--mse-color-border, #d1d1d1);
-  border-radius: var(--mse-radius, 0.5rem);
+  border: 1px solid var(--mse-color-border, #75787B);
+  border-radius: var(--mse-radius, 0);
   background: var(--mse-color-input-background, #fff);
   overflow: hidden;
 }
@@ -12,12 +12,12 @@
 }
 
 .mse-quill .ql-toolbar.ql-snow {
-  border-bottom: 1px solid var(--mse-color-border, #d1d1d1);
-  background: var(--mse-color-subtle-background, #f3f2f1);
+  border-bottom: 1px solid var(--mse-color-border, #75787B);
+  background: var(--mse-color-subtle-background, #fff);
 }
 
 .mse-quill .ql-container {
-  color: var(--mse-color-text, #242424);
+  color: var(--mse-color-text, #000);
   font-size: var(--mse-font-size-body, 1rem);
 }
 
@@ -26,28 +26,28 @@
 }
 
 .mse-quill .ql-editor.ql-blank::before {
-  color: var(--mse-color-muted, #616161);
+  color: var(--mse-color-muted, #006298);
   font-style: normal;
 }
 
 .mse-quill .ql-snow .ql-stroke {
-  stroke: var(--mse-color-text, #242424);
+  stroke: var(--mse-color-text, #000);
 }
 
 .mse-quill .ql-snow .ql-fill {
-  fill: var(--mse-color-text, #242424);
+  fill: var(--mse-color-text, #000);
 }
 
 .mse-quill .ql-snow .ql-picker {
-  color: var(--mse-color-text, #242424);
+  color: var(--mse-color-text, #000);
 }
 
 .mse-quill .ql-snow .ql-active .ql-stroke,
 .mse-quill .ql-snow .ql-picker-label.ql-active .ql-stroke {
-  stroke: var(--mse-color-primary, #0f6cbd);
+  stroke: var(--mse-color-primary, #008542);
 }
 
 .mse-quill .ql-snow .ql-active .ql-fill,
 .mse-quill .ql-snow .ql-picker-label.ql-active .ql-fill {
-  fill: var(--mse-color-primary, #0f6cbd);
+  fill: var(--mse-color-primary, #008542);
 }
