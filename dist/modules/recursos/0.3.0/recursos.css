@@ -1,18 +1,16 @@
 /* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
    regardless of which module's loader injects its core.css <link> last */
 [data-mse-module="recursos"][data-mse-module="recursos"] {
-  --recursos-void: #041a12;
-  --recursos-void-2: #0a2e1f;
-  --recursos-surface: #0d3524;
-  --recursos-line: rgb(255 255 255 / 12%);
-  --recursos-text: #f4faf8;
-  --recursos-text-muted: #a9c9bb;
+  --recursos-surface: #FFFFFF;
+  --recursos-line: #75787B;
+  --recursos-text: #000000;
+  --recursos-text-muted: #006298;
   --recursos-accent: #008542;
   --recursos-accent-2: #75787b;
 
-  background: linear-gradient(180deg, var(--recursos-void) 0%, var(--recursos-void-2) 55%, var(--recursos-void) 100%);
+  background: #FFFFFF;
   color: var(--recursos-text);
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Petrobras Sans", Arial, sans-serif;
   padding: 2rem clamp(1rem, 4vw, 2.5rem);
   border-radius: var(--mse-section-radius, 0);
 }
@@ -25,7 +23,8 @@
 }
 
 .mse-recursos__status--error {
-  color: #ffb4a9;
+  color: #000000;
+  border-left: 0.25rem solid #ED8B00;
 }
 
 .mse-recursos__accordion {
@@ -39,7 +38,8 @@
 .mse-recursos__group {
   background: var(--recursos-surface);
   border: 1px solid var(--recursos-line);
-  border-radius: 0.75rem;
+  border-radius: 0;
+  border-left: 0.25rem solid var(--recursos-accent);
   overflow: hidden;
 }
 
@@ -96,7 +96,7 @@
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.6rem 0.75rem;
-  border-radius: 0.5rem;
+  border-radius: 0;
   color: var(--recursos-text);
   text-decoration: none;
   border: 1px solid transparent;
@@ -104,7 +104,7 @@
 
 .mse-recursos__link-anchor:hover,
 .mse-recursos__link-anchor:focus-visible {
-  background: rgb(255 255 255 / 6%);
+  background: #FFFFFF;
   border-color: var(--recursos-line);
 }
 
