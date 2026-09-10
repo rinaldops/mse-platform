@@ -1,7 +1,13 @@
 const VIDEO_FIELDS = [
   "Id", "Title", "URL", "Categoria", "Apresentador", "Data",
-  "Duracao", "Miniatura", "Descricao", "Destaque", "OrdemCarrossel"
+  "Duracao", "Miniatura", "Descricao", "Destaque", "OrdemCarrossel", "Visualizacoes"
 ];
+
+function positiveInteger(value, label) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 1) throw new TypeError(`${label} deve ser um inteiro positivo.`);
+  return number;
+}
 
 function groupByCategory(items) {
   const groups = new Map();
@@ -36,5 +42,20 @@ export function createVideotecaReadService({ dataSources } = {}) {
     return { featured, groups: groupByCategory(items) };
   }
 
-  return Object.freeze({ listCatalog });
+  async function registerView(videoId) {
+    const id = positiveInteger(videoId, "videoId");
+    const source = dataSources.get("videoteca-videos");
+    const client = dataSources.getClient("videoteca-videos");
+    const current = await client.getListItem(source, id, { select: ["Id", "Visualizacoes"] });
+    if (!current.item) return null;
+    await client.updateListItem(
+      source,
+      id,
+      { Visualizacoes: Number(current.item.Visualizacoes ?? 0) + 1 },
+      { etag: current.etag }
+    );
+    return id;
+  }
+
+  return Object.freeze({ listCatalog, registerView });
 }

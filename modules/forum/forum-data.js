@@ -119,8 +119,8 @@ function topicFilter({ view, categoryId, search }) {
   if (view === "unanswered") filters.push("Status eq 'Aberto'", "QuantidadeRespostas eq 0");
   else if (view === "resolved") filters.push("Status eq 'Resolvido'");
   else if (view === "pinned") filters.push("Fixado eq 1", "Status ne 'Arquivado'");
-  else if (view === "recent") filters.push("Status ne 'Arquivado'");
-  else throw new TypeError("view deve ser recent, unanswered, resolved ou pinned.");
+  else if (view === "recent" || view === "popular") filters.push("Status ne 'Arquivado'");
+  else throw new TypeError("view deve ser recent, popular, unanswered, resolved ou pinned.");
 
   if (categoryId !== undefined && categoryId !== null && categoryId !== "") {
     filters.push(`CategoriaId eq ${positiveInteger(categoryId, "categoryId")}`);
@@ -128,6 +128,18 @@ function topicFilter({ view, categoryId, search }) {
   const escapedSearch = escapeODataText(search ?? "");
   if (escapedSearch) filters.push(`substringof('${escapedSearch}',Title)`);
   return filters.join(" and ");
+}
+
+const TOPIC_SORTS = Object.freeze({
+  recentes: "UltimaAtividade desc,Id desc",
+  respostas: "QuantidadeRespostas desc,UltimaAtividade desc,Id desc",
+  visualizacoes: "QuantidadeVisualizacoes desc,UltimaAtividade desc,Id desc"
+});
+
+function topicOrderBy(sort) {
+  // Fixado sempre primeiro, qualquer que seja a ordenação escolhida (README §Interações).
+  const key = TOPIC_SORTS[sort] ? sort : "recentes";
+  return `Fixado desc,${TOPIC_SORTS[key]}`;
 }
 
 function freezeResult(value) {
@@ -247,6 +259,15 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     return currentUserPromise;
   }
 
+  async function whoAmI() {
+    const response = await dataSources.getClient("forum-topics").request("/_api/web/currentuser?$select=Id,Title");
+    const data = response.data?.d ?? response.data;
+    return freezeResult({
+      id: positiveInteger(data?.Id, "currentUser.Id"),
+      title: data?.Title || "Autor não informado"
+    });
+  }
+
   async function topicsForTag(tagId) {
     const id = positiveInteger(tagId, "tagId");
     const taxonomyById = await taxonomy();
@@ -286,11 +307,16 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       if (!tagsByTopic.has(relation.TopicoId)) tagsByTopic.set(relation.TopicoId, []);
       tagsByTopic.get(relation.TopicoId).push(tag);
     }
-    return topics.map((topic) => freezeResult({
-      ...topic,
-      category: taxonomyById.get(topic.CategoriaId) ?? null,
-      tags: tagsByTopic.get(topic.Id) ?? []
-    }));
+    return topics.map((topic) => {
+      const category = taxonomyById.get(topic.CategoriaId);
+      return freezeResult({
+        ...topic,
+        // Cor é texto livre no schema; normalizar aqui garante que todo consumidor
+        // (view) só receba tons aprovados, sem precisar conhecer categoryColor().
+        category: category ? { ...category, Cor: categoryColor(category.Cor) } : null,
+        tags: tagsByTopic.get(topic.Id) ?? []
+      });
+    });
   }
 
   async function listTopics({
@@ -298,6 +324,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     categoryId,
     tagId,
     search = "",
+    sort = "recentes",
     pageSize = 20,
     cursor
   } = {}) {
@@ -319,7 +346,7 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
         select: TOPIC_FIELDS,
         expand: "Author",
         filter: topicFilter({ view, categoryId, search }),
-        orderBy: "Fixado desc,UltimaAtividade desc,Id desc",
+        orderBy: topicOrderBy(sort),
         top: pageSize,
         cursor: next
       });
@@ -975,9 +1002,95 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     }));
   }
 
+  async function listForumOverview({ unansweredDays = 3 } = {}) {
+    if (!Number.isInteger(unansweredDays) || unansweredDays < 1) {
+      throw new TypeError("unansweredDays deve ser um inteiro positivo.");
+    }
+    const [categories, tags] = await Promise.all([
+      listTaxonomy({ type: "Categoria" }),
+      listTaxonomy({ type: "Tag" })
+    ]);
+    const topicSource = dataSources.get("forum-topics");
+    const answerSource = dataSources.get("forum-answers");
+    const relationSource = dataSources.get("forum-topic-tags");
+    // ponytail: amostra de até 500 tópicos/respostas para os agregados da barra
+    // lateral — consolidar em contadores no schema se o fórum crescer além disso.
+    const [topics, answers, relations] = await Promise.all([
+      dataSources.getClient("forum-topics").getListItems(topicSource, {
+        select: ["Id", "CategoriaId", "Status", "Fixado", "QuantidadeRespostas", "UltimaAtividade", "Author/Id"],
+        expand: "Author",
+        filter: "Status ne 'Arquivado'",
+        orderBy: "Id desc",
+        top: 500
+      }),
+      dataSources.getClient("forum-answers").getListItems(answerSource, {
+        select: ["Id", "Author/Id"],
+        expand: "Author",
+        filter: "Status eq 'Publicada'",
+        orderBy: "Id desc",
+        top: 500
+      }),
+      dataSources.getClient("forum-topic-tags").getListItems(relationSource, { select: ["TagId"], top: 5000 })
+    ]);
+
+    const categoryCounts = new Map();
+    const activeAuthors = new Set();
+    let resolved = 0;
+    let unansweredOverdue = 0;
+    let unansweredCount = 0;
+    let pinnedCount = 0;
+    const threshold = Date.now() - unansweredDays * 24 * 60 * 60 * 1000;
+    for (const topic of topics) {
+      categoryCounts.set(topic.CategoriaId, (categoryCounts.get(topic.CategoriaId) ?? 0) + 1);
+      if (topic.Author?.Id) activeAuthors.add(topic.Author.Id);
+      if (topic.Status === "Resolvido") resolved += 1;
+      if (topic.Fixado) pinnedCount += 1;
+      if (Number(topic.QuantidadeRespostas ?? 0) === 0) {
+        unansweredCount += 1;
+        const updated = Date.parse(topic.UltimaAtividade || "");
+        if (Number.isFinite(updated) && updated <= threshold) unansweredOverdue += 1;
+      }
+    }
+    for (const answer of answers) {
+      if (answer.Author?.Id) activeAuthors.add(answer.Author.Id);
+    }
+    const tagCounts = new Map();
+    for (const relation of relations) tagCounts.set(relation.TagId, (tagCounts.get(relation.TagId) ?? 0) + 1);
+
+    return freezeResult({
+      indicators: {
+        topics: topics.length,
+        answers: answers.length,
+        resolvedPercent: topics.length ? Math.round((resolved / topics.length) * 100) : 0,
+        active: activeAuthors.size
+      },
+      tabCounts: {
+        recent: topics.length,
+        popular: topics.length,
+        unanswered: unansweredCount,
+        resolved,
+        pinned: pinnedCount
+      },
+      categories: categories.map((category) => ({
+        id: category.Id,
+        title: category.Title,
+        color: categoryColor(category.Cor),
+        count: categoryCounts.get(category.Id) ?? 0
+      })),
+      tags: tags
+        .map((tag) => ({ id: tag.Id, title: tag.Title, count: tagCounts.get(tag.Id) ?? 0 }))
+        .filter((tag) => tag.count > 0)
+        .sort((left, right) => right.count - left.count || left.title.localeCompare(right.title, "pt-BR"))
+        .slice(0, 10),
+      unansweredOverdue
+    });
+  }
+
   return Object.freeze({
     listTaxonomy,
     listCategorySummaries,
+    listForumOverview,
+    whoAmI,
     listTopics,
     listContributors,
     getTopic,

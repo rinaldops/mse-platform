@@ -461,4 +461,48 @@ await assert.rejects(
   assert.equal(summaries[2].color, "#006298");
 }
 
+{
+  const now = Date.now();
+  const old = new Date(now - 5 * 24 * 60 * 60 * 1000).toISOString();
+  const recentDate = new Date(now).toISOString();
+  const overviewDataSources = {
+    get: (key) => ({ key }),
+    getClient: () => ({
+      async getListItems(source) {
+        if (source.key === "forum-taxonomy") return [
+          { Id: 10, Title: "SAP", Tipo: "Categoria", Cor: "#006298" },
+          { Id: 11, Title: "Dados", Tipo: "Categoria", Cor: "#008542" },
+          { Id: 20, Title: "REST", Tipo: "Tag" },
+          { Id: 21, Title: "OData", Tipo: "Tag" }
+        ];
+        if (source.key === "forum-topics") return [
+          { Id: 1, CategoriaId: 10, Status: "Resolvido", Fixado: true, QuantidadeRespostas: 2, UltimaAtividade: recentDate, Author: { Id: 1 } },
+          { Id: 2, CategoriaId: 10, Status: "Aberto", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: old, Author: { Id: 2 } },
+          { Id: 3, CategoriaId: 11, Status: "Aberto", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: recentDate, Author: { Id: 1 } }
+        ];
+        if (source.key === "forum-answers") return [{ Id: 5, Author: { Id: 3 } }];
+        if (source.key === "forum-topic-tags") return [{ TagId: 20 }, { TagId: 20 }];
+        return [];
+      },
+      async request() {
+        return { data: { Id: 9, Title: "Carla" } };
+      }
+    })
+  };
+  const overviewService = createForumReadService({ dataSources: overviewDataSources });
+  const overview = await overviewService.listForumOverview();
+  assert.equal(overview.indicators.topics, 3);
+  assert.equal(overview.indicators.answers, 1);
+  assert.equal(overview.indicators.resolvedPercent, 33);
+  assert.equal(overview.indicators.active, 3);
+  assert.deepEqual(overview.tabCounts, { recent: 3, popular: 3, unanswered: 2, resolved: 1, pinned: 1 });
+  assert.equal(overview.categories.find((item) => item.id === 10).count, 2);
+  assert.equal(overview.categories.find((item) => item.id === 11).count, 1);
+  assert.deepEqual(overview.tags.map((item) => item.title), ["REST"]);
+  assert.equal(overview.unansweredOverdue, 1);
+
+  const whoAmI = await overviewService.whoAmI();
+  assert.deepEqual(whoAmI, { id: 9, title: "Carla" });
+}
+
 console.log("forum-data.test.js: verificações concluídas com sucesso.");
