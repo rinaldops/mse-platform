@@ -1061,3 +1061,98 @@
 .mse-forum__empty .mse-forum__button {
   margin-top: 0.5rem;
 }
+
+/* Home-page teaser (createForumSummaryView) — separate module instance
+   (data-mse-module="forum-summary"), not covered by the .mse-forum rules
+   above. Read-only: a handful of recent topics linking out to Forum.aspx,
+   no filters/tabs/composer here — that's the full experience. */
+[data-mse-module="forum-summary"][data-mse-module="forum-summary"] {
+  background: #FFFFFF;
+  color: #000000;
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+}
+
+.mse-forum__summary {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #75787B;
+}
+
+.mse-forum__summary-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-forum__summary-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.mse-forum__summary-see-all {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #006298;
+  text-decoration: none;
+}
+
+.mse-forum__summary-see-all:hover,
+.mse-forum__summary-see-all:focus-visible {
+  text-decoration: underline;
+}
+
+.mse-forum__summary-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mse-forum__summary-item {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #75787B;
+  text-decoration: none;
+  color: #000000;
+  transition: background 0.15s ease;
+}
+
+.mse-forum__summary-item:hover,
+.mse-forum__summary-item:focus-visible {
+  background: #F2F7FA;
+}
+
+.mse-forum__summary-item-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.mse-forum__summary-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: #006298;
+}
+
+.mse-forum__summary-chip {
+  padding: 0.1rem 0.45rem;
+  background: var(--accent, #006298);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.mse-forum__summary-empty {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #75787B;
+  color: #006298;
+  font-size: 0.9rem;
+  text-align: center;
+}

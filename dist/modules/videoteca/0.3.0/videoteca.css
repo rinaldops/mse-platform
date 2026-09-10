@@ -632,3 +632,110 @@
     transition: none;
   }
 }
+
+/* Home-page teaser (createVideotecaSummaryView) — separate module instance
+   (data-mse-module="videoteca-summary"), not covered by the .mse-videoteca
+   rules above. Read-only: a handful of featured/recent videos linking out to
+   Videoteca.aspx, no carousel/filters/view-tracking here — that's the full page. */
+[data-mse-module="videoteca-summary"][data-mse-module="videoteca-summary"] {
+  background: #FFFFFF;
+  color: #000000;
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+}
+
+.mse-videoteca__summary {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #75787B;
+}
+
+.mse-videoteca__summary-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__summary-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.mse-videoteca__summary-see-all {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #006298;
+  text-decoration: none;
+}
+
+.mse-videoteca__summary-see-all:hover,
+.mse-videoteca__summary-see-all:focus-visible {
+  text-decoration: underline;
+}
+
+.mse-videoteca__summary-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.mse-videoteca__summary-item {
+  display: grid;
+  gap: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mse-videoteca__summary-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: var(--accent, #006298);
+  border: 1px solid #75787B;
+}
+
+.mse-videoteca__summary-item:hover .mse-videoteca__summary-thumb,
+.mse-videoteca__summary-item:focus-visible .mse-videoteca__summary-thumb {
+  border-color: #006298;
+}
+
+.mse-videoteca__summary-duration {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  color: #000000;
+  background: #FDC82F;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+.mse-videoteca__summary-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mse-videoteca__summary-item-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.mse-videoteca__summary-category {
+  color: #006298;
+  font-size: 0.72rem;
+}
+
+.mse-videoteca__summary-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #75787B;
+  color: #006298;
+  font-size: 0.9rem;
+  text-align: center;
+}

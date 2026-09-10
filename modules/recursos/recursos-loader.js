@@ -6,7 +6,8 @@
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/recursos/"));
   const roots = [...document.querySelectorAll('[data-mse-module="recursos"]')];
-  if (!roots.length && script?.parentNode) {
+  const summaryRoots = [...document.querySelectorAll('[data-mse-module="recursos-summary"]')];
+  if (!roots.length && !summaryRoots.length && script?.parentNode) {
     const root = document.createElement("div");
     root.id = "mse-recursos-home";
     root.dataset.mseModule = "recursos";
@@ -16,23 +17,25 @@
     roots.push(root);
   }
 
+  const allRoots = [...roots, ...summaryRoots];
+
   function write(message) {
-    for (const root of roots) root.textContent = message;
+    for (const root of allRoots) root.textContent = message;
   }
 
   try {
-    if (!roots.length) throw new Error("Missing recursos root element.");
+    if (!allRoots.length) throw new Error("Missing recursos root element.");
 
     const scriptPath = script?.src ? new URL(script.src, window.location.href).pathname : "";
     const assetBase = scriptPath.includes("/SiteAssets/")
       ? scriptPath.slice(0, scriptPath.indexOf("/SiteAssets/") + "/SiteAssets".length)
       : "";
-    const webUrl = (roots[0].dataset.webUrl || assetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
+    const webUrl = (allRoots[0].dataset.webUrl || assetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
     if (!webUrl || !assetBase) throw new Error("Unable to infer webUrl or SiteAssets path.");
 
     write("Carregando recursos...");
 
-    const [{ createSharePointDataSourceRegistry }, { createRecursosReadService }, { mountRecursos }] =
+    const [{ createSharePointDataSourceRegistry }, { createRecursosReadService }, { mountRecursos, mountRecursosSummary }] =
       await Promise.all([
         import(`${assetBase}/mse-platform/core/${CORE_VERSION}/data-sources.js`),
         import(`${assetBase}/mse-platform/modules/recursos/${RECURSOS_VERSION}/recursos-data.js`),
@@ -57,13 +60,30 @@
       sources
     });
 
-    mountRecursos({
-      service: createRecursosReadService({ dataSources }),
-      instances: Object.fromEntries(roots.map((root) => [
-        root.dataset.configKey || root.id || "recursos-home",
-        { layout: { mode: root.dataset.layoutMode || "contained" } }
-      ]))
-    });
+    const service = createRecursosReadService({ dataSources });
+
+    if (roots.length) {
+      mountRecursos({
+        service,
+        instances: Object.fromEntries(roots.map((root) => [
+          root.dataset.configKey || root.id || "recursos-home",
+          { layout: { mode: root.dataset.layoutMode || "contained" } }
+        ]))
+      });
+    }
+
+    if (summaryRoots.length) {
+      mountRecursosSummary({
+        service,
+        instances: Object.fromEntries(summaryRoots.map((root) => [
+          root.dataset.configKey || root.id || "recursos-summary",
+          {
+            layout: { mode: root.dataset.layoutMode || "contained" },
+            recursosSummary: { pageHref: root.dataset.pageHref }
+          }
+        ]))
+      });
+    }
   } catch (error) {
     write(`Falha ao carregar recursos: ${error?.message || error}`);
     console.error(error);

@@ -441,3 +441,66 @@ export function createVideotecaView({ root, service, reducedMotion, storage = gl
     root.replaceChildren();
   };
 }
+
+// Lean read-only panel for the Home page: a handful of featured/recent videos
+// with a link to the full Videoteca page. Unlike the full page's cards (which
+// open the recording directly), every item here points at Videoteca.aspx —
+// this panel is a teaser, not a player shortcut. No filters/carousel/tracking
+// beyond plain navigation — the full experience lives there (createVideotecaView).
+export function createVideotecaSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+  if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
+  if (!service || typeof service.listCatalog !== "function") {
+    throw new TypeError("service deve implementar listCatalog().");
+  }
+  if (typeof pageHref !== "string" || !pageHref) {
+    throw new TypeError("pageHref é obrigatório.");
+  }
+
+  const document = root.ownerDocument;
+  let disposed = false;
+
+  function videoCard(video) {
+    const card = element(document, "a", "mse-videoteca__summary-item");
+    card.href = pageHref;
+    const thumb = element(document, "span", "mse-videoteca__summary-thumb");
+    thumb.style.setProperty("--accent", accentFor(video.Categoria));
+    if (video.Duracao) thumb.append(element(document, "span", "mse-videoteca__summary-duration", video.Duracao));
+    const meta = element(document, "span", "mse-videoteca__summary-meta");
+    meta.append(element(document, "span", "mse-videoteca__summary-item-title", video.Title));
+    if (video.Categoria) meta.append(element(document, "span", "mse-videoteca__summary-category", video.Categoria));
+    card.append(thumb, meta);
+    return card;
+  }
+
+  async function render() {
+    const panel = element(document, "section", "mse-videoteca__summary");
+    const header = element(document, "div", "mse-videoteca__summary-header");
+    header.append(element(document, "h2", "mse-videoteca__summary-title", "Videoteca"));
+    const seeAll = element(document, "a", "mse-videoteca__summary-see-all", "Ver videoteca completa");
+    seeAll.href = pageHref;
+    header.append(seeAll);
+
+    const list = element(document, "div", "mse-videoteca__summary-list");
+    panel.append(header, list);
+    root.replaceChildren(panel);
+
+    try {
+      const catalog = await service.listCatalog();
+      if (disposed) return;
+      const all = catalog.groups.flatMap((group) => group.videos);
+      const featured = (catalog.featured.length ? catalog.featured : all).slice(0, limit);
+      list.replaceChildren(...(featured.length
+        ? featured.map(videoCard)
+        : [element(document, "p", "mse-videoteca__summary-empty", "Nenhum vídeo publicado ainda.")]));
+    } catch {
+      if (disposed) return;
+      list.replaceChildren(element(document, "p", "mse-videoteca__summary-empty", errorMessage()));
+    }
+  }
+
+  render();
+
+  return () => {
+    disposed = true;
+  };
+}

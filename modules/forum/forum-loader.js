@@ -14,7 +14,8 @@
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/forum/"));
   const roots = [...document.querySelectorAll('[data-mse-module="forum"]')];
-  if (!roots.length && script?.parentNode) {
+  const summaryRoots = [...document.querySelectorAll('[data-mse-module="forum-summary"]')];
+  if (!roots.length && !summaryRoots.length && script?.parentNode) {
     const root = document.createElement("div");
     root.id = "mse-forum-home";
     root.dataset.mseModule = "forum";
@@ -24,23 +25,25 @@
     roots.push(root);
   }
 
+  const allRoots = [...roots, ...summaryRoots];
+
   function write(message) {
-    for (const root of roots) root.textContent = message;
+    for (const root of allRoots) root.textContent = message;
   }
 
   try {
-    if (!roots.length) throw new Error("Missing forum root element.");
+    if (!allRoots.length) throw new Error("Missing forum root element.");
 
     const scriptPath = script?.src ? new URL(script.src, window.location.href).pathname : "";
     const assetBase = scriptPath.includes("/SiteAssets/")
       ? scriptPath.slice(0, scriptPath.indexOf("/SiteAssets/") + "/SiteAssets".length)
       : "";
-    const webUrl = (roots[0].dataset.webUrl || assetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
+    const webUrl = (allRoots[0].dataset.webUrl || assetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
     if (!webUrl || !assetBase) throw new Error("Unable to infer webUrl or SiteAssets path.");
 
     write("Carregando fórum...");
 
-    const [{ createSharePointDataSourceRegistry }, { sanitizeRichText }, { createForumReadService }, { mountForum }] =
+    const [{ createSharePointDataSourceRegistry }, { sanitizeRichText }, { createForumReadService }, { mountForum, mountForumSummary }] =
       await Promise.all([
         import(`${assetBase}/mse-platform/core/${CORE_VERSION}/data-sources.js`),
         import(`${assetBase}/mse-platform/core/${CORE_VERSION}/rich-text.js`),
@@ -66,19 +69,36 @@
       sources
     });
 
-    mountForum({
-      service: createForumReadService({ dataSources, sanitizeRichText }),
-      instances: Object.fromEntries(roots.map((root) => [
-        root.dataset.configKey || root.id || "forum-home",
-        {
-          layout: { mode: root.dataset.layoutMode || "contained" },
-          forum: {
-            editor: root.dataset.editor || undefined,
-            pageSize: Number(root.dataset.pageSize || 12)
+    const service = createForumReadService({ dataSources, sanitizeRichText });
+
+    if (roots.length) {
+      mountForum({
+        service,
+        instances: Object.fromEntries(roots.map((root) => [
+          root.dataset.configKey || root.id || "forum-home",
+          {
+            layout: { mode: root.dataset.layoutMode || "contained" },
+            forum: {
+              editor: root.dataset.editor || undefined,
+              pageSize: Number(root.dataset.pageSize || 12)
+            }
           }
-        }
-      ]))
-    });
+        ]))
+      });
+    }
+
+    if (summaryRoots.length) {
+      mountForumSummary({
+        service,
+        instances: Object.fromEntries(summaryRoots.map((root) => [
+          root.dataset.configKey || root.id || "forum-summary",
+          {
+            layout: { mode: root.dataset.layoutMode || "contained" },
+            forumSummary: { pageHref: root.dataset.pageHref }
+          }
+        ]))
+      });
+    }
   } catch (error) {
     write(`Falha ao carregar o fórum: ${error?.message || error}`);
     console.error(error);

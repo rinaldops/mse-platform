@@ -1196,3 +1196,68 @@ export function createForumView({
     windowImpl?.removeEventListener?.("popstate", onPopState);
   };
 }
+
+// Lean read-only panel for the Home page: a handful of recent topics with a
+// link to the full Forum page. No routing, filters or interactivity beyond
+// plain navigation — the full experience lives on Forum.aspx (createForumView).
+export function createForumSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+  if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
+  if (!service || typeof service.listTopics !== "function") {
+    throw new TypeError("service deve implementar listTopics().");
+  }
+  if (typeof pageHref !== "string" || !pageHref) {
+    throw new TypeError("pageHref é obrigatório.");
+  }
+
+  const document = root.ownerDocument;
+  let disposed = false;
+
+  function topicHref(topicId) {
+    const url = new URL(pageHref, globalThis.location?.origin ?? "http://localhost");
+    url.searchParams.set("forumTopic", String(topicId));
+    return `${url.pathname}${url.search}`;
+  }
+
+  function topicRow(topic) {
+    const row = element(document, "a", "mse-forum__summary-item");
+    row.href = topicHref(topic.Id);
+    row.append(element(document, "span", "mse-forum__summary-item-title", topic.Title));
+    const meta = element(document, "span", "mse-forum__summary-item-meta");
+    const category = element(document, "span", "mse-forum__summary-chip", topic.category?.Nome || "Geral");
+    category.style.setProperty("--accent", topic.category?.Cor || "#006298");
+    const count = topic.QuantidadeRespostas ?? 0;
+    meta.append(category, element(document, "span", null, `${count} resposta${count === 1 ? "" : "s"}`));
+    row.append(meta);
+    return row;
+  }
+
+  async function render() {
+    const panel = element(document, "section", "mse-forum__summary");
+    const header = element(document, "div", "mse-forum__summary-header");
+    header.append(element(document, "h2", "mse-forum__summary-title", "Fórum"));
+    const seeAll = element(document, "a", "mse-forum__summary-see-all", "Ver fórum completo");
+    seeAll.href = pageHref;
+    header.append(seeAll);
+
+    const list = element(document, "div", "mse-forum__summary-list");
+    panel.append(header, list);
+    root.replaceChildren(panel);
+
+    try {
+      const { topics } = await service.listTopics({ view: "recent", sort: "recentes", pageSize: limit });
+      if (disposed) return;
+      list.replaceChildren(...(topics.length
+        ? topics.map(topicRow)
+        : [element(document, "p", "mse-forum__summary-empty", "Nenhum tópico publicado ainda.")]));
+    } catch (error) {
+      if (disposed) return;
+      list.replaceChildren(element(document, "p", "mse-forum__summary-empty", errorMessage(error)));
+    }
+  }
+
+  render();
+
+  return () => {
+    disposed = true;
+  };
+}

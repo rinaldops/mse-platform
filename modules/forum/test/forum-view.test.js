@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { forumRouteUrl, readForumRoute } from "../forum-view.js";
+import { forumRouteUrl, readForumRoute, createForumSummaryView } from "../forum-view.js";
 
 assert.deepEqual(
   readForumRoute("https://example.test/pagina.aspx"),
@@ -25,5 +25,69 @@ assert.equal(
   ),
   "/pagina.aspx?origem=menu&forumView=unanswered&forumSort=visualizacoes&forumTag=7&forumAnswer=9&forumCompose=1&forumEdit=1&forumMine=1&forumSearch=ETag"
 );
+
+// createForumSummaryView: lean Home-page panel — smoke-test rendering, the
+// Forum.aspx deep link and the empty/error states with a minimal fake DOM.
+class FakeClassList {
+  constructor() { this.values = new Set(); }
+  add(...names) { names.forEach((name) => this.values.add(name)); }
+  remove(...names) { names.forEach((name) => this.values.delete(name)); }
+}
+
+class FakeElement {
+  constructor(tag, ownerDocument) {
+    this.tagName = tag.toUpperCase();
+    this.ownerDocument = ownerDocument;
+    this.nodeType = 1;
+    this.children = [];
+    this.classList = new FakeClassList();
+    this.className = "";
+    this.textContent = "";
+    this.style = { setProperty() {} };
+  }
+  append(...children) { this.children.push(...children); }
+  replaceChildren(...children) { this.children = children; }
+}
+
+function findAll(node, predicate, out = []) {
+  if (predicate(node)) out.push(node);
+  for (const child of node.children ?? []) findAll(child, predicate, out);
+  return out;
+}
+
+const fakeDocument = { createElement(tag) { return new FakeElement(tag, fakeDocument); } };
+
+{
+  const root = new FakeElement("div", fakeDocument);
+  const topics = [
+    { Id: 10, Title: "Como configurar SSO", category: { Nome: "SAP", Cor: "#006298" }, QuantidadeRespostas: 3 },
+    { Id: 11, Title: "Dúvida sobre Power Automate", category: null, QuantidadeRespostas: 0 }
+  ];
+  const cleanup = createForumSummaryView({
+    root,
+    service: { async listTopics() { return { topics, next: null }; } },
+    pageHref: "/sites/tecnologiasdigitais/SitePages/Forum.aspx"
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const items = findAll(root, (node) => node.className === "mse-forum__summary-item");
+  assert.equal(items.length, 2);
+  assert.equal(items[0].href, "/sites/tecnologiasdigitais/SitePages/Forum.aspx?forumTopic=10");
+  const seeAll = findAll(root, (node) => node.className === "mse-forum__summary-see-all")[0];
+  assert.equal(seeAll.href, "/sites/tecnologiasdigitais/SitePages/Forum.aspx");
+  cleanup();
+}
+
+{
+  const root = new FakeElement("div", fakeDocument);
+  createForumSummaryView({
+    root,
+    service: { async listTopics() { return { topics: [], next: null }; } },
+    pageHref: "/sites/tecnologiasdigitais/SitePages/Forum.aspx"
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  const empty = findAll(root, (node) => node.className === "mse-forum__summary-empty")[0];
+  assert.ok(empty, "deve mostrar estado vazio sem tópicos");
+}
 
 console.log("forum-view.test.js: verificações concluídas com sucesso.");
