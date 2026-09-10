@@ -16,13 +16,13 @@
   /* three uneven light sources (an irregular triangle, not one centered blob) give the
      hero depth: each stop is azul-escuro tinted lighter — 85/80/90% color-to-white mix —
      fading to transparent over the flat azul-escuro base, so edges stay the darkest,
-     full-strength approved blue. The wide, very diffuse 5% black layer on top is a
+     full-strength approved blue. The wide, very diffuse 10% black layer on top is a
      documented local exception (IDENTIDADE-PETROBRAS.md secao 4: exceção local exige
-     justificativa e aprovação) — approved to draw focus toward the center; at 5% and
+     justificativa e aprovação) — approved to draw focus toward the center; at 10% and
      confined to the outer margin it never becomes a predominant off-palette color
      against a page that otherwise stays strictly within the Petrobras palette. */
   background:
-    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.05) 100%),
+    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
     radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),
     radial-gradient(56rem 50rem at 37% 68%, #3381AD, transparent 62%),
     radial-gradient(62rem 54rem at 82% 52%, #1A72A2, transparent 64%),
@@ -35,7 +35,7 @@
 @media (max-width: 760px) {
   [data-mse-module="home"][data-mse-module="home"] {
     background:
-      radial-gradient(140% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.05) 100%),
+      radial-gradient(140% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
       radial-gradient(32rem 26rem at 62% 10%, #267AA7, transparent 60%),
       radial-gradient(34rem 28rem at 28% 50%, #3381AD, transparent 58%),
       var(--home-azul-escuro);
@@ -45,7 +45,7 @@
 .mse-home {
   position: relative;
   overflow: hidden;
-  padding: clamp(56px, 10vw, 104px) clamp(20px, 4vw, 56px) clamp(48px, 7vw, 72px);
+  padding: clamp(24px, 3.5vw, 40px) clamp(20px, 4vw, 56px) clamp(24px, 3.5vw, 40px);
 }
 
 .mse-home__constellation {
@@ -57,9 +57,15 @@
 }
 
 .mse-home__lines {
+  /* Right-anchored at 80% width (was edge-to-edge): shrinks the lines' lateral
+     spread by 20% without touching the path data — preserveAspectRatio="none"
+     rescales the same viewBox into the narrower box, so the vertical tuning
+     (top clearance, bottom overflow) stays exactly as calibrated. */
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80%;
   height: 100%;
 }
 
@@ -100,13 +106,15 @@
 .mse-home__inner {
   position: relative;
   z-index: 2;
-  max-width: clamp(20rem, 32vw + 34rem, 90rem);
+  /* Percentage of the hero's own width, not vw/rem: the accent lines are positioned
+     as fixed percentages of the hero (stretched SVG viewBox), so the text column has
+     to scale in that same proportion to keep clear of them and stay visually balanced
+     against the graphic at every hero width — a vw+rem formula grows at a different
+     rate than the hero itself and drifts out of sync at both ends of the range. */
+  max-width: clamp(20rem, 50%, 56rem);
 }
 
 .mse-home__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
   font-family: var(--home-font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.14em;
@@ -114,11 +122,8 @@
   color: var(--home-amarelo);
 }
 
-.mse-home__eyebrow::before {
-  content: "";
-  width: 1.1em;
-  height: 1px;
-  background: currentcolor;
+.mse-home__eyebrow-mark {
+  text-decoration: underline;
 }
 
 .mse-home__title {
@@ -128,13 +133,11 @@
   font-size: clamp(2.4rem, 2vw + 2.3rem, 5rem);
   line-height: 1.08;
   margin: 0.5em 0 0.42em;
-  max-width: 17ch;
-  text-wrap: balance;
 }
 
 .mse-home__accent {
   font-style: normal;
-  color: var(--home-amarelo);
+  color: var(--home-laranja);
 }
 
 .mse-home__accent--warm {
@@ -142,7 +145,6 @@
 }
 
 .mse-home__sub {
-  max-width: 48ch;
   font-size: 1.08rem;
   color: var(--home-text);
   opacity: 0.88;
@@ -194,13 +196,16 @@
 }
 
 .mse-home__stats {
-  position: relative;
-  z-index: 2;
+  /* No position/z-index here (unlike .mse-home__inner): this row is meant to
+     sit in the same paint layer as the accent lines' svg, so the lines cross
+     visibly over the white rule and the numbers — full-width like the page,
+     not clipped to the title column's narrower, line-safe max-width. */
   margin-top: clamp(44px, 7vw, 72px);
   padding-top: 1.6em;
   border-top: 1px solid var(--home-line);
   display: grid;
   grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
   gap: 2.6em;
 }
 

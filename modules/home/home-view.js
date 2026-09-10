@@ -18,10 +18,10 @@ const FLOATER_TERMS = Object.freeze([
 ]);
 
 export const DEFAULT_STATS = Object.freeze([
-  { value: "8", label: "ÁREAS DE TECNOLOGIA" },
+  { value: "17", label: "ENCONTROS REALIZADOS" },
   { value: "1×/mês", label: "ENCONTRO AO VIVO" },
-  { value: "100%", label: "ENCONTROS GRAVADOS" },
-  { value: "4", label: "MÓDULOS NO HUB" }
+  { value: "—", label: "APRESENTAÇÕES REALIZADAS" },
+  { value: "—", label: "MENSAGENS NO FÓRUM" }
 ]);
 
 export function normalizeStats(stats) {
@@ -70,7 +70,7 @@ function renderLines(document) {
   svg.setAttribute("aria-hidden", "true");
 
   const lineA = document.createElementNS(SVG_NS, "path");
-  lineA.setAttribute("d", "M 420 400 L 587 47 Q 600 20 630 24 L 840 51 Q 870 55 892 76 L 1000 180");
+  lineA.setAttribute("d", "M 420 400 L 587 82 Q 600 58 630 62 L 840 86 Q 870 90 892 108 L 1000 202");
   lineA.setAttribute("fill", "none");
   lineA.setAttribute("stroke", "var(--home-amarelo)");
   lineA.setAttribute("stroke-width", "2");
@@ -79,7 +79,7 @@ function renderLines(document) {
   lineA.setAttribute("opacity", "0.9");
 
   const lineB = document.createElementNS(SVG_NS, "path");
-  lineB.setAttribute("d", "M 470 395 L 670 163 Q 690 140 718 129 L 892 61 Q 920 50 939 73 L 1000 150");
+  lineB.setAttribute("d", "M 414 454 L 670 187 Q 690 166 718 156 L 892 95 Q 920 85 939 106 L 1000 175");
   lineB.setAttribute("fill", "none");
   lineB.setAttribute("stroke", "var(--home-laranja)");
   lineB.setAttribute("stroke-width", "1.5");
@@ -250,7 +250,12 @@ export function createHomeView({ root, stats } = {}) {
   if (!reducedMotion) shell.append(renderFloaters(document));
 
   const inner = element(document, "div", "mse-home__inner");
-  inner.append(element(document, "span", "mse-home__eyebrow", "Hub de Tecnologias Digitais"));
+  const eyebrow = element(document, "span", "mse-home__eyebrow");
+  eyebrow.append(
+    element(document, "span", "mse-home__eyebrow-mark", "Hub"),
+    document.createTextNode(" de Tecnologias Digitais")
+  );
+  inner.append(eyebrow);
 
   const heading = element(document, "h1", "mse-home__title");
   heading.append(
@@ -266,7 +271,7 @@ export function createHomeView({ root, stats } = {}) {
     document,
     "p",
     "mse-home__sub",
-    "Power Platform, SAP, Azure, Microsoft 365, IA e outras ferramentas do ambiente corporativo — reunidas em um só lugar para automatizar processos, resolver problemas do dia a dia e aprender com quem já resolveu."
+    "SAP, Azure, Databricks, AIDA, Microsoft 365, Power Platform, Fabric, IA e outras ferramentas do ambiente corporativo — reunidas em um só lugar para automatizar processos, resolver problemas do dia a dia e aprender com quem já resolveu."
   ));
 
   const actions = element(document, "div", "mse-home__actions");
@@ -277,9 +282,14 @@ export function createHomeView({ root, stats } = {}) {
   actions.append(forumLink, videotecaLink);
   inner.append(actions);
 
-  inner.append(renderStats(document, normalizedStats));
-
   shell.append(inner);
+  // Stats sit outside .mse-home__inner (and outside its z-index:2 stacking
+  // context) on purpose: unlike the title, it's fine — desired, even — for
+  // the accent lines to visually cross the white rule and the numbers, as a
+  // cue that they're a separate depth layer. Being a direct shell child also
+  // lets this row size to the hero's own width instead of the title column's
+  // narrower, line-safe max-width.
+  shell.append(renderStats(document, normalizedStats));
   root.replaceChildren(shell);
 
   const disposeConstellation = initConstellation(canvas, { reducedMotion, windowImpl });

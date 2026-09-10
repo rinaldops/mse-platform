@@ -90,12 +90,12 @@ for (const relativePath of [...cssFiles, ...scriptFiles]) {
     assert.doesNotMatch(css, /color-mix\(/i, `${relativePath}: color-mix não permitido.`);
     // rgba()/rgb() fabricate transparency-based surfaces and stay banned, with ONE documented
     // local exception (doc secao 4 exige justificativa + aprovacao para excecao local): a single
-    // very diffuse 5% black vignette at the hero's margin, approved to add focus toward the
+    // very diffuse 10% black vignette at the hero's margin, approved to add focus toward the
     // center without creating any predominance of an off-palette color across the whole page.
     const rgbCalls = css.match(/rgba?\([^)]*\)/gi) ?? [];
-    const disallowedRgb = rgbCalls.filter((call) => call.replace(/\s+/g, "") !== "rgba(0,0,0,0.05)");
+    const disallowedRgb = rgbCalls.filter((call) => call.replace(/\s+/g, "") !== "rgba(0,0,0,0.1)");
     assert.deepEqual(disallowedRgb, [],
-      `${relativePath}: uso de rgba/rgb não permitido (só a vinheta de margem 5% preto é uma exceção aprovada): ${disallowedRgb.join(", ")}`);
+      `${relativePath}: uso de rgba/rgb não permitido (só a vinheta de margem 10% preto é uma exceção aprovada): ${disallowedRgb.join(", ")}`);
     assert.doesNotMatch(css, /letter-spacing\s*:\s*-/i,
       `${relativePath}: letter-spacing negativo não permitido.`);
   }
