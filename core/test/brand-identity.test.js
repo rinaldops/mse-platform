@@ -22,7 +22,12 @@ const scriptFiles = [
 ];
 const approvedColors = new Set([
   "#008542", "#FDC82F", "#FFFFFF", "#00B2A9", "#C4D600",
-  "#EBFF00", "#ED8B00", "#006298", "#3DDAFF", "#75787B", "#000000"
+  "#EBFF00", "#ED8B00", "#006298", "#3DDAFF", "#75787B", "#000000",
+  // Exceção local documentada (IDENTIDADE-PETROBRAS.md secao 4): tons de UI
+  // derivados de uma mistura clara de #006298, usados nas páginas internas
+  // (barra de página compacta) para hover/estado ativo de superfície e borda
+  // inativa de item de lista — não são cor de marca, só estado de interface.
+  "#F2F7FA", "#E3E9ED"
 ]);
 
 function normalizeHex(value) {

@@ -1,5 +1,9 @@
 export const RECURSOS_SCHEMA_VERSION = 1;
 
+export const RECURSOS_CATEGORIES = Object.freeze([
+  "Power Platform", "Microsoft 365", "SAP", "Azure e APIs", "Governança", "Dicas rápidas"
+]);
+
 export const RECURSOS_LIST_SCHEMAS = [
   {
     key: "recursos-links",
@@ -19,7 +23,7 @@ export const RECURSOS_LIST_SCHEMAS = [
         type: "Choice",
         required: true,
         indexed: true,
-        choices: ["Power Platform", "Microsoft 365", "SAP", "Azure e APIs", "Governança", "Dicas rápidas"]
+        choices: RECURSOS_CATEGORIES
       },
       { internalName: "Descricao", displayName: "Descrição", type: "Note", lines: 3 },
       { internalName: "IconeChave", displayName: "Ícone", type: "Text", maxLength: 60 },

@@ -30,4 +30,27 @@ assert.equal(groups.find((g) => g.category === "Power Platform").videos.length, 
 
 assert.throws(() => createVideotecaReadService({}), TypeError);
 
+{
+  const updates = [];
+  const viewDataSources = {
+    get: (key) => ({ key }),
+    getClient: () => ({
+      getListItem: async (source, id) => {
+        assert.equal(source.key, "videoteca-videos");
+        assert.equal(id, 2);
+        return { item: { Id: 2, Visualizacoes: 4 }, etag: '"v-1"' };
+      },
+      updateListItem: async (source, id, values, options) => {
+        updates.push({ source, id, values, options });
+        return { item: null, etag: '"v-2"' };
+      }
+    })
+  };
+  const viewService = createVideotecaReadService({ dataSources: viewDataSources });
+  assert.equal(await viewService.registerView(2), 2);
+  assert.equal(updates[0].values.Visualizacoes, 5);
+  assert.equal(updates[0].options.etag, '"v-1"');
+  await assert.rejects(viewService.registerView(-1), TypeError);
+}
+
 console.log("videoteca-data.test.js: verificações concluídas com sucesso.");

@@ -1,6 +1,6 @@
-export const VIDEOTECA_SCHEMA_VERSION = 1;
+export const VIDEOTECA_SCHEMA_VERSION = 2;
 
-const CATEGORIES = [
+export const VIDEOTECA_CATEGORIES = Object.freeze([
   "Power Platform",
   "Microsoft 365",
   "SAP",
@@ -9,7 +9,7 @@ const CATEGORIES = [
   "Automation Anywhere",
   "IA e Machine Learning",
   "Outros"
-];
+]);
 
 export const VIDEOTECA_LIST_SCHEMAS = [
   {
@@ -30,7 +30,7 @@ export const VIDEOTECA_LIST_SCHEMAS = [
         type: "Choice",
         required: true,
         indexed: true,
-        choices: CATEGORIES
+        choices: VIDEOTECA_CATEGORIES
       },
       { internalName: "Apresentador", displayName: "Apresentador", type: "Text", maxLength: 100 },
       { internalName: "Data", displayName: "Data", type: "DateTime", indexed: true },
@@ -48,6 +48,14 @@ export const VIDEOTECA_LIST_SCHEMAS = [
       {
         internalName: "OrdemCarrossel",
         displayName: "Ordem no carrossel",
+        type: "Number",
+        indexed: true,
+        min: 0,
+        defaultValue: 0
+      },
+      {
+        internalName: "Visualizacoes",
+        displayName: "Visualizações",
         type: "Number",
         indexed: true,
         min: 0,

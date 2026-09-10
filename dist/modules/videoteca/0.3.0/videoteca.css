@@ -5,12 +5,13 @@
   --vt-line: #75787B;
   --vt-text: #000000;
   --vt-text-muted: #006298;
+  --vt-mono: ui-monospace, Consolas, monospace;
 
   background: #FFFFFF;
   color: var(--vt-text);
   font-family: "Petrobras Sans", Arial, sans-serif;
-  padding: 2rem clamp(1rem, 4vw, 2.5rem);
   border-radius: var(--mse-section-radius, 0);
+  overflow: hidden;
 }
 
 .mse-videoteca__status {
@@ -25,110 +26,400 @@
   border-left: 0.25rem solid #ED8B00;
 }
 
-.mse-videoteca {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 72rem;
-  margin: 0 auto;
+/* ── Barra de página (substitui o Hero nas páginas internas) ──────────────── */
+
+.mse-videoteca__pagebar {
+  background:
+    radial-gradient(120% 160% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+    radial-gradient(40rem 20rem at 62% 15%, #267AA7, transparent 65%),
+    radial-gradient(44rem 22rem at 30% 85%, #3381AD, transparent 62%),
+    #006298;
+  color: #FFFFFF;
+  padding: 0.9rem clamp(20px, 4vw, 56px);
 }
 
-/* Carousel */
+.mse-videoteca__pagebar-inner {
+  max-width: 76rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__breadcrumb {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.mse-videoteca__breadcrumb-link {
+  font-family: var(--vt-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+.mse-videoteca__breadcrumb-link:hover {
+  color: #3DDAFF;
+  opacity: 1;
+}
+
+.mse-videoteca__breadcrumb-sep {
+  font-family: var(--vt-mono);
+  font-size: 0.72rem;
+  opacity: 0.55;
+}
+
+.mse-videoteca__pagebar-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #FFFFFF;
+}
+
+.mse-videoteca__search {
+  display: flex;
+  align-items: center;
+  flex: 1 1 18rem;
+  max-width: 34rem;
+  border: 1px solid #FFFFFF;
+}
+
+.mse-videoteca__search-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  color: #FFFFFF;
+}
+
+.mse-videoteca__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  padding: 0.55em 0.6em 0.55em 0;
+  color: #FFFFFF;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.mse-videoteca__search-input::placeholder {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.mse-videoteca__pagebar-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.mse-videoteca__pagebar-button {
+  padding: 0.6em 1.2em;
+  border: 1px solid transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-videoteca__pagebar-button--primary {
+  border-color: transparent;
+  color: #000000;
+  background: #FDC82F;
+}
+
+.mse-videoteca__pagebar-button--primary:hover {
+  border-color: #000000;
+}
+
+.mse-videoteca__pagebar-button--ghost {
+  border-color: #FFFFFF;
+  background: transparent;
+}
+
+.mse-videoteca__pagebar-button--ghost:hover {
+  border-color: #3DDAFF;
+  color: #3DDAFF;
+}
+
+.mse-videoteca__pagebar :is(.mse-videoteca__search-input, .mse-videoteca__pagebar-button, .mse-videoteca__breadcrumb-link):focus-visible {
+  outline-color: #FFFFFF;
+}
+
+/* ── Página / filtros ───────────────────────────────────────────────────────── */
+
+.mse-videoteca__page {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(20px, 4vw, 56px) 4rem;
+  display: grid;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.mse-videoteca__filterbar {
+  display: grid;
+  gap: 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-videoteca__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--vt-line);
+  background: #FFFFFF;
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.mse-videoteca__chip:hover {
+  border-color: var(--vt-text-muted);
+}
+
+.mse-videoteca__chip--active {
+  border-color: var(--vt-text-muted);
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.mse-videoteca__chip-count {
+  font-family: var(--vt-mono);
+  font-size: 0.7rem;
+}
+
+.mse-videoteca__row2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mse-videoteca__sort-label {
+  font-size: 0.85rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__select {
+  min-height: 2.4rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--vt-line);
+  background: #FFFFFF;
+  color: inherit;
+  font: inherit;
+}
+
+.mse-videoteca__view-toggle {
+  display: flex;
+}
+
+.mse-videoteca__view-button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--vt-text-muted);
+  border-left-width: 0;
+  background: #FFFFFF;
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-videoteca__view-button:first-child {
+  border-left-width: 1px;
+}
+
+.mse-videoteca__view-button--active {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+}
+
+.mse-videoteca__filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__clear-filters {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--vt-line);
+  background: #FFFFFF;
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* ── Carrossel de destaques ─────────────────────────────────────────────────── */
+/* root (mountCarousel) recebe track + prev + next + dots + status como irmãos
+   diretos — o grid abaixo reposiciona esses irmãos sem precisar de wrapper novo:
+   a trilha ocupa a linha 1 inteira; setas e dots ficam centrados na linha 2. */
 
 .mse-videoteca__carousel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 0;
-  border: 1px solid var(--vt-line);
-  aspect-ratio: 21 / 9;
-  min-height: 14rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto auto 1fr;
+  align-items: center;
+  column-gap: 0.6rem;
+  row-gap: 0.6rem;
 }
 
 .mse-videoteca__carousel-track {
+  grid-column: 1 / -1;
   display: flex;
   width: 100%;
-  height: 100%;
+  min-height: 17rem;
+  border: 1px solid var(--vt-line);
+  overflow: hidden;
   transition: transform 0.5s ease;
 }
 
 .mse-videoteca__slide {
   flex: 0 0 100%;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  padding: 1.5rem;
-  background-color: #006298;
-  background-size: cover;
-  background-position: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  min-height: 17rem;
   color: var(--vt-text);
   text-decoration: none;
 }
 
-.mse-videoteca__slide-info {
+.mse-videoteca__slide-media {
+  background-color: var(--accent, #006298);
+  background-size: cover;
+  background-position: center;
+}
+
+.mse-videoteca__slide-text {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  max-width: 38rem;
-  padding: 1rem;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
   background: #006298;
+  color: #FFFFFF;
 }
 
 .mse-videoteca__slide-eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   font-size: 0.7rem;
-  color: #FDC82F;
   font-weight: 700;
+  color: #FDC82F;
 }
 
 .mse-videoteca__slide-title {
-  font-size: 1.4rem;
+  margin: 0;
+  font-size: clamp(1.3rem, 1.4vw + 1rem, 1.8rem);
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.mse-videoteca__slide-description {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  opacity: 0.9;
 }
 
 .mse-videoteca__slide-sub {
+  font-size: 0.82rem;
+}
+
+.mse-videoteca__slide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.mse-videoteca__slide-watch {
+  padding: 0.6em 1.2em;
+  background: #FDC82F;
+  color: #000000;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.mse-videoteca__slide-list {
+  padding: 0.6em 1.2em;
+  border: 1px solid #FFFFFF;
+  background: transparent;
   color: #FFFFFF;
-  font-size: 0.85rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .mse-videoteca__nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0;
+  grid-row: 2;
+  width: 2.2rem;
+  height: 2rem;
   border: 1px solid var(--vt-line);
-  background: #006298;
-  color: #FFFFFF;
-  font-size: 1.4rem;
+  background: #FFFFFF;
+  color: var(--vt-text-muted);
+  font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
 }
 
+.mse-videoteca__nav:hover {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+}
+
 .mse-videoteca__nav--prev {
-  left: 1rem;
+  grid-column: 2;
 }
 
 .mse-videoteca__nav--next {
-  right: 1rem;
+  grid-column: 4;
 }
 
 .mse-videoteca__carousel-dots {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-row: 2;
+  grid-column: 3;
   display: flex;
+  align-items: center;
   gap: 0.4rem;
 }
 
 .mse-videoteca__dot {
-  width: 0.5rem;
+  width: 2.2rem;
   height: 0.5rem;
-  border-radius: 0;
   border: none;
-  background: #75787B;
+  background: var(--vt-line);
   cursor: pointer;
   padding: 0;
 }
@@ -137,27 +428,61 @@
   background: #FDC82F;
 }
 
-/* Category rows */
+/* ── Trilhas por categoria / continuar assistindo ──────────────────────────── */
+
+.mse-videoteca__rows {
+  display: grid;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.mse-videoteca__row-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
 
 .mse-videoteca__row-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #006298;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__row-header .mse-videoteca__row-title {
+  margin-bottom: 0;
+}
+
+.mse-videoteca__row-mark {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--accent, #006298);
+}
+
+.mse-videoteca__row-count {
+  font-family: var(--vt-mono);
+  font-size: 0.7rem;
+  color: var(--vt-text-muted);
 }
 
 .mse-videoteca__row-track {
   display: flex;
   gap: 1rem;
   overflow-x: auto;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.5rem;
+  scrollbar-color: var(--vt-line) #FFFFFF;
+  scrollbar-width: thin;
 }
 
 .mse-videoteca__card {
-  flex: 0 0 14rem;
+  flex: 0 0 15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
   text-decoration: none;
   color: var(--vt-text);
 }
@@ -165,11 +490,17 @@
 .mse-videoteca__thumb {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 0;
-  background-color: #006298;
+  background-color: var(--accent, #006298);
   background-size: cover;
   background-position: center;
   border: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__card-accent {
+  display: block;
+  height: 4px;
+  margin-top: -0.45rem;
+  background: var(--accent, #006298);
 }
 
 .mse-videoteca__duration {
@@ -179,24 +510,121 @@
   color: #000000;
   background: #FDC82F;
   padding: 0.1rem 0.4rem;
-  border-radius: 0;
   font-size: 0.7rem;
 }
 
 .mse-videoteca__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.15rem;
 }
 
 .mse-videoteca__title {
   font-weight: 600;
   font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .mse-videoteca__sub {
   color: var(--vt-text-muted);
   font-size: 0.75rem;
+}
+
+.mse-videoteca__card-chip {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--vt-text-muted);
+  color: var(--vt-text-muted);
+  font-size: 0.72rem;
+}
+
+/* ── Grade "Todos os vídeos" ────────────────────────────────────────────────── */
+
+.mse-videoteca__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1.25rem 1rem;
+}
+
+.mse-videoteca__grid .mse-videoteca__card {
+  flex: initial;
+}
+
+/* ── Estado vazio (filtro/busca sem resultado) ─────────────────────────────── */
+
+.mse-videoteca__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  border: 1px solid var(--vt-line);
+  text-align: center;
+}
+
+.mse-videoteca__empty-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__empty-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__button {
+  margin-top: 0.5rem;
+  padding: 0.6em 1.2em;
+  border: 1px solid transparent;
+  background: #008542;
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-videoteca__button:hover {
+  background: var(--vt-text-muted);
+}
+
+.mse-videoteca__pagebar-button:focus-visible,
+.mse-videoteca__breadcrumb-link:focus-visible,
+.mse-videoteca__search-input:focus-visible,
+.mse-videoteca__chip:focus-visible,
+.mse-videoteca__view-button:focus-visible,
+.mse-videoteca__clear-filters:focus-visible,
+.mse-videoteca__card:focus-visible,
+.mse-videoteca__slide:focus-visible,
+.mse-videoteca__nav:focus-visible,
+.mse-videoteca__dot:focus-visible,
+.mse-videoteca__button:focus-visible,
+.mse-videoteca__select:focus-visible,
+.mse-videoteca__slide-list:focus-visible {
+  outline: 0.18rem solid var(--vt-text-muted);
+  outline-offset: 0.15rem;
+}
+
+@media (max-width: 47.99rem) {
+  .mse-videoteca__slide {
+    grid-template-columns: 1fr;
+  }
+
+  .mse-videoteca__chips {
+    overflow-x: auto;
+  }
+
+  .mse-videoteca__pagebar-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .mse-videoteca__pagebar-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
