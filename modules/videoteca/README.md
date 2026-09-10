@@ -39,6 +39,10 @@ Current version: `0.4.0`.
   (solid `var(--accent)` used instead) to keep the brand-identity `rgba()` ban intact; the
   prototype itself marks that texture as reference-only.
 
+## Home-page summary panel
+
+Besides the full module above (meant for Videoteca's own page), `mountVideotecaSummary()`/`createVideotecaSummaryView()` render a separate, lean, read-only panel — a few featured (or recent) videos plus a "Ver videoteca completa" link — meant for embedding on the site's main page instead of the full app. It mounts on `data-mse-module="videoteca-summary"` (a different selector, so it never collides with the full `mountVideoteca()`), and `videoteca-loader.js` mounts whichever of the two roots it finds on the page (or both). Unlike the full page's cards, every item here links to Videoteca's own page, never straight to the recording — this panel is a teaser, not a player shortcut. See `TD/webparts/videoteca/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
+
 ## Data structures
 
 The module declares one SharePoint list: `VideotecaVideos`.
@@ -54,4 +58,4 @@ npm test
 Use [`USAGE.md`](USAGE.md) to publish the assets and paste the Modern Script Editor snippet.
 
 Versioning policy: never overwrite a published version folder in place — see
-[`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).
+[`../../../_docs/ARQUITETURA-MSE.md`](../../../_docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).

@@ -355,3 +355,69 @@ export function createRecursosView({ root, service } = {}) {
     root.replaceChildren();
   };
 }
+
+// Lean read-only panel for the Home page: the top link of each category with
+// a link to the full Recursos page. Unlike the full page's shortcuts (which
+// open the resource directly), every item here points at Recursos.aspx —
+// this panel is a teaser, not a shortcut bar. No filters/search/interactivity
+// beyond plain navigation — the full experience lives there (createRecursosView).
+export function createRecursosSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+  if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
+  if (!service || typeof service.listGroupedLinks !== "function") {
+    throw new TypeError("service deve implementar listGroupedLinks().");
+  }
+  if (typeof pageHref !== "string" || !pageHref) {
+    throw new TypeError("pageHref é obrigatório.");
+  }
+
+  const document = root.ownerDocument;
+  let disposed = false;
+
+  function linkCard(link) {
+    const card = element(document, "a", "mse-recursos__summary-item");
+    card.href = pageHref;
+    card.append(
+      element(document, "span", "mse-recursos__summary-sigla", sigla(link)),
+      (() => {
+        const body = element(document, "span", "mse-recursos__summary-body");
+        body.append(
+          element(document, "span", "mse-recursos__summary-name", link.Title),
+          element(document, "span", "mse-recursos__summary-category", link.Categoria || "")
+        );
+        return body;
+      })()
+    );
+    return card;
+  }
+
+  async function render() {
+    const panel = element(document, "section", "mse-recursos__summary");
+    const header = element(document, "div", "mse-recursos__summary-header");
+    header.append(element(document, "h2", "mse-recursos__summary-title", "Recursos"));
+    const seeAll = element(document, "a", "mse-recursos__summary-see-all", "Ver todos os recursos");
+    seeAll.href = pageHref;
+    header.append(seeAll);
+
+    const list = element(document, "div", "mse-recursos__summary-list");
+    panel.append(header, list);
+    root.replaceChildren(panel);
+
+    try {
+      const groups = await service.listGroupedLinks();
+      if (disposed) return;
+      const featured = groups.map((group) => group.links[0]).filter(Boolean).slice(0, limit);
+      list.replaceChildren(...(featured.length
+        ? featured.map(linkCard)
+        : [element(document, "p", "mse-recursos__summary-empty", "Nenhum recurso publicado ainda.")]));
+    } catch (error) {
+      if (disposed) return;
+      list.replaceChildren(element(document, "p", "mse-recursos__summary-empty", errorMessage(error)));
+    }
+  }
+
+  render();
+
+  return () => {
+    disposed = true;
+  };
+}

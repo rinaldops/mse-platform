@@ -26,6 +26,10 @@ Current version: `0.4.0`.
 - The page bar reuses `home.css`'s exact blue gradient recipe (same `radial-gradient` stack) so navigating between Home and Forum feels continuous.
 - Detail/compose/edit views are untouched by this redesign — only the list view (`renderList`) changed. `topicCard()` (used by the detail view's related topics) is kept separate from the new `topicListCard()`.
 
+## Home-page summary panel
+
+Besides the full module above (meant for the forum's own page), `mountForumSummary()`/`createForumSummaryView()` render a separate, lean, read-only panel — a few recent topics plus a "Ver fórum completo" link — meant for embedding on the site's main page instead of the full app. It mounts on `data-mse-module="forum-summary"` (a different selector, so it never collides with the full `mountForum()`), and `forum-loader.js` mounts whichever of the two roots it finds on the page (or both). Every topic link points at the forum's own page, using `?forumTopic=<id>` to deep-link straight to that topic. See `TD/webparts/forum/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
+
 ## Data structures
 
 The module declares seven SharePoint structures:

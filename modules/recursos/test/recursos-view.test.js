@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRecursosView } from "../recursos-view.js";
+import { createRecursosView, createRecursosSummaryView } from "../recursos-view.js";
 
 class FakeClassList {
   constructor() { this.values = new Set(); }
@@ -83,5 +83,24 @@ assert.equal(cards[1].target, undefined);
 
 cleanup();
 assert.equal(root.children.length, 0);
+
+// createRecursosSummaryView: lean Home-page panel — items link at Recursos.aspx
+// (not the resource URL itself), unlike the full page's shortcut cards.
+{
+  const summaryRoot = new FakeElement("div", document);
+  const summaryCleanup = createRecursosSummaryView({
+    root: summaryRoot,
+    service,
+    pageHref: "/sites/tecnologiasdigitais/SitePages/Recursos.aspx"
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const summaryItems = findAll(summaryRoot, (node) => node.className === "mse-recursos__summary-item");
+  assert.equal(summaryItems.length, 1);
+  assert.equal(summaryItems[0].href, "/sites/tecnologiasdigitais/SitePages/Recursos.aspx");
+  const summaryName = findAll(summaryItems[0], (node) => node.className === "mse-recursos__summary-name")[0];
+  assert.equal(summaryName.textContent, "Guia do Power Apps");
+  summaryCleanup();
+}
 
 console.log("recursos-view.test.js: verificações concluídas com sucesso.");
