@@ -3,7 +3,11 @@
 [data-mse-module="forum"][data-mse-module="forum"] {
   --forum-surface: #FFFFFF;
   --forum-surface-2: #FFFFFF;
-  --forum-line: #75787B;
+  /* Every use of --forum-line in this file is a 1px border — kept as a
+     distinct token from --forum-border-soft (same value) since one reads
+     as "the module's line color" and the other as "the soft-border
+     exception", but both must render the same light gray. */
+  --forum-line: #E3E9ED;
   --forum-text: #000000;
   --forum-text-muted: #75787B;
   --forum-accent: #006298;
@@ -1200,7 +1204,7 @@
 [data-mse-module="forum-summary"][data-mse-module="forum-summary"] {
   --fs-text: #000000;
   --fs-muted: #006298;
-  --fs-line: #75787B;
+  --fs-line: #E3E9ED;
   --fs-card: #FFFFFF;
   --fs-hover: #F2F7FA;
 
