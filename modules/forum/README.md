@@ -24,7 +24,43 @@ Current version: `0.4.0`.
 - Route state (`aba/categoria/tag/busca/ordem/mine`) is persisted in the query string — the only one of the three redesigned modules that does this, since the pattern already existed here before the redesign.
 - Search is Title-only, matching the pre-existing `topicFilter()` search scope; the design handoff did not request full-text search.
 - The page bar reuses `home.css`'s exact blue gradient recipe (same `radial-gradient` stack) so navigating between Home and Forum feels continuous.
-- Detail/compose/edit views are untouched by this redesign — only the list view (`renderList`) changed. `topicCard()` (used by the detail view's related topics) is kept separate from the new `topicListCard()`.
+- Compose/edit views are untouched by this redesign — only list (`renderList`) and, later, detail (`renderDetail`, see below) changed. `topicCard()` (used by the detail view's related topics) is kept separate from the new `topicListCard()`.
+
+## Layout particulars (topic detail view)
+
+A later pass reworked `renderDetail()` after live review flagged that colored
+buttons and blue author names were winning the reader's attention over the
+actual question/answer text — see `ARQUITETURA-MSE.md` §18.9 for the full
+sequence of corrections (and the two dead ends kept as documented lessons).
+What shipped:
+
+- **Reading order**: heading → body text → one compact row of icon-only
+  actions (reactions, permalink, mark-solution, edit, archive) → author ·
+  date, right-aligned in that same row as the least important fact. No
+  standalone meta line above the body anymore.
+- **Icons, not text buttons**: small inline SVGs (`icon()`/`ICON_PATHS` in
+  `forum-view.js`) — heart/check/star for reactions (Gostei/Útil/Excelente),
+  link/check-square/pencil/archive-box for actions. Deliberately not emoji
+  characters (inconsistent, full-color rendering across platforms would
+  undo the "quiet" goal) and not `.mse-forum__button` (too large/saturated
+  for a repeated per-item row — that class stays for real page-level CTAs
+  like "Publicar tópico").
+- **Color rule for reactions**: the icon itself always carries a fixed hue
+  (gostei→`--forum-accent`, útil→`--forum-verde`, excelente→`--forum-danger`,
+  heart/star rendered as solid fills for an "emoji-like" look) regardless of
+  count. The surrounding button never goes past a light gray fill
+  (`--forum-surface-soft`) once it has a reaction or is the reader's own —
+  a full saturated background was tried first and reverted, see §18.9.
+  Functional icons (edit/archive/link/mark-solution) stay neutral gray
+  always; only reactions get permanent color.
+- **The topic page shares `.mse-forum__pagebar`/`.mse-forum__page` with the
+  list page** instead of a bespoke lighter header, so a reader landing
+  straight on a topic link still sees the same blue "Hub TD / Fórum / …"
+  banner. The third breadcrumb segment (topic title, truncated) is the one
+  piece the list page's two-segment crumb doesn't need.
+- Section order below the answers: the reply form ("Responder") comes
+  before "Tópicos relacionados" — everything about the current topic first,
+  a pointer elsewhere last.
 
 ## Home-page summary panel
 
