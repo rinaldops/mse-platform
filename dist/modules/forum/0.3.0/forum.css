@@ -300,6 +300,14 @@
   margin-top: 0.75rem;
 }
 
+/* .mse-forum__answer already insets its content by its own 1rem padding;
+   the topic has no such card wrapper, so its meta would otherwise sit 1rem
+   further right than every answer's — this closes that gap without adding
+   a border/card look to the topic itself. */
+.mse-forum__topic-actions {
+  padding-right: 1rem;
+}
+
 .mse-forum__answer-form {
   display: grid;
   gap: 0.75rem;
