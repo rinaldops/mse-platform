@@ -247,6 +247,19 @@
   margin-top: 0.75rem;
 }
 
+.mse-forum__answer-actions .mse-forum__button,
+.mse-forum__answer-actions .mse-forum__back {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.mse-forum__answer-actions .mse-forum__button--danger {
+  color: var(--forum-danger);
+  background: transparent;
+  border-color: var(--forum-danger);
+}
+
 .mse-forum__answer-form {
   display: grid;
 }
