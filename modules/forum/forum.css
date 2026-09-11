@@ -32,12 +32,13 @@
   padding: 2rem clamp(1rem, 4vw, 2.5rem);
 }
 
-/* List view (Fórum.aspx) replaces the Hero with a compact full-bleed page bar,
-   so it opts out of the shared .mse-forum content padding/max-width — its own
-   .mse-forum__pagebar and .mse-forum__page manage width and padding per section
-   (README "Barra de página"). Detail/compose views are out of this redesign's
-   scope and keep the base .mse-forum box above untouched. */
-.mse-forum.mse-forum--list {
+/* List and detail views both open with the same full-bleed .mse-forum__pagebar
+   (so a reader always sees which section they're in), so both opt out of the
+   shared .mse-forum content padding/max-width — .mse-forum__pagebar and
+   .mse-forum__page manage width and padding per section instead (README
+   "Barra de página"). Compose is the one view still on the plain box above. */
+.mse-forum.mse-forum--list,
+.mse-forum.mse-forum--detail {
   display: block;
   gap: 0;
   max-width: none;
@@ -85,46 +86,6 @@
 .mse-forum__back {
   color: var(--forum-accent);
   text-decoration: none;
-}
-
-/* Signals "you're inside Fórum" on the topic page — quiet by design (small,
-   muted, uppercase like RESPOSTAS/RESPONDER) since the reading page stays
-   text-first; the full colored .mse-forum__pagebar hero belongs to the list
-   page only (see the comment on .mse-forum.mse-forum--list above). */
-.mse-forum__detail-breadcrumb {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.mse-forum__detail-breadcrumb-link {
-  color: var(--forum-text-muted);
-  text-decoration: none;
-}
-
-.mse-forum__detail-breadcrumb-link:hover {
-  color: var(--forum-accent);
-  text-decoration: underline;
-}
-
-.mse-forum__detail-breadcrumb-sep {
-  color: var(--forum-line);
-  font-weight: 400;
-}
-
-.mse-forum__detail-breadcrumb-current {
-  min-width: 0;
-  max-width: 40ch;
-  overflow: hidden;
-  color: var(--forum-text-muted);
-  font-weight: 400;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .mse-forum__tabs {
@@ -764,6 +725,22 @@
   font-family: var(--forum-mono);
   font-size: 0.72rem;
   opacity: 0.55;
+}
+
+/* Detail page's third breadcrumb segment (the topic title) — same look as
+   a crumb link minus the hover, and bounded so a long title still fits
+   the bar instead of overflowing it. */
+.mse-forum__breadcrumb-current {
+  overflow: hidden;
+  max-width: 40ch;
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mse-forum__pagebar-title {

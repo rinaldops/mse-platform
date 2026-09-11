@@ -906,30 +906,32 @@ export function createForumView({
   async function renderDetail(route, sequence) {
     const shell = element(document, "article", "mse-forum mse-forum--detail");
 
-    // "Hub TD / Fórum" is available immediately; the third segment (topic
-    // title) is appended once the topic loads, so the trail never disappears
-    // mid-load — unlike the old bare "← Voltar aos tópicos" link, it also
-    // signals which site section the reader is in, not just how to leave it.
-    const breadcrumb = element(document, "nav", "mse-forum__detail-breadcrumb");
+    // Same blue .mse-forum__pagebar as the list page, so a reader landing
+    // straight on a topic link still sees they're inside Fórum. "Hub TD /
+    // Fórum" is available immediately; the third segment (topic title) is
+    // appended once the topic loads, so the trail never disappears mid-load.
+    const bar = element(document, "header", "mse-forum__pagebar");
+    const barInner = element(document, "div", "mse-forum__pagebar-inner");
+    const breadcrumb = element(document, "nav", "mse-forum__breadcrumb");
     breadcrumb.setAttribute("aria-label", "Caminho");
-    const home = element(document, "a", "mse-forum__detail-breadcrumb-link", "Hub TD");
+    const home = element(document, "a", "mse-forum__breadcrumb-link", "Hub TD");
     home.href = "#inicio";
-    const forumLink = element(document, "a", "mse-forum__detail-breadcrumb-link", "Fórum");
+    const forumLink = element(document, "a", "mse-forum__breadcrumb-link", "Fórum");
     forumLink.href = forumRouteUrl(currentHref(), { topicId: null, answerId: null });
     forumLink.addEventListener("click", (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       navigate({ topicId: null, answerId: null });
     });
-    breadcrumb.append(
-      home,
-      element(document, "span", "mse-forum__detail-breadcrumb-sep", "/"),
-      forumLink
-    );
+    const sep = element(document, "span", "mse-forum__breadcrumb-sep", "/");
+    sep.setAttribute("aria-hidden", "true");
+    breadcrumb.append(home, sep, forumLink);
+    barInner.append(breadcrumb);
+    bar.append(barInner);
 
-    const content = element(document, "div", "mse-forum__content");
+    const content = element(document, "div", "mse-forum__content mse-forum__page");
     content.append(status("Carregando discussão…"));
-    shell.append(breadcrumb, content);
+    shell.append(bar, content);
     root.replaceChildren(shell);
 
     try {
@@ -981,9 +983,11 @@ export function createForumView({
         return bar;
       }
 
+      const currentSep = element(document, "span", "mse-forum__breadcrumb-sep", "/");
+      currentSep.setAttribute("aria-hidden", "true");
       breadcrumb.append(
-        element(document, "span", "mse-forum__detail-breadcrumb-sep", "/"),
-        element(document, "span", "mse-forum__detail-breadcrumb-current", topic.Title || "Tópico sem título")
+        currentSep,
+        element(document, "span", "mse-forum__breadcrumb-current", topic.Title || "Tópico sem título")
       );
       const heading = element(document, "h2", "mse-forum__title", topic.Title || "Tópico sem título");
       const body = publicationBody(topic.Conteudo, topic.FormatoConteudo);
@@ -1224,8 +1228,8 @@ export function createForumView({
         answersHeading,
         answers,
         ...(loadMoreAnswers ? [loadMoreAnswers] : []),
-        related,
-        ...(topic.Status === "Arquivado" || topic.Status === "Fechado" ? [] : [reply])
+        ...(topic.Status === "Arquivado" || topic.Status === "Fechado" ? [] : [reply]),
+        related
       );
       const highlighted = route.answerId ? document.getElementById(`forumResposta-${route.answerId}`) : null;
       if (highlighted) {
