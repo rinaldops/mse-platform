@@ -81,6 +81,40 @@ function formattedDate(value) {
   }).format(date);
 }
 
+// Small monochrome icons (currentColor, no fill) for the action row — plain
+// glyphs like the rest of the module's icons (⌕, ✕, ↗), just as inline SVG
+// since these shapes have no safe single-character Unicode equivalent.
+const ICON_PATHS = {
+  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  link: '<path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/>',
+  checkSquare: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  archive: '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>'
+};
+
+function icon(document, name) {
+  const span = element(document, "span", "mse-forum__icon");
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name]}</svg>`;
+  return span;
+}
+
+// Icon-only action (edit/archive/mark solution/permalink): the visible label
+// moves entirely to title/aria-label so the row stays compact single-line.
+function iconButton(document, tag, className, iconName, label) {
+  const node = element(document, tag, className);
+  node.append(icon(document, iconName));
+  setIconButtonLabel(node, label);
+  return node;
+}
+
+function setIconButtonLabel(node, label) {
+  node.title = label;
+  node.setAttribute("aria-label", label);
+}
+
 function errorMessage(error) {
   if (error?.code === "access-denied") return "Você não possui acesso aos dados deste fórum.";
   if (error?.code === "not-found") return "Uma estrutura necessária do fórum não foi encontrada.";
@@ -906,9 +940,13 @@ export function createForumView({
 
       function reactionBar(publicationType, publicationId, summary = {}) {
         const bar = element(document, "div", "mse-forum__reactions");
-        for (const [reactionType, label] of [["Gostei", "Gostei"], ["Util", "Útil"], ["Excelente", "Excelente"]]) {
-          const button = element(document, "button", "mse-forum__reaction", `${label} ${summary[reactionType] ?? 0}`);
+        for (const [reactionType, label, iconName] of [["Gostei", "Gostei", "heart"], ["Util", "Útil", "check"], ["Excelente", "Excelente", "star"]]) {
+          const count = summary[reactionType] ?? 0;
+          const button = element(document, "button", "mse-forum__reaction");
           button.type = "button";
+          button.append(icon(document, iconName), element(document, "span", "mse-forum__reaction-count", String(count)));
+          button.title = `${label} (${count})`;
+          button.setAttribute("aria-label", `${label} (${count})`);
           button.setAttribute("aria-pressed", summary.mine?.includes(reactionType) ? "true" : "false");
           if (summary.mine?.includes(reactionType)) button.classList.add("mse-forum__reaction--active");
           button.addEventListener("click", async () => {
@@ -928,41 +966,41 @@ export function createForumView({
       }
 
       const heading = element(document, "h2", "mse-forum__title", topic.Title || "Tópico sem título");
-      const meta = element(
-        document,
-        "p",
-        "mse-forum__meta",
-        `${topic.Author?.Title || "Autor não informado"} · ${formattedDate(topic.Created)}`
-      );
       const body = publicationBody(topic.Conteudo, topic.FormatoConteudo);
       const topicActions = element(document, "div", "mse-forum__topic-actions");
       topicActions.append(reactionBar("Topico", topic.Id, reactionSummary[`Topico:${topic.Id}`]));
       if (topic.canEdit) {
-        const edit = element(document, "a", "mse-forum__button", "Editar tópico");
+        const edit = iconButton(document, "a", "mse-forum__icon-button", "edit", "Editar tópico");
         edit.href = forumRouteUrl(currentHref(), { edit: true });
         edit.addEventListener("click", (event) => {
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
           event.preventDefault();
           navigate({ edit: true });
         });
-        const archive = element(document, "button", "mse-forum__button mse-forum__button--danger", "Arquivar tópico");
+        const archive = iconButton(document, "button", "mse-forum__icon-button mse-forum__icon-button--danger", "archive", "Arquivar tópico");
         archive.type = "button";
         archive.addEventListener("click", async () => {
           if (!windowImpl?.confirm?.("Arquivar este tópico? Ele deixará de aparecer nas listagens.")) return;
           archive.disabled = true;
-          archive.textContent = "Arquivando…";
+          setIconButtonLabel(archive, "Arquivando…");
           try {
             await service.archiveTopic(topic.Id);
             if (disposed || sequence !== renderSequence) return;
             await navigate({ topicId: null, edit: null });
           } catch (error) {
             archive.disabled = false;
-            archive.textContent = "Tentar arquivar novamente";
+            setIconButtonLabel(archive, "Tentar arquivar novamente");
             content.append(status(errorMessage(error), "alert"));
           }
         });
         topicActions.append(edit, archive);
       }
+      topicActions.append(element(
+        document,
+        "span",
+        "mse-forum__meta",
+        `${topic.Author?.Title || "Autor não informado"} · ${formattedDate(topic.Created)}`
+      ));
       const answersHeading = element(document, "h3", "mse-forum__answers-title", "Respostas");
       const answers = element(document, "div", "mse-forum__answers");
       let nextAnswers = answerPage.next;
@@ -989,11 +1027,11 @@ export function createForumView({
           article.classList.add("mse-forum__answer--highlight");
           article.tabIndex = -1;
         }
-        const metaLine = element(document, "p", "mse-forum__meta", `${answer.Author?.Title || "Autor não informado"} · ${formattedDate(answer.Created)}`);
+        const metaLine = element(document, "span", "mse-forum__meta", `${answer.Author?.Title || "Autor não informado"} · ${formattedDate(answer.Created)}`);
         const answerActions = element(document, "div", "mse-forum__answer-actions");
         if (accepted) answerActions.append(element(document, "span", "mse-forum__badge mse-forum__badge--accepted", "Solução aceita"));
         answerActions.append(reactionBar("Resposta", answer.Id, reactionSummary[`Resposta:${answer.Id}`]));
-        const answerLink = element(document, "a", "mse-forum__answer-permalink", "Link da resposta");
+        const answerLink = iconButton(document, "a", "mse-forum__icon-button", "link", "Link da resposta");
         answerLink.href = forumRouteUrl(currentHref(), { answerId: answer.Id });
         answerLink.addEventListener("click", (event) => {
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -1002,11 +1040,13 @@ export function createForumView({
         });
         answerActions.append(answerLink);
         if (topic.canEdit) {
-          const solution = element(
+          const solutionLabel = accepted ? "Remover solução" : "Marcar solução";
+          const solution = iconButton(
             document,
             "button",
-            "mse-forum__button mse-forum__button--secondary",
-            accepted ? "Remover solução" : "Marcar solução"
+            `mse-forum__icon-button${accepted ? " mse-forum__icon-button--active" : ""}`,
+            "checkSquare",
+            solutionLabel
           );
           solution.type = "button";
           solution.addEventListener("click", async () => {
@@ -1024,9 +1064,9 @@ export function createForumView({
           answerActions.append(solution);
         }
         if (answer.canEdit) {
-          const editAnswer = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Editar resposta");
+          const editAnswer = iconButton(document, "button", "mse-forum__icon-button", "edit", "Editar resposta");
           editAnswer.type = "button";
-          const archiveAnswer = element(document, "button", "mse-forum__button mse-forum__button--danger", "Arquivar resposta");
+          const archiveAnswer = iconButton(document, "button", "mse-forum__icon-button mse-forum__icon-button--danger", "archive", "Arquivar resposta");
           archiveAnswer.type = "button";
           editAnswer.addEventListener("click", async () => {
             editAnswer.disabled = true;
@@ -1063,7 +1103,7 @@ export function createForumView({
                   feedback.replaceChildren(status(errorMessage(error), "alert"));
                 }
               });
-              article.replaceChildren(metaLine, form);
+              article.replaceChildren(form);
               editor.focus();
             } catch (error) {
               editAnswer.disabled = false;
@@ -1073,20 +1113,21 @@ export function createForumView({
           archiveAnswer.addEventListener("click", async () => {
             if (!windowImpl?.confirm?.("Arquivar esta resposta?")) return;
             archiveAnswer.disabled = true;
-            archiveAnswer.textContent = "Arquivando…";
+            setIconButtonLabel(archiveAnswer, "Arquivando…");
             try {
               await service.archiveAnswer(answer.Id);
               if (disposed || sequence !== renderSequence) return;
               await navigate({ answerId: null });
             } catch (error) {
               archiveAnswer.disabled = false;
-              archiveAnswer.textContent = "Tentar arquivar novamente";
+              setIconButtonLabel(archiveAnswer, "Tentar arquivar novamente");
               article.append(status(errorMessage(error), "alert"));
             }
           });
           answerActions.append(editAnswer, archiveAnswer);
         }
-        article.append(metaLine, publicationBody(answer.Conteudo || "", answer.FormatoConteudo), answerActions);
+        answerActions.append(metaLine);
+        article.append(publicationBody(answer.Conteudo || "", answer.FormatoConteudo), answerActions);
         answers.append(article);
       };
 
@@ -1159,7 +1200,6 @@ export function createForumView({
 
       content.replaceChildren(
         heading,
-        meta,
         body,
         topicActions,
         answersHeading,

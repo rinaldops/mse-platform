@@ -126,7 +126,7 @@
 .mse-forum__tag-chip:focus-visible,
 .mse-forum__unanswered-button:focus-visible,
 .mse-forum__clear-filters:focus-visible,
-.mse-forum__answer-permalink:focus-visible,
+.mse-forum__icon-button:focus-visible,
 .mse-forum__topic-card-title:focus-visible {
   outline: 0.18rem solid var(--forum-accent);
   outline-offset: 0.15rem;
@@ -233,69 +233,77 @@
   color: #000000;
 }
 
-.mse-forum__topic-actions {
+.mse-forum__topic-actions,
+.mse-forum__answer-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
-.mse-forum__topic-actions .mse-forum__button {
-  min-height: 2rem;
-  padding: 0.25rem 0.65rem;
-  color: var(--forum-verde);
-  background: transparent;
-  border-color: var(--forum-verde);
-  font-size: 0.85rem;
-}
-
-.mse-forum__topic-actions .mse-forum__button--danger {
-  color: var(--forum-danger);
-  background: transparent;
-  border-color: var(--forum-danger);
-}
-
-.mse-forum__answer-actions,
-.mse-forum__answer-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.mse-forum__answer-actions {
   margin-top: 0.75rem;
-}
-
-.mse-forum__answer-actions .mse-forum__button,
-.mse-forum__answer-permalink {
-  min-height: 2rem;
-  padding: 0.25rem 0.65rem;
-  font-size: 0.85rem;
-}
-
-.mse-forum__answer-actions .mse-forum__button--secondary {
-  margin-top: 0;
-}
-
-.mse-forum__answer-actions .mse-forum__button--danger {
-  color: var(--forum-danger);
-  background: transparent;
-  border-color: var(--forum-danger);
-}
-
-.mse-forum__answer-permalink {
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid var(--forum-line);
-  border-radius: 0;
-  color: var(--forum-text-muted);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.mse-forum__answer-permalink:hover {
-  border-color: var(--forum-accent);
 }
 
 .mse-forum__answer-form {
   display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Icon-only action row: reactions, permalink, edit/archive/mark-solution all
+   read as quiet metadata so the question/answer text above stays the loudest
+   thing on the page. The author · date meta line joins the same row, last —
+   the least important fact, not the first thing the eye meets. */
+.mse-forum__icon {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+}
+
+.mse-forum__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mse-forum__icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  color: var(--forum-text-muted);
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-forum__icon-button:hover {
+  border-color: var(--forum-accent);
+  color: var(--forum-accent);
+}
+
+.mse-forum__icon-button--danger:hover {
+  border-color: var(--forum-danger);
+  color: var(--forum-danger);
+}
+
+.mse-forum__icon-button--active {
+  border-color: var(--forum-verde);
+  color: var(--forum-verde);
+}
+
+.mse-forum__icon-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.mse-forum__topic-actions .mse-forum__meta,
+.mse-forum__answer-actions .mse-forum__meta {
+  margin-left: auto;
 }
 
 .mse-forum__related {
@@ -472,6 +480,9 @@
 }
 
 .mse-forum__reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   min-height: 2rem;
   padding: 0.25rem 0.55rem;
   border: 1px solid var(--forum-line);
@@ -481,6 +492,10 @@
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+.mse-forum__reaction-count {
+  font-size: 0.8rem;
 }
 
 .mse-forum__reaction--active {
