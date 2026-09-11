@@ -993,7 +993,7 @@ export function createForumView({
         const answerActions = element(document, "div", "mse-forum__answer-actions");
         if (accepted) answerActions.append(element(document, "span", "mse-forum__badge mse-forum__badge--accepted", "Solução aceita"));
         answerActions.append(reactionBar("Resposta", answer.Id, reactionSummary[`Resposta:${answer.Id}`]));
-        const answerLink = element(document, "a", "mse-forum__back", "Link da resposta");
+        const answerLink = element(document, "a", "mse-forum__answer-permalink", "Link da resposta");
         answerLink.href = forumRouteUrl(currentHref(), { answerId: answer.Id });
         answerLink.addEventListener("click", (event) => {
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

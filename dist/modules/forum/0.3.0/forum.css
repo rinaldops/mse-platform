@@ -126,6 +126,7 @@
 .mse-forum__tag-chip:focus-visible,
 .mse-forum__unanswered-button:focus-visible,
 .mse-forum__clear-filters:focus-visible,
+.mse-forum__answer-permalink:focus-visible,
 .mse-forum__topic-card-title:focus-visible {
   outline: 0.18rem solid var(--forum-accent);
   outline-offset: 0.15rem;
@@ -248,16 +249,34 @@
 }
 
 .mse-forum__answer-actions .mse-forum__button,
-.mse-forum__answer-actions .mse-forum__back {
+.mse-forum__answer-permalink {
   min-height: 2rem;
   padding: 0.25rem 0.65rem;
   font-size: 0.85rem;
+}
+
+.mse-forum__answer-actions .mse-forum__button--secondary {
+  margin-top: 0;
 }
 
 .mse-forum__answer-actions .mse-forum__button--danger {
   color: var(--forum-danger);
   background: transparent;
   border-color: var(--forum-danger);
+}
+
+.mse-forum__answer-permalink {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  color: var(--forum-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mse-forum__answer-permalink:hover {
+  border-color: var(--forum-accent);
 }
 
 .mse-forum__answer-form {
