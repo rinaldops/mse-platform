@@ -10,6 +10,11 @@
   --forum-verde: #008542;
   --forum-danger: #ED8B00;
   --forum-amarelo: #FDC82F;
+  /* Documented local exceptions (IDENTIDADE-PETROBRAS.md secao 4): light
+     tints of azul-escuro/cinza for hover/active surfaces and 1px borders on
+     inactive items — never a predominant background. */
+  --forum-border-soft: #E3E9ED;
+  --forum-surface-soft: #F2F7FA;
   --forum-mono: ui-monospace, Consolas, monospace;
 
   background: #FFFFFF;
@@ -322,7 +327,7 @@
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid var(--forum-line);
+  border: 1px solid var(--forum-border-soft);
   border-radius: 0;
   color: var(--forum-text-muted);
   background: transparent;
@@ -341,8 +346,7 @@
 }
 
 .mse-forum__icon-button--active {
-  border-color: var(--forum-verde);
-  color: var(--forum-verde);
+  background: var(--forum-surface-soft);
 }
 
 .mse-forum__icon-button:disabled {
@@ -516,12 +520,6 @@
   text-decoration: none;
 }
 
-.mse-forum__badge--accepted {
-  color: var(--forum-verde);
-  background: #FFFFFF;
-  border: 1px solid var(--forum-verde);
-}
-
 .mse-forum__reactions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -534,10 +532,10 @@
   gap: 0.3rem;
   min-height: 2rem;
   padding: 0.25rem 0.55rem;
-  border: 1px solid var(--forum-line);
+  border: 1px solid var(--forum-border-soft);
   border-radius: 0;
   color: var(--forum-text-muted);
-  background: var(--forum-surface);
+  background: transparent;
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -547,39 +545,27 @@
   font-size: 0.8rem;
 }
 
-/* Filled per reaction type when it's yours — laranja (excelente) needs black
-   text per IDENTIDADE-PETROBRAS.md §5 (white-on-laranja is a banned combo). */
-.mse-forum__reaction--gostei.mse-forum__reaction--active {
-  border-color: var(--forum-accent);
-  color: #FFFFFF;
-  background: var(--forum-accent);
+/* The icon carries the color, always, like a little emoji — heart/check/star
+   keep their identity whether or not anyone has reacted yet. The block
+   around it is what changes: no fill at zero (as before), a light gray fill
+   once it has a reaction — never a full saturated background, "selected"
+   tops out at the same light gray as merely "has a count" (per feedback:
+   solid color blocks pull too much attention). */
+.mse-forum__reaction--gostei .mse-forum__icon {
+  color: var(--forum-danger);
 }
 
-.mse-forum__reaction--util.mse-forum__reaction--active {
-  border-color: var(--forum-verde);
-  color: #FFFFFF;
-  background: var(--forum-verde);
-}
-
-.mse-forum__reaction--excelente.mse-forum__reaction--active {
-  border-color: var(--forum-danger);
-  color: #000000;
-  background: var(--forum-danger);
-}
-
-/* A count above zero tints just the icon — the layout stays as quiet outline
-   buttons; only :not(--active) so a reaction the reader made themselves keeps
-   the stronger filled treatment above instead of a conflicting icon tint. */
-.mse-forum__reaction--gostei.mse-forum__reaction--counted:not(.mse-forum__reaction--active) .mse-forum__icon {
-  color: var(--forum-accent);
-}
-
-.mse-forum__reaction--util.mse-forum__reaction--counted:not(.mse-forum__reaction--active) .mse-forum__icon {
+.mse-forum__reaction--util .mse-forum__icon {
   color: var(--forum-verde);
 }
 
-.mse-forum__reaction--excelente.mse-forum__reaction--counted:not(.mse-forum__reaction--active) .mse-forum__icon {
-  color: var(--forum-danger);
+.mse-forum__reaction--excelente .mse-forum__icon {
+  color: var(--forum-amarelo);
+}
+
+.mse-forum__reaction--counted,
+.mse-forum__reaction--active {
+  background: var(--forum-surface-soft);
 }
 
 .mse-forum__metrics {
