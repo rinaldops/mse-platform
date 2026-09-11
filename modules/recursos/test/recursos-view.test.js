@@ -84,22 +84,42 @@ assert.equal(cards[1].target, undefined);
 cleanup();
 assert.equal(root.children.length, 0);
 
-// createRecursosSummaryView: lean Home-page panel — items link at Recursos.aspx
-// (not the resource URL itself), unlike the full page's shortcut cards.
+// createRecursosSummaryView: Home-page panel — items link at Recursos.aspx
+// (not the resource URL itself), category chips filter, one CTA button.
 {
   const summaryRoot = new FakeElement("div", document);
+  const summaryService = {
+    async listGroupedLinks() {
+      return [
+        { category: "Power Platform", links: [
+          { Id: 1, Title: "Guia do Power Apps", URL: "https://make.powerapps.com/guia", Categoria: "Power Platform" },
+          { Id: 2, Title: "Fórmulas", URL: "https://learn.microsoft.com/x", Categoria: "Power Platform" }
+        ] },
+        { category: "Microsoft 365", links: [
+          { Id: 3, Title: "Central do Teams", URL: "https://support.microsoft.com/teams", Categoria: "Microsoft 365" }
+        ] }
+      ];
+    }
+  };
   const summaryCleanup = createRecursosSummaryView({
     root: summaryRoot,
-    service,
+    service: summaryService,
     pageHref: "/sites/tecnologiasdigitais/SitePages/Recursos.aspx"
   });
   await new Promise((resolve) => setImmediate(resolve));
 
   const summaryItems = findAll(summaryRoot, (node) => node.className === "mse-recursos__summary-item");
-  assert.equal(summaryItems.length, 1);
+  assert.equal(summaryItems.length, 2, "Mais usados = primeiro link de cada categoria");
   assert.equal(summaryItems[0].href, "/sites/tecnologiasdigitais/SitePages/Recursos.aspx");
-  const summaryName = findAll(summaryItems[0], (node) => node.className === "mse-recursos__summary-name")[0];
-  assert.equal(summaryName.textContent, "Guia do Power Apps");
+  assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-name")[0].textContent, "Guia do Power Apps");
+  assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-host")[0].textContent, "make.powerapps.com");
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].href, "/sites/tecnologiasdigitais/SitePages/Recursos.aspx");
+
+  const chips = findAll(summaryRoot, (n) => n.className?.startsWith?.("mse-recursos__summary-chip-btn"));
+  assert.deepEqual(chips.map((c) => c.textContent), ["Mais usados", "Power Platform", "Microsoft 365"]);
+  chips.find((c) => c.textContent === "Power Platform").listeners.get("click")();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-item").length, 2, "categoria Power Platform tem 2 links");
   summaryCleanup();
 }
 

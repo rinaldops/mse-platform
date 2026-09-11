@@ -28,7 +28,7 @@ Current version: `0.4.0`.
 
 ## Home-page summary panel
 
-Besides the full module above (meant for the forum's own page), `mountForumSummary()`/`createForumSummaryView()` render a separate, lean, read-only panel — a few recent topics plus a "Ver fórum completo" link — meant for embedding on the site's main page instead of the full app. It mounts on `data-mse-module="forum-summary"` (a different selector, so it never collides with the full `mountForum()`), and `forum-loader.js` mounts whichever of the two roots it finds on the page (or both). Every topic link points at the forum's own page, using `?forumTopic=<id>` to deep-link straight to that topic. See `TD/webparts/forum/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
+Besides the full module above (meant for the forum's own page), `mountForumSummary()`/`createForumSummaryView()` render a separate read-only panel for the site's main page: a two-column preview of recent topics with a ~2-line excerpt, category-chip filtering (client-side over one fetch), and a single button through to the full forum. It mounts on `data-mse-module="forum-summary"` (a different selector, so it never collides with the full `mountForum()`), and `forum-loader.js` mounts whichever of the two roots it finds on the page (or both). Every topic link points at the forum's own page, using `?forumTopic=<id>` to deep-link straight to that topic. The panel paints no background of its own — it blends into the SharePoint section colour and flips to a light palette on a dark section (`.mse-app--ambient-dark`, set by core). See `TD/webparts/forum/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
 
 ## Data structures
 

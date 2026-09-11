@@ -165,7 +165,7 @@ export function createForumView({
     if (format === "HtmlSeguroV1" && renderRichText) {
       node.classList.add("mse-forum__body--rich");
       renderRichText(node, value || "");
-    } else node.textContent = value || "Sem conteúdo.";
+    } else node.textContent = plainTextFromNote(value) || "Sem conteúdo.";
     return node;
   }
 
@@ -1197,10 +1197,36 @@ export function createForumView({
   };
 }
 
-// Lean read-only panel for the Home page: a handful of recent topics with a
-// link to the full Forum page. No routing, filters or interactivity beyond
-// plain navigation — the full experience lives on Forum.aspx (createForumView).
-export function createForumSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+// SharePoint's Note field wraps even plain text in <div class="ExternalClass…">
+// (and HtmlSeguroV1 carries real markup) — strip tags unconditionally,
+// turning line/paragraph breaks into "\n" first so multi-line content
+// survives, then decode the handful of entities that survive.
+function plainTextFromNote(value) {
+  let text = String(value || "");
+  if (!text) return "";
+  text = text.replace(/<(?:br|\/p|\/div)\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&#(\d+);/g, (_, n) => { try { return String.fromCodePoint(Number(n)); } catch { return " "; } })
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => { try { return String.fromCodePoint(parseInt(h, 16)); } catch { return " "; } })
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&quot;/gi, '"')
+    .replace(/&(?:#39|apos);/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&");
+  return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+// A preview, never rendered: same stripping, collapsed to a single line.
+function summaryExcerpt(value) {
+  return plainTextFromNote(value).replace(/\s+/g, " ").trim();
+}
+
+// Read-only Home-page panel: a two-column preview of recent topics with a
+// two-line excerpt and category chips to narrow the view, plus one button
+// through to the full Forum page. Filtering is client-side over a single
+// fetch — the real experience lives on Forum.aspx (createForumView).
+export function createForumSummaryView({ root, service, pageHref, limit = 6, fetchSize = 14 } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
   if (!service || typeof service.listTopics !== "function") {
     throw new TypeError("service deve implementar listTopics().");
@@ -1211,6 +1237,8 @@ export function createForumSummaryView({ root, service, pageHref, limit = 4 } = 
 
   const document = root.ownerDocument;
   let disposed = false;
+  let allTopics = [];
+  let activeCategory = null;
 
   function topicHref(topicId) {
     const url = new URL(pageHref, globalThis.location?.origin ?? "http://localhost");
@@ -1218,40 +1246,105 @@ export function createForumSummaryView({ root, service, pageHref, limit = 4 } = 
     return `${url.pathname}${url.search}`;
   }
 
-  function topicRow(topic) {
-    const row = element(document, "a", "mse-forum__summary-item");
-    row.href = topicHref(topic.Id);
-    row.append(element(document, "span", "mse-forum__summary-item-title", topic.Title));
-    const meta = element(document, "span", "mse-forum__summary-item-meta");
-    const category = element(document, "span", "mse-forum__summary-chip", topic.category?.Nome || "Geral");
-    category.style.setProperty("--accent", topic.category?.Cor || "#006298");
-    const count = topic.QuantidadeRespostas ?? 0;
-    meta.append(category, element(document, "span", null, `${count} resposta${count === 1 ? "" : "s"}`));
-    row.append(meta);
+  function categoriesFromTopics() {
+    const seen = new Map();
+    for (const topic of allTopics) {
+      const id = topic.category?.Id;
+      if (id && !seen.has(id)) {
+        seen.set(id, { id, name: topic.category.Nome || topic.category.Title || "Categoria", color: topic.category.Cor || "#006298" });
+      }
+    }
+    return [...seen.values()];
+  }
+
+  function visibleTopics() {
+    const filtered = activeCategory === null
+      ? allTopics
+      : allTopics.filter((topic) => topic.category?.Id === activeCategory);
+    return filtered.slice(0, limit);
+  }
+
+  function chipRow() {
+    const categories = categoriesFromTopics();
+    if (categories.length < 2) return null;
+    const row = element(document, "div", "mse-forum__summary-chips");
+    row.setAttribute("role", "group");
+    row.setAttribute("aria-label", "Filtrar por categoria");
+
+    const make = (label, value, color) => {
+      const chip = element(document, "button", "mse-forum__summary-chip-btn", label);
+      chip.type = "button";
+      const on = activeCategory === value;
+      chip.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) chip.classList.add("mse-forum__summary-chip-btn--on");
+      if (color) chip.style.setProperty("--accent", color);
+      chip.addEventListener("click", () => {
+        if (disposed || activeCategory === value) return;
+        activeCategory = value;
+        renderShell();
+      });
+      return chip;
+    };
+
+    row.append(make("Todas", null, "#006298"));
+    for (const category of categories) row.append(make(category.name, category.id, category.color));
     return row;
   }
 
-  async function render() {
+  function topicCard(topic) {
+    const card = element(document, "a", "mse-forum__summary-card");
+    card.href = topicHref(topic.Id);
+    card.style.setProperty("--accent", topic.category?.Cor || "#006298");
+
+    card.append(element(document, "span", "mse-forum__summary-card-title", topic.Title || "Tópico sem título"));
+
+    const excerpt = summaryExcerpt(topic.Conteudo);
+    if (excerpt) card.append(element(document, "span", "mse-forum__summary-card-excerpt", excerpt));
+
+    const meta = element(document, "span", "mse-forum__summary-card-meta");
+    const tag = element(document, "span", "mse-forum__summary-card-tag", topic.category?.Nome || topic.category?.Title || "Geral");
+    const count = Number(topic.QuantidadeRespostas ?? 0);
+    meta.append(tag, element(document, "span", null, `${count} resposta${count === 1 ? "" : "s"}`));
+    card.append(meta);
+    return card;
+  }
+
+  function renderShell() {
     const panel = element(document, "section", "mse-forum__summary");
+
     const header = element(document, "div", "mse-forum__summary-header");
     header.append(element(document, "h2", "mse-forum__summary-title", "Fórum"));
-    const seeAll = element(document, "a", "mse-forum__summary-see-all", "Ver fórum completo");
-    seeAll.href = pageHref;
-    header.append(seeAll);
+    const cta = element(document, "a", "mse-forum__summary-cta", "Ver fórum completo");
+    cta.href = pageHref;
+    header.append(cta);
+    panel.append(header);
+
+    const chips = chipRow();
+    if (chips) panel.append(chips);
 
     const list = element(document, "div", "mse-forum__summary-list");
-    panel.append(header, list);
-    root.replaceChildren(panel);
+    const topics = visibleTopics();
+    list.replaceChildren(...(topics.length
+      ? topics.map(topicCard)
+      : [element(document, "p", "mse-forum__summary-empty", "Nenhum tópico nesta categoria.")]));
+    panel.append(list);
 
+    root.replaceChildren(panel);
+  }
+
+  async function render() {
     try {
-      const { topics } = await service.listTopics({ view: "recent", sort: "recentes", pageSize: limit });
+      const { topics } = await service.listTopics({ view: "recent", sort: "recentes", pageSize: fetchSize });
       if (disposed) return;
-      list.replaceChildren(...(topics.length
-        ? topics.map(topicRow)
-        : [element(document, "p", "mse-forum__summary-empty", "Nenhum tópico publicado ainda.")]));
+      allTopics = topics;
+      if (!allTopics.length) {
+        root.replaceChildren(element(document, "p", "mse-forum__summary-empty", "Nenhum tópico publicado ainda."));
+        return;
+      }
+      renderShell();
     } catch (error) {
       if (disposed) return;
-      list.replaceChildren(element(document, "p", "mse-forum__summary-empty", errorMessage(error)));
+      root.replaceChildren(element(document, "p", "mse-forum__summary-empty", errorMessage(error)));
     }
   }
 
