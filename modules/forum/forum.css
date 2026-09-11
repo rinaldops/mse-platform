@@ -299,7 +299,7 @@
   border: 1px solid var(--forum-border-soft);
   border-radius: 0;
   color: var(--forum-text-muted);
-  background: transparent;
+  background: #FFFFFF;
   text-decoration: none;
   cursor: pointer;
 }
@@ -409,7 +409,7 @@
   justify-self: center;
   margin-top: 1rem;
   color: var(--forum-accent);
-  background: transparent;
+  background: #FFFFFF;
   border-color: var(--forum-line);
 }
 
@@ -504,7 +504,7 @@
   border: 1px solid var(--forum-border-soft);
   border-radius: 0;
   color: var(--forum-text-muted);
-  background: transparent;
+  background: #FFFFFF;
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -808,22 +808,30 @@
 }
 
 .mse-forum__pagebar-button--primary:hover {
-  border-color: #000000;
+  border-color: var(--forum-border-soft);
 }
 
 .mse-forum__pagebar-button--ghost {
-  border-color: #FFFFFF;
-  background: transparent;
+  border-color: var(--forum-accent);
+  background: #FFFFFF;
+  color: var(--forum-accent);
 }
 
 .mse-forum__pagebar-button--ghost:hover,
 .mse-forum__pagebar-button--active {
-  border-color: #3DDAFF;
-  color: #3DDAFF;
+  border-color: var(--forum-accent);
+  background: var(--forum-accent);
+  color: #FFFFFF;
 }
 
 .mse-forum__pagebar :is(.mse-forum__search-input, .mse-forum__pagebar-button, .mse-forum__breadcrumb-link):focus-visible {
   outline-color: #FFFFFF;
+}
+
+/* The ghost button has a white fill (no more transparent-on-blue buttons),
+   so the white outline above would vanish against it. */
+.mse-forum__pagebar-button--ghost:focus-visible {
+  outline-color: var(--forum-accent);
 }
 
 /* ── Página / abas / ordenação ─────────────────────────────────────────────── */
@@ -931,7 +939,7 @@
   padding: 0.55rem 0.7rem;
   border: 0;
   border-left: 3px solid #E3E9ED;
-  background: transparent;
+  background: #FFFFFF;
   color: #000000;
   font: inherit;
   font-size: 0.9rem;
@@ -1244,7 +1252,7 @@
 
 .mse-forum__summary-cta:hover,
 .mse-forum__summary-cta:focus-visible {
-  border-color: #000000;
+  border-color: var(--fs-line);
 }
 
 .mse-forum__summary-chips {
@@ -1256,7 +1264,7 @@
 .mse-forum__summary-chip-btn {
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--fs-line);
-  background: transparent;
+  background: var(--fs-card);
   color: var(--fs-text);
   font: inherit;
   font-size: 0.8rem;
