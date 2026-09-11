@@ -85,9 +85,9 @@ function formattedDate(value) {
 // glyphs like the rest of the module's icons (⌕, ✕, ↗), just as inline SVG
 // since these shapes have no safe single-character Unicode equivalent.
 const ICON_PATHS = {
-  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  heart: '<path fill="currentColor" stroke="none" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
   check: '<polyline points="20 6 9 17 4 12"/>',
-  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  star: '<polygon fill="currentColor" stroke="none" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   link: '<path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/>',
   checkSquare: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
@@ -1049,7 +1049,6 @@ export function createForumView({
         }
         const metaLine = element(document, "span", "mse-forum__meta", `${answer.Author?.Title || "Autor não informado"} · ${formattedDate(answer.Created)}`);
         const answerActions = element(document, "div", "mse-forum__answer-actions");
-        if (accepted) answerActions.append(element(document, "span", "mse-forum__badge mse-forum__badge--accepted", "Solução aceita"));
         answerActions.append(reactionBar("Resposta", answer.Id, reactionSummary[`Resposta:${answer.Id}`]));
         const answerLink = iconButton(document, "a", "mse-forum__icon-button", "link", "Link da resposta");
         answerLink.href = forumRouteUrl(currentHref(), { answerId: answer.Id });
