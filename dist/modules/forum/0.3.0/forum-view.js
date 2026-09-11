@@ -905,16 +905,31 @@ export function createForumView({
 
   async function renderDetail(route, sequence) {
     const shell = element(document, "article", "mse-forum mse-forum--detail");
-    const back = element(document, "a", "mse-forum__back", "← Voltar aos tópicos");
-    back.href = forumRouteUrl(currentHref(), { topicId: null, answerId: null });
-    back.addEventListener("click", (event) => {
+
+    // "Hub TD / Fórum" is available immediately; the third segment (topic
+    // title) is appended once the topic loads, so the trail never disappears
+    // mid-load — unlike the old bare "← Voltar aos tópicos" link, it also
+    // signals which site section the reader is in, not just how to leave it.
+    const breadcrumb = element(document, "nav", "mse-forum__detail-breadcrumb");
+    breadcrumb.setAttribute("aria-label", "Caminho");
+    const home = element(document, "a", "mse-forum__detail-breadcrumb-link", "Hub TD");
+    home.href = "#inicio";
+    const forumLink = element(document, "a", "mse-forum__detail-breadcrumb-link", "Fórum");
+    forumLink.href = forumRouteUrl(currentHref(), { topicId: null, answerId: null });
+    forumLink.addEventListener("click", (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       navigate({ topicId: null, answerId: null });
     });
+    breadcrumb.append(
+      home,
+      element(document, "span", "mse-forum__detail-breadcrumb-sep", "/"),
+      forumLink
+    );
+
     const content = element(document, "div", "mse-forum__content");
     content.append(status("Carregando discussão…"));
-    shell.append(back, content);
+    shell.append(breadcrumb, content);
     root.replaceChildren(shell);
 
     try {
@@ -942,12 +957,13 @@ export function createForumView({
         const bar = element(document, "div", "mse-forum__reactions");
         for (const [reactionType, label, iconName] of [["Gostei", "Gostei", "heart"], ["Util", "Útil", "check"], ["Excelente", "Excelente", "star"]]) {
           const count = summary[reactionType] ?? 0;
-          const button = element(document, "button", "mse-forum__reaction");
+          const button = element(document, "button", `mse-forum__reaction mse-forum__reaction--${reactionType.toLowerCase()}`);
           button.type = "button";
           button.append(icon(document, iconName), element(document, "span", "mse-forum__reaction-count", String(count)));
           button.title = `${label} (${count})`;
           button.setAttribute("aria-label", `${label} (${count})`);
           button.setAttribute("aria-pressed", summary.mine?.includes(reactionType) ? "true" : "false");
+          if (count > 0) button.classList.add("mse-forum__reaction--counted");
           if (summary.mine?.includes(reactionType)) button.classList.add("mse-forum__reaction--active");
           button.addEventListener("click", async () => {
             button.disabled = true;
@@ -965,6 +981,10 @@ export function createForumView({
         return bar;
       }
 
+      breadcrumb.append(
+        element(document, "span", "mse-forum__detail-breadcrumb-sep", "/"),
+        element(document, "span", "mse-forum__detail-breadcrumb-current", topic.Title || "Tópico sem título")
+      );
       const heading = element(document, "h2", "mse-forum__title", topic.Title || "Tópico sem título");
       const body = publicationBody(topic.Conteudo, topic.FormatoConteudo);
       const topicActions = element(document, "div", "mse-forum__topic-actions");
