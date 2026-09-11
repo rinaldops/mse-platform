@@ -60,6 +60,7 @@ class FakeElement {
     this.children = [];
     this.className = "";
     this.textContent = "";
+    this.parentElement = null;
   }
 
   setAttribute(name, value) {
@@ -189,6 +190,34 @@ assert.equal(sharePointThemeConfig.theme.tokens.shadow, "none");
 
 await mountModule(options);
 assert.equal(renderCount, 2);
+
+// Ambient background detection: a dark SharePoint section makes the module
+// root carry .mse-app--ambient-dark so its CSS can switch to a transparent
+// surface; a light or absent section leaves it off.
+const ambientParent = new FakeElement("ambient-parent");
+const ambientRoot = new FakeElement("ambient");
+ambientRoot.dataset.configKey = "ambient";
+ambientRoot.parentElement = ambientParent;
+selectedRoots = [ambientRoot];
+const backgroundByElement = new Map([[ambientParent, "rgb(3, 120, 124)"]]);
+globalThis.getComputedStyle = (element) => ({
+  backgroundColor: backgroundByElement.get(element) || "rgba(0, 0, 0, 0)"
+});
+await mountModule({ name: "ambient", selector: '[data-mse-module="ambient"]', render: () => () => {} });
+assert.ok(ambientRoot.classList.contains("mse-app--ambient-dark"), "seção escura deve marcar ambient-dark");
+await disposeModule(ambientRoot);
+assert.ok(!ambientRoot.classList.contains("mse-app--ambient-dark"), "dispose remove ambient-dark");
+
+backgroundByElement.set(ambientParent, "rgb(240, 249, 250)");
+const lightRoot = new FakeElement("ambient-light");
+lightRoot.dataset.configKey = "ambient-light";
+lightRoot.parentElement = ambientParent;
+selectedRoots = [lightRoot];
+await mountModule({ name: "ambient-light", selector: '[data-mse-module="ambient-light"]', render: () => () => {} });
+assert.ok(!lightRoot.classList.contains("mse-app--ambient-dark"), "seção clara não marca ambient-dark");
+delete globalThis.getComputedStyle;
+
+selectedRoots = [root];
 
 const failingRoot = new FakeElement("failing");
 selectedRoots = [failingRoot];

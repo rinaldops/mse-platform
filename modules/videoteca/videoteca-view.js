@@ -447,7 +447,7 @@ export function createVideotecaView({ root, service, reducedMotion, storage = gl
 // open the recording directly), every item here points at Videoteca.aspx —
 // this panel is a teaser, not a player shortcut. No filters/carousel/tracking
 // beyond plain navigation — the full experience lives there (createVideotecaView).
-export function createVideotecaSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+export function createVideotecaSummaryView({ root, service, pageHref, limit = 6 } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
   if (!service || typeof service.listCatalog !== "function") {
     throw new TypeError("service deve implementar listCatalog().");
@@ -458,43 +458,96 @@ export function createVideotecaSummaryView({ root, service, pageHref, limit = 4 
 
   const document = root.ownerDocument;
   let disposed = false;
+  let catalog = { featured: [], groups: [] };
+  let activeCategory = null;
+
+  function visibleVideos() {
+    if (activeCategory === null) {
+      const all = catalog.groups.flatMap((group) => group.videos);
+      return (catalog.featured.length ? catalog.featured : all).slice(0, limit);
+    }
+    const group = catalog.groups.find((entry) => entry.category === activeCategory);
+    return (group?.videos ?? []).slice(0, limit);
+  }
+
+  function chipRow() {
+    if (catalog.groups.length < 2) return null;
+    const row = element(document, "div", "mse-videoteca__summary-chips");
+    row.setAttribute("role", "group");
+    row.setAttribute("aria-label", "Filtrar por categoria");
+
+    const make = (label, value) => {
+      const chip = element(document, "button", "mse-videoteca__summary-chip-btn", label);
+      chip.type = "button";
+      const on = activeCategory === value;
+      chip.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) chip.classList.add("mse-videoteca__summary-chip-btn--on");
+      if (value) chip.style.setProperty("--accent", accentFor(value));
+      chip.addEventListener("click", () => {
+        if (disposed || activeCategory === value) return;
+        activeCategory = value;
+        renderShell();
+      });
+      return chip;
+    };
+
+    row.append(make("Destaques", null));
+    for (const group of catalog.groups) row.append(make(group.category, group.category));
+    return row;
+  }
 
   function videoCard(video) {
     const card = element(document, "a", "mse-videoteca__summary-item");
     card.href = pageHref;
+    card.style.setProperty("--accent", accentFor(video.Categoria));
+
     const thumb = element(document, "span", "mse-videoteca__summary-thumb");
-    thumb.style.setProperty("--accent", accentFor(video.Categoria));
     if (video.Duracao) thumb.append(element(document, "span", "mse-videoteca__summary-duration", video.Duracao));
+
     const meta = element(document, "span", "mse-videoteca__summary-meta");
     meta.append(element(document, "span", "mse-videoteca__summary-item-title", video.Title));
-    if (video.Categoria) meta.append(element(document, "span", "mse-videoteca__summary-category", video.Categoria));
+    const sub = [video.Apresentador, video.Categoria].filter(Boolean).join(" · ");
+    if (sub) meta.append(element(document, "span", "mse-videoteca__summary-sub", sub));
+
     card.append(thumb, meta);
     return card;
   }
 
-  async function render() {
+  function renderShell() {
     const panel = element(document, "section", "mse-videoteca__summary");
+
     const header = element(document, "div", "mse-videoteca__summary-header");
     header.append(element(document, "h2", "mse-videoteca__summary-title", "Videoteca"));
-    const seeAll = element(document, "a", "mse-videoteca__summary-see-all", "Ver videoteca completa");
-    seeAll.href = pageHref;
-    header.append(seeAll);
+    const cta = element(document, "a", "mse-videoteca__summary-cta", "Ver videoteca completa");
+    cta.href = pageHref;
+    header.append(cta);
+    panel.append(header);
+
+    const chips = chipRow();
+    if (chips) panel.append(chips);
 
     const list = element(document, "div", "mse-videoteca__summary-list");
-    panel.append(header, list);
-    root.replaceChildren(panel);
+    const videos = visibleVideos();
+    list.replaceChildren(...(videos.length
+      ? videos.map(videoCard)
+      : [element(document, "p", "mse-videoteca__summary-empty", "Nenhum vídeo nesta categoria.")]));
+    panel.append(list);
 
+    root.replaceChildren(panel);
+  }
+
+  async function render() {
     try {
-      const catalog = await service.listCatalog();
+      catalog = await service.listCatalog();
       if (disposed) return;
-      const all = catalog.groups.flatMap((group) => group.videos);
-      const featured = (catalog.featured.length ? catalog.featured : all).slice(0, limit);
-      list.replaceChildren(...(featured.length
-        ? featured.map(videoCard)
-        : [element(document, "p", "mse-videoteca__summary-empty", "Nenhum vídeo publicado ainda.")]));
+      if (!catalog.groups.length) {
+        root.replaceChildren(element(document, "p", "mse-videoteca__summary-empty", "Nenhum vídeo publicado ainda."));
+        return;
+      }
+      renderShell();
     } catch {
       if (disposed) return;
-      list.replaceChildren(element(document, "p", "mse-videoteca__summary-empty", errorMessage()));
+      root.replaceChildren(element(document, "p", "mse-videoteca__summary-empty", errorMessage()));
     }
   }
 

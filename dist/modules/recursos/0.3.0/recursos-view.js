@@ -361,7 +361,7 @@ export function createRecursosView({ root, service } = {}) {
 // open the resource directly), every item here points at Recursos.aspx —
 // this panel is a teaser, not a shortcut bar. No filters/search/interactivity
 // beyond plain navigation — the full experience lives there (createRecursosView).
-export function createRecursosSummaryView({ root, service, pageHref, limit = 4 } = {}) {
+export function createRecursosSummaryView({ root, service, pageHref, limit = 6 } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
   if (!service || typeof service.listGroupedLinks !== "function") {
     throw new TypeError("service deve implementar listGroupedLinks().");
@@ -372,46 +372,89 @@ export function createRecursosSummaryView({ root, service, pageHref, limit = 4 }
 
   const document = root.ownerDocument;
   let disposed = false;
+  let groups = [];
+  let activeCategory = null;
+
+  function visibleLinks() {
+    if (activeCategory === null) {
+      return groups.map((group) => group.links[0]).filter(Boolean).slice(0, limit);
+    }
+    const group = groups.find((entry) => entry.category === activeCategory);
+    return (group?.links ?? []).slice(0, limit);
+  }
+
+  function chipRow() {
+    if (groups.length < 2) return null;
+    const row = element(document, "div", "mse-recursos__summary-chips");
+    row.setAttribute("role", "group");
+    row.setAttribute("aria-label", "Filtrar por categoria");
+
+    const make = (label, value) => {
+      const chip = element(document, "button", "mse-recursos__summary-chip-btn", label);
+      chip.type = "button";
+      const on = activeCategory === value;
+      chip.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on) chip.classList.add("mse-recursos__summary-chip-btn--on");
+      chip.addEventListener("click", () => {
+        if (disposed || activeCategory === value) return;
+        activeCategory = value;
+        renderShell();
+      });
+      return chip;
+    };
+
+    row.append(make("Mais usados", null));
+    for (const group of groups) row.append(make(group.category, group.category));
+    return row;
+  }
 
   function linkCard(link) {
     const card = element(document, "a", "mse-recursos__summary-item");
     card.href = pageHref;
-    card.append(
-      element(document, "span", "mse-recursos__summary-sigla", sigla(link)),
-      (() => {
-        const body = element(document, "span", "mse-recursos__summary-body");
-        body.append(
-          element(document, "span", "mse-recursos__summary-name", link.Title),
-          element(document, "span", "mse-recursos__summary-category", link.Categoria || "")
-        );
-        return body;
-      })()
-    );
+    const body = element(document, "span", "mse-recursos__summary-body");
+    body.append(element(document, "span", "mse-recursos__summary-name", link.Title));
+    const host = hostFromUrl(link.URL);
+    if (host) body.append(element(document, "span", "mse-recursos__summary-host", host));
+    body.append(element(document, "span", "mse-recursos__summary-category", link.Categoria || ""));
+    card.append(element(document, "span", "mse-recursos__summary-sigla", sigla(link)), body);
     return card;
   }
 
-  async function render() {
+  function renderShell() {
     const panel = element(document, "section", "mse-recursos__summary");
+
     const header = element(document, "div", "mse-recursos__summary-header");
     header.append(element(document, "h2", "mse-recursos__summary-title", "Recursos"));
-    const seeAll = element(document, "a", "mse-recursos__summary-see-all", "Ver todos os recursos");
-    seeAll.href = pageHref;
-    header.append(seeAll);
+    const cta = element(document, "a", "mse-recursos__summary-cta", "Ver todos os recursos");
+    cta.href = pageHref;
+    header.append(cta);
+    panel.append(header);
+
+    const chips = chipRow();
+    if (chips) panel.append(chips);
 
     const list = element(document, "div", "mse-recursos__summary-list");
-    panel.append(header, list);
-    root.replaceChildren(panel);
+    const links = visibleLinks();
+    list.replaceChildren(...(links.length
+      ? links.map(linkCard)
+      : [element(document, "p", "mse-recursos__summary-empty", "Nenhum recurso nesta categoria.")]));
+    panel.append(list);
 
+    root.replaceChildren(panel);
+  }
+
+  async function render() {
     try {
-      const groups = await service.listGroupedLinks();
+      groups = await service.listGroupedLinks();
       if (disposed) return;
-      const featured = groups.map((group) => group.links[0]).filter(Boolean).slice(0, limit);
-      list.replaceChildren(...(featured.length
-        ? featured.map(linkCard)
-        : [element(document, "p", "mse-recursos__summary-empty", "Nenhum recurso publicado ainda.")]));
+      if (!groups.length) {
+        root.replaceChildren(element(document, "p", "mse-recursos__summary-empty", "Nenhum recurso publicado ainda."));
+        return;
+      }
+      renderShell();
     } catch (error) {
       if (disposed) return;
-      list.replaceChildren(element(document, "p", "mse-recursos__summary-empty", errorMessage(error)));
+      root.replaceChildren(element(document, "p", "mse-recursos__summary-empty", errorMessage(error)));
     }
   }
 

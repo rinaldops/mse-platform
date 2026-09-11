@@ -608,26 +608,43 @@
 }
 
 /* Home-page teaser (createRecursosSummaryView) — separate module instance
-   (data-mse-module="recursos-summary"), not covered by the .mse-recursos
-   rules above. Read-only: a handful of curated links linking out to
-   Recursos.aspx, no filters/search/view-toggle here — that's the full page. */
+   (data-mse-module="recursos-summary"). Curated links with category-chip
+   filtering and one button through to Recursos.aspx. The panel never paints
+   its own background: it blends into the SharePoint section colour. On a
+   light section the default dark palette stays legible; on a dark section
+   core adds .mse-app--ambient-dark and the palette flips (see
+   ARQUITETURA-MSE.md #18.7-18.8). The panel is borderless; item cards keep
+   the module's yellow accent border-left. */
 [data-mse-module="recursos-summary"][data-mse-module="recursos-summary"] {
-  background: #FFFFFF;
-  color: #000000;
+  --rs-text: #000000;
+  --rs-muted: #006298;
+  --rs-line: #75787B;
+  --rs-card: #FFFFFF;
+  --rs-hover: #F2F7FA;
+
+  background: transparent;
+  color: var(--rs-text);
   font-family: "Petrobras Sans", Arial, sans-serif;
   border-radius: var(--mse-section-radius, 0);
+}
+
+[data-mse-module="recursos-summary"].mse-app--ambient-dark {
+  --rs-text: #FFFFFF;
+  --rs-muted: #FFFFFF;
+  --rs-line: #FFFFFF;
+  --rs-card: transparent;
+  --rs-hover: transparent;
 }
 
 .mse-recursos__summary {
   display: grid;
   gap: 1rem;
   padding: 1.5rem;
-  border: 1px solid #75787B;
 }
 
 .mse-recursos__summary-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
@@ -635,37 +652,69 @@
 
 .mse-recursos__summary-title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #000000;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--rs-text);
 }
 
-.mse-recursos__summary-see-all {
+.mse-recursos__summary-cta {
+  padding: 0.55rem 1.1rem;
+  border: 1px solid transparent;
+  background: #FDC82F;
+  color: #000000;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #006298;
   text-decoration: none;
+  white-space: nowrap;
 }
 
-.mse-recursos__summary-see-all:hover,
-.mse-recursos__summary-see-all:focus-visible {
-  text-decoration: underline;
+.mse-recursos__summary-cta:hover,
+.mse-recursos__summary-cta:focus-visible {
+  border-color: #000000;
+}
+
+.mse-recursos__summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-recursos__summary-chip-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rs-line);
+  background: transparent;
+  color: var(--rs-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.mse-recursos__summary-chip-btn:hover {
+  border-color: #006298;
+}
+
+.mse-recursos__summary-chip-btn--on {
+  border-color: #006298;
+  background: #006298;
+  color: #FFFFFF;
 }
 
 .mse-recursos__summary-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.6rem;
 }
 
 .mse-recursos__summary-item {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid #75787B;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--rs-line);
   border-left: 4px solid #FDC82F;
-  background: #FFFFFF;
+  background: var(--rs-card);
   color: inherit;
   text-decoration: none;
   transition: background 0.15s ease;
@@ -673,19 +722,19 @@
 
 .mse-recursos__summary-item:hover,
 .mse-recursos__summary-item:focus-visible {
-  background: #F2F7FA;
+  background: var(--rs-hover);
 }
 
 .mse-recursos__summary-sigla {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
+  width: 2.1rem;
+  height: 2.1rem;
   background: #006298;
   color: #FFFFFF;
   font-family: ui-monospace, Consolas, monospace;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
 }
 
@@ -697,20 +746,35 @@
 
 .mse-recursos__summary-name {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: #000000;
+  font-weight: 700;
+  color: var(--rs-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-recursos__summary-host {
+  font-size: 0.72rem;
+  color: var(--rs-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mse-recursos__summary-category {
-  font-size: 0.75rem;
-  color: #006298;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--rs-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .mse-recursos__summary-empty {
+  grid-column: 1 / -1;
   margin: 0;
   padding: 1rem;
-  border: 1px solid #75787B;
-  color: #006298;
+  border: 1px solid var(--rs-line);
+  color: var(--rs-muted);
   font-size: 0.9rem;
   text-align: center;
 }

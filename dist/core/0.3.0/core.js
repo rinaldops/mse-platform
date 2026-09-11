@@ -390,10 +390,45 @@ export function loadSharePointConfiguration({
   return request;
 }
 
+const AMBIENT_COLOR_PATTERN = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/;
+
+// Section background colors are a SharePoint page-authoring choice (zone
+// emphasis or a custom section background), entirely outside this module's
+// own CSS — so it can only be read back from the rendered DOM, not known
+// in advance. Walks up from the module root (skipping the root itself,
+// since its own background is what a module's CSS is about to control) to
+// find the first non-transparent ambient background, then classifies it
+// light/dark by WCAG relative luminance so module CSS can pick a matching
+// surface via `.mse-app--ambient-dark`. Mirrors the color-adaptive script in
+// TD/webparts/*/provision-*.html (see ARQUITETURA-MSE.md #18.7), which can't
+// import this module because raw Modern Script Editor snippets have no
+// module loader available.
+function ambientIsDark(root) {
+  const getStyle = globalThis.getComputedStyle;
+  if (typeof getStyle !== "function") return false;
+
+  let node = root.parentElement;
+  while (node) {
+    const computed = getStyle(node);
+    const match = AMBIENT_COLOR_PATTERN.exec(computed?.backgroundColor || "");
+    if (match && (match[4] === undefined || parseFloat(match[4]) > 0)) {
+      const channels = [match[1], match[2], match[3]].map((value) => {
+        const c = Number(value) / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      const luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+      return luminance < 0.5;
+    }
+    node = node.parentElement;
+  }
+  return false;
+}
+
 function applyPresentation(root, config) {
   root.classList.add("mse-app");
   root.classList.toggle("mse-app--contained", config.layout.mode === "contained");
   root.classList.toggle("mse-app--full-bleed", config.layout.mode === "fullBleed");
+  root.classList.toggle("mse-app--ambient-dark", ambientIsDark(root));
   root.dataset.mseCoreVersion = CORE_VERSION;
 
   const properties = [];
@@ -522,7 +557,7 @@ async function disposeRoot(root) {
       root.style.removeProperty(property);
     }
     root.replaceChildren();
-    root.classList.remove("mse-app", "mse-app--contained", "mse-app--full-bleed");
+    root.classList.remove("mse-app", "mse-app--contained", "mse-app--full-bleed", "mse-app--ambient-dark");
     delete root.dataset.mseInitialized;
     delete root.dataset.mseCoreVersion;
     delete root.dataset.mseState;

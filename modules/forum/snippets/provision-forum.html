@@ -4,6 +4,41 @@
   <pre data-mse-forum-provision-output style="white-space: pre-wrap; background: #FFFFFF; padding: 8px; overflow: auto;"></pre>
 </section>
 
+<script>
+(function () {
+  try {
+    var section = document.currentScript.previousElementSibling;
+    if (!section) return;
+
+    var node = section;
+    var rgb = [255, 255, 255];
+    while (node) {
+      var match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(getComputedStyle(node).backgroundColor);
+      if (match && (match[4] === undefined || parseFloat(match[4]) > 0)) {
+        rgb = [Number(match[1]), Number(match[2]), Number(match[3])];
+        break;
+      }
+      node = node.parentElement;
+    }
+
+    var channels = rgb.map(function (value) {
+      var c = value / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    var isDark = luminance < 0.5;
+
+    section.style.borderColor = isDark ? "#FFFFFF" : "#75787B";
+    var heading = section.querySelector("h2");
+    if (heading) heading.style.color = isDark ? "#FFFFFF" : "#000000";
+    var status = section.querySelector("p");
+    if (status) status.style.color = isDark ? "#FFFFFF" : "#006298";
+  } catch (error) {
+    console.error("Falha ao adaptar cores do painel de provisionamento:", error);
+  }
+})();
+</script>
+
 <script
   src="__SITE_ASSETS__/mse-platform/modules/forum/0.4.0/provision-forum.js"
   data-target="#mse-forum-provision"
