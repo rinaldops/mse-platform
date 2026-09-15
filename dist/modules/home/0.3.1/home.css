@@ -1,0 +1,233 @@
+/* doubled selector: each module loader injects its own <link> to core.css,
+   so core's .mse-app background can land after this rule in the cascade;
+   matching specificity (0,1,0) alone loses that tiebreak on some pages */
+[data-mse-module="home"][data-mse-module="home"] {
+  --home-azul-escuro: #006298;
+  --home-azul-claro: #3DDAFF;
+  --home-verde-agua: #00B2A9;
+  --home-verde: #008542;
+  --home-amarelo: #FDC82F;
+  --home-laranja: #ED8B00;
+  --home-text: #FFFFFF;
+  --home-line: #FFFFFF;
+  --home-font-display: "Petrobras Sans", Arial, sans-serif;
+  --home-font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Roboto Mono", monospace;
+
+  /* three uneven light sources (an irregular triangle, not one centered blob) give the
+     hero depth: each stop is azul-escuro tinted lighter — 85/80/90% color-to-white mix —
+     fading to transparent over the flat azul-escuro base, so edges stay the darkest,
+     full-strength approved blue. The wide, very diffuse 10% black layer on top is a
+     documented local exception (IDENTIDADE-PETROBRAS.md secao 4: exceção local exige
+     justificativa e aprovação) — approved to draw focus toward the center; at 10% and
+     confined to the outer margin it never becomes a predominant off-palette color
+     against a page that otherwise stays strictly within the Petrobras palette. */
+  background:
+    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+    radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),
+    radial-gradient(56rem 50rem at 37% 68%, #3381AD, transparent 62%),
+    radial-gradient(62rem 54rem at 82% 52%, #1A72A2, transparent 64%),
+    var(--home-azul-escuro);
+  color: var(--home-text);
+  border-radius: var(--mse-section-radius, 0);
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  [data-mse-module="home"][data-mse-module="home"] {
+    background:
+      radial-gradient(140% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+      radial-gradient(32rem 26rem at 62% 10%, #267AA7, transparent 60%),
+      radial-gradient(34rem 28rem at 28% 50%, #3381AD, transparent 58%),
+      var(--home-azul-escuro);
+  }
+}
+
+.mse-home {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(24px, 3.5vw, 40px) clamp(20px, 4vw, 56px) clamp(24px, 3.5vw, 40px);
+}
+
+.mse-home__constellation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+
+.mse-home__lines {
+  /* Right-anchored at 80% width (was edge-to-edge): shrinks the lines' lateral
+     spread by 20% without touching the path data — preserveAspectRatio="none"
+     rescales the same viewBox into the narrower box, so the vertical tuning
+     (top clearance, bottom overflow) stays exactly as calibrated. */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80%;
+  height: 100%;
+}
+
+@media (max-width: 760px) {
+  .mse-home__lines { display: none; }
+}
+
+.mse-home__floaters {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mse-home__floater {
+  position: absolute;
+  font-family: var(--home-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--home-text);
+  opacity: 0;
+  white-space: nowrap;
+  animation: mse-home-floater-drift 16s ease-in-out infinite;
+}
+
+@keyframes mse-home-floater-drift {
+  0% { opacity: 0; transform: translateY(10px); }
+  12% { opacity: 0.16; }
+  50% { opacity: 0.22; transform: translateY(-14px); }
+  88% { opacity: 0.14; }
+  100% { opacity: 0; transform: translateY(-26px); }
+}
+
+@media (max-width: 760px) {
+  .mse-home__floaters { display: none; }
+}
+
+.mse-home__inner {
+  position: relative;
+  z-index: 2;
+  /* Percentage of the hero's own width, not vw/rem: the accent lines are positioned
+     as fixed percentages of the hero (stretched SVG viewBox), so the text column has
+     to scale in that same proportion to keep clear of them and stay visually balanced
+     against the graphic at every hero width — a vw+rem formula grows at a different
+     rate than the hero itself and drifts out of sync at both ends of the range. */
+  max-width: clamp(20rem, 50%, 56rem);
+}
+
+.mse-home__eyebrow {
+  font-family: var(--home-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--home-amarelo);
+}
+
+.mse-home__eyebrow-mark {
+  text-decoration: underline;
+}
+
+.mse-home__title {
+  font-family: var(--home-font-display);
+  font-weight: 700;
+  letter-spacing: 0;
+  font-size: clamp(2.4rem, 2vw + 2.3rem, 5rem);
+  line-height: 1.08;
+  margin: 0.5em 0 0.42em;
+}
+
+.mse-home__accent {
+  font-style: normal;
+  color: var(--home-laranja);
+}
+
+.mse-home__accent--warm {
+  color: var(--home-amarelo);
+}
+
+.mse-home__sub {
+  font-size: 1.08rem;
+  color: var(--home-text);
+  opacity: 0.88;
+  margin: 0;
+}
+
+.mse-home__actions {
+  margin-top: 2em;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.mse-home__button {
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.85em 1.5em;
+  border-radius: 0;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.mse-home__button:hover {
+  transform: translateY(-2px);
+}
+
+.mse-home__button--primary {
+  background: var(--home-amarelo);
+  color: #000000;
+}
+
+.mse-home__button--primary:hover {
+  background: var(--home-amarelo);
+  border-color: #000000;
+}
+
+.mse-home__button--ghost {
+  border-color: var(--home-line);
+  color: var(--home-text);
+}
+
+.mse-home__button--ghost:hover {
+  border-color: var(--home-azul-claro);
+  color: var(--home-azul-claro);
+}
+
+.mse-home__stats {
+  /* No position/z-index here (unlike .mse-home__inner): this row is meant to
+     sit in the same paint layer as the accent lines' svg, so the lines cross
+     visibly over the white rule and the numbers — full-width like the page,
+     not clipped to the title column's narrower, line-safe max-width. */
+  margin-top: clamp(44px, 7vw, 72px);
+  padding-top: 1.6em;
+  border-top: 1px solid var(--home-line);
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: 2.6em;
+}
+
+.mse-home__stat b {
+  display: block;
+  font-family: var(--home-font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.mse-home__stat span {
+  font-family: var(--home-font-mono);
+  font-size: 0.7rem;
+  color: var(--home-text);
+  opacity: 0.82;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 760px) {
+  .mse-home__stats { grid-template-columns: repeat(2, auto); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-home__floater { animation: none; }
+}
