@@ -188,6 +188,12 @@ assert.match(topicCall.options.filter, /QuantidadeRespostas eq 0/);
 assert.match(topicCall.options.filter, /CategoriaId eq 10/);
 assert.match(topicCall.options.filter, /substringof\('d''água',Title\)/);
 assert.equal(topicCall.options.top, 10);
+assert.match(topicCall.options.orderBy, /^Fixado desc,/);
+for (const sort of ["primeiras", "categorias", "respostas", "menosRespostas", "visualizacoes", "menosVisualizacoes"]) {
+  await service.listTopics({ sort });
+  const sortedCall = calls.filter((call) => call.method === "page" && call.source.key === "forum-topics").at(-1);
+  assert.match(sortedCall.options.orderBy, /^Fixado desc,/);
+}
 
 await service.listTopics({ view: "resolved" });
 const resolvedTopicCall = calls.filter((call) => call.method === "page" && call.source.key === "forum-topics").at(-1);
@@ -348,7 +354,11 @@ const ownerService = createForumReadService({
 });
 assert.equal((await ownerService.getTopic(1)).canEdit, false);
 assert.equal((await ownerService.getTopic(1)).canClose, true);
+assert.equal((await ownerService.getTopic(1)).canPin, true);
 assert.deepEqual(await ownerService.closeTopic(1), { topicId: 1, status: "Encerrado" });
+assert.deepEqual(await ownerService.setTopicPinned(1, true), { topicId: 1, pinned: true });
+assert.ok(calls.some((call) => call.method === "update" && call.values.Fixado === true));
+await assert.rejects(service.setTopicPinned(1, true), (error) => error.code === "access-denied");
 const editable = await service.getTopicForEdit(1);
 assert.equal(editable.etag, '"topic-1"');
 const updated = await service.updateTopic({
@@ -458,7 +468,7 @@ assert.ok(calls.some((call) => call.method === "update"
   && call.values.Status === "Aberto"));
 
 await assert.rejects(service.listTopics({ view: "invalid" }), /view deve ser/);
-await assert.rejects(service.listTopics({ pageSize: 51 }), /entre 1 e 50/);
+await assert.rejects(service.listTopics({ pageSize: 101 }), /entre 1 e 100/);
 await assert.rejects(
   service.listTopics({ cursor: "https://contoso.sharepoint.com/teams/forum/_api/web/lists" }),
   /cursor não pertence/
