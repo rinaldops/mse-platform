@@ -80,6 +80,20 @@ The module declares seven SharePoint structures:
 
 Lists use stable ASCII internal names and friendly display names. The core resolves list GUIDs during provisioning and uses them for REST operations.
 
+## Legacy imports
+
+`ForumTopicos` and `ForumRespostas` include optional `Legacy*` fields for
+one-time migrations from older SharePoint discussion boards. Imported rows keep
+the original source id, URL, author name/email and created/modified timestamps
+without attempting to rewrite SharePoint system fields such as `Author` or
+`Created`.
+
+Read views expose `DisplayAuthor` and `DisplayCreatedAt`, preferring legacy
+metadata when present and falling back to native SharePoint metadata for new
+posts. Permission checks still use the native SharePoint `Author.Id`, so
+migrated history is display-only unless a later workflow explicitly maps legacy
+authors to current users.
+
 ## Local tests
 
 ```powershell
