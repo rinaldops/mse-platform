@@ -11,7 +11,7 @@ Current version: `0.4.0`.
 - Compact full-bleed page bar (breadcrumb, debounced search by title, "Novo tópico" and "Minha atividade" actions) replacing the Home hero on this module's own page.
 - Topic listing with tabs (recentes/populares/sem resposta/minha atividade), sidebar (indicators, categories, tags, unanswered panel), sort (recentes/respostas/visualizações) and card-based list.
 - Topic detail view, filters and search by title.
-- Topic creation, editing, archiving and drafts.
+- Topic creation, editing, closing and drafts.
 - Configurable safe rich-text editor: Quill, Summernote Lite or native fallback.
 - Answers with pagination, editing and archiving.
 - Reactions.
@@ -35,12 +35,12 @@ sequence of corrections (and the two dead ends kept as documented lessons).
 What shipped:
 
 - **Reading order**: heading → body text → one compact row of icon-only
-  actions (reactions, permalink, mark-solution, edit, archive) → author ·
+  actions (reactions, permalink, mark-solution, edit, close) → author ·
   date, right-aligned in that same row as the least important fact. No
   standalone meta line above the body anymore.
 - **Icons, not text buttons**: small inline SVGs (`icon()`/`ICON_PATHS` in
   `forum-view.js`) — heart/check/star for reactions (Gostei/Útil/Excelente),
-  link/check-square/pencil/archive-box for actions. Deliberately not emoji
+  link/check-square/pencil/lock for actions. Deliberately not emoji
   characters (inconsistent, full-color rendering across platforms would
   undo the "quiet" goal) and not `.mse-forum__button` (too large/saturated
   for a repeated per-item row — that class stays for real page-level CTAs
@@ -51,7 +51,7 @@ What shipped:
   count. The surrounding button never goes past a light gray fill
   (`--forum-surface-soft`) once it has a reaction or is the reader's own —
   a full saturated background was tried first and reverted, see §18.9.
-  Functional icons (edit/archive/link/mark-solution) stay neutral gray
+  Functional icons (edit/close/link/mark-solution) stay neutral gray
   always; only reactions get permanent color.
 - **The topic page shares `.mse-forum__pagebar`/`.mse-forum__page` with the
   list page** instead of a bespoke lighter header, so a reader landing

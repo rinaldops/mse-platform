@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { forumRouteUrl, readForumRoute, createForumSummaryView } from "../forum-view.js";
+import { forumRouteUrl, readForumRoute, createForumView, createForumSummaryView } from "../forum-view.js";
 
 assert.deepEqual(
   readForumRoute("https://example.test/pagina.aspx"),
@@ -59,6 +59,39 @@ function findAll(node, predicate, out = []) {
 }
 
 const fakeDocument = { createElement(tag) { return new FakeElement(tag, fakeDocument); } };
+const forumServiceMethods = [
+  "listTopics",
+  "listContributors",
+  "listTaxonomy",
+  "listCategorySummaries",
+  "listForumOverview",
+  "whoAmI",
+  "getTopic",
+  "listAnswers",
+  "createAnswer",
+  "getAnswerForEdit",
+  "updateAnswer",
+  "archiveAnswer",
+  "listReactions",
+  "toggleReaction",
+  "acceptAnswer",
+  "clearAcceptedAnswer",
+  "createTopic",
+  "getTopicForEdit",
+  "updateTopic",
+  "archiveTopic",
+  "loadTopicDraft",
+  "saveTopicDraft",
+  "deleteTopicDraft"
+];
+
+assert.throws(
+  () => createForumView({
+    root: new FakeElement("div", fakeDocument),
+    service: Object.fromEntries(forumServiceMethods.map((name) => [name, async () => ({})]))
+  }),
+  /service deve implementar/
+);
 
 {
   const root = new FakeElement("div", fakeDocument);
