@@ -154,5 +154,6 @@ On the published page:
 6. Add an answer.
 7. React to the topic or answer.
 8. Mark an answer as accepted.
+9. Close a topic and confirm the reply form is hidden.
 
 If the page shows an access or missing-list error, verify the current user has permission on the site and that the provisioning created all `Forum*` lists.

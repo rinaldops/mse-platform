@@ -62,7 +62,7 @@ const client = {
   async getListItem(source, id, options) {
     calls.push({ method: "item", source, id, options });
     if (source.key === "forum-topics") {
-      return { item: { Id: id, Title: "Detalhe", Conteudo: "Texto", CategoriaId: 10, Author: { Id: 7 } }, etag: '"topic-1"' };
+      return { item: { Id: id, Title: "Detalhe", Conteudo: "Texto", CategoriaId: 10, Status: "Aberto", Author: { Id: 7 } }, etag: '"topic-1"' };
     }
     if (source.key === "forum-answers") {
       return {
@@ -321,6 +321,7 @@ await assert.rejects(
 const detail = await service.getTopic(1);
 assert.equal(detail.Title, "Detalhe");
 assert.equal(detail.canEdit, true);
+assert.equal(detail.canClose, true);
 const foreignService = createForumReadService({
   dataSources: {
     get: dataSources.get,
@@ -328,7 +329,22 @@ const foreignService = createForumReadService({
   }
 });
 assert.equal((await foreignService.getTopic(1)).canEdit, false);
+assert.equal((await foreignService.getTopic(1)).canClose, false);
 await assert.rejects(foreignService.getTopicForEdit(1), (error) => error.code === "access-denied");
+const ownerService = createForumReadService({
+  dataSources: {
+    get: dataSources.get,
+    getClient: () => ({
+      ...client,
+      async request() {
+        return { data: { Id: 8, Title: "Paulo", Groups: { results: [{ Title: "Tecnologias Digitais Owners" }] } } };
+      }
+    })
+  }
+});
+assert.equal((await ownerService.getTopic(1)).canEdit, false);
+assert.equal((await ownerService.getTopic(1)).canClose, true);
+assert.deepEqual(await ownerService.closeTopic(1), { topicId: 1, status: "Encerrado" });
 const editable = await service.getTopicForEdit(1);
 assert.equal(editable.etag, '"topic-1"');
 const updated = await service.updateTopic({
@@ -345,6 +361,8 @@ assert.equal(updateCall.options.etag, '"topic-1"');
 assert.ok(calls.some((call) => call.method === "delete" && call.source.key === "forum-topic-tags" && call.id === 40));
 assert.ok(calls.some((call) => call.method === "create"
   && call.source.key === "forum-topic-tags" && call.values.Title === "1:21"));
+assert.deepEqual(await service.closeTopic(1), { topicId: 1, status: "Encerrado" });
+assert.ok(calls.some((call) => call.method === "update" && call.values.Status === "Encerrado"));
 assert.deepEqual(await service.archiveTopic(1), { topicId: 1, status: "Arquivado" });
 assert.ok(calls.some((call) => call.method === "update" && call.values.Status === "Arquivado"));
 const answers = await service.listAnswers(1);
@@ -363,6 +381,25 @@ assert.equal(createdAnswerCall.values.Conteudo, "<p>Resposta <strong>nova</stron
 assert.ok(calls.some((call) => call.method === "update"
   && call.source.key === "forum-topics"
   && call.values.QuantidadeRespostas === 1));
+const closedTopicService = createForumReadService({
+  dataSources: {
+    get: dataSources.get,
+    getClient: () => ({
+      ...client,
+      async getListItem(source, id, options) {
+        if (source.key === "forum-topics") {
+          return { item: { Id: id, Status: "Encerrado", QuantidadeRespostas: 0, UltimaAtividade: "2026-01-01T00:00:00Z" }, etag: '"closed-topic"' };
+        }
+        return client.getListItem(source, id, options);
+      }
+    })
+  },
+  sanitizeRichText: (input) => input
+});
+await assert.rejects(
+  closedTopicService.createAnswer({ topicId: 1, content: "Resposta", contentFormat: "TextoSimples" }),
+  /não aceita novas respostas/
+);
 const editableAnswer = await service.getAnswerForEdit(5);
 assert.equal(editableAnswer.etag, '"answer-1"');
 const updatedAnswer = await service.updateAnswer({
@@ -478,7 +515,7 @@ await assert.rejects(
         if (source.key === "forum-topics") return [
           { Id: 1, CategoriaId: 10, Status: "Resolvido", Fixado: true, QuantidadeRespostas: 2, UltimaAtividade: recentDate, Author: { Id: 1 } },
           { Id: 2, CategoriaId: 10, Status: "Aberto", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: old, Author: { Id: 2 } },
-          { Id: 3, CategoriaId: 11, Status: "Aberto", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: recentDate, Author: { Id: 1 } }
+          { Id: 3, CategoriaId: 11, Status: "Encerrado", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: recentDate, Author: { Id: 1 } }
         ];
         if (source.key === "forum-answers") return [{ Id: 5, Author: { Id: 3 } }];
         if (source.key === "forum-topic-tags") return [{ TagId: 20 }, { TagId: 20 }];
@@ -495,14 +532,14 @@ await assert.rejects(
   assert.equal(overview.indicators.answers, 1);
   assert.equal(overview.indicators.resolvedPercent, 33);
   assert.equal(overview.indicators.active, 3);
-  assert.deepEqual(overview.tabCounts, { recent: 3, popular: 3, unanswered: 2, resolved: 1, pinned: 1 });
+  assert.deepEqual(overview.tabCounts, { recent: 3, popular: 3, unanswered: 1, resolved: 1, pinned: 1 });
   assert.equal(overview.categories.find((item) => item.id === 10).count, 2);
   assert.equal(overview.categories.find((item) => item.id === 11).count, 1);
   assert.deepEqual(overview.tags.map((item) => item.title), ["REST"]);
   assert.equal(overview.unansweredOverdue, 1);
 
   const whoAmI = await overviewService.whoAmI();
-  assert.deepEqual(whoAmI, { id: 9, title: "Carla" });
+  assert.deepEqual(whoAmI, { id: 9, title: "Carla", isSiteOwner: false });
 }
 
 console.log("forum-data.test.js: verificações concluídas com sucesso.");
