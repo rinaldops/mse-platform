@@ -155,5 +155,8 @@ On the published page:
 7. React to the topic or answer.
 8. Mark an answer as accepted.
 9. Close a topic and confirm the reply form is hidden.
+10. As a site owner, pin and unpin a topic and confirm pinned topics remain first in every ordering.
+11. Edit a topic, use Cancel and confirm the original content was preserved.
+12. Validate topic pagination with 20, 50 and 100 items per page.
 
 If the page shows an access or missing-list error, verify the current user has permission on the site and that the provisioning created all `Forum*` lists.

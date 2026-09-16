@@ -9,11 +9,11 @@ Current version: `0.4.0`.
 - Declarative SharePoint list schema.
 - Categories and tags.
 - Compact full-bleed page bar (breadcrumb, debounced search by title, "Novo tópico" and "Minha atividade" actions) replacing the Home hero on this module's own page.
-- Topic listing with tabs (recentes/populares/sem resposta/minha atividade), sidebar (indicators, categories, tags, unanswered panel), sort (recentes/respostas/visualizações) and card-based list.
+- Topic listing with tabs, sidebar, fixed topics first, seven sort options and cursor pagination with 20, 50 or 100 items.
 - Topic detail view, filters and search by title.
 - Topic creation, editing, closing and drafts.
 - Configurable safe rich-text editor: Quill, Summernote Lite or native fallback.
-- Answers with pagination, editing and archiving.
+- Answers with pagination and editing.
 - Reactions.
 - Accepted answer / solved topic flow.
 - Related topics.
@@ -21,7 +21,7 @@ Current version: `0.4.0`.
 
 ## Layout particulars (page bar redesign)
 
-- Route state (`aba/categoria/tag/busca/ordem/mine`) is persisted in the query string — the only one of the three redesigned modules that does this, since the pattern already existed here before the redesign.
+- Route state (`aba/categoria/tag/busca/ordem/tamanho/mine`) is persisted in the query string — the only one of the three redesigned modules that does this, since the pattern already existed here before the redesign.
 - Search is Title-only, matching the pre-existing `topicFilter()` search scope; the design handoff did not request full-text search.
 - The page bar reuses `home.css`'s exact blue gradient recipe (same `radial-gradient` stack) so navigating between Home and Forum feels continuous.
 - Compose/edit views are untouched by this redesign — only list (`renderList`) and, later, detail (`renderDetail`, see below) changed. `topicCard()` (used by the detail view's related topics) is kept separate from the new `topicListCard()`.

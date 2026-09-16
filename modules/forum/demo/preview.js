@@ -35,6 +35,7 @@ const topics = [
     Created: "2026-08-15T12:00:00Z",
     Author: { Title: "Ana Silva" },
     canEdit: true,
+    canPin: true,
     category: taxonomy[0],
     tags: [{ Id: 20, Title: "REST" }, { Id: 21, Title: "ETag" }]
   },
@@ -267,6 +268,16 @@ const service = {
     topic.Status = "Arquivado";
     topic.canEdit = false;
     return { topicId: topic.Id, status: topic.Status };
+  },
+  async closeTopic(id) {
+    const topic = topics.find((item) => item.Id === Number(id));
+    topic.Status = "Encerrado";
+    return { topicId: topic.Id, status: topic.Status };
+  },
+  async setTopicPinned(id, pinned) {
+    const topic = topics.find((item) => item.Id === Number(id));
+    topic.Fixado = pinned;
+    return { topicId: topic.Id, pinned };
   },
   async loadTopicDraft() { return draft ? { id: 60, ...draft } : null; },
   async saveTopicDraft(values) {
