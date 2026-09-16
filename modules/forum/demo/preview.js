@@ -105,7 +105,7 @@ const service = {
     let result = topics;
     if (view === "recent") result = result.filter((topic) => topic.Status !== "Arquivado");
     if (view === "unanswered") result = result.filter((topic) => topic.QuantidadeRespostas === 0);
-    if (view === "resolved") result = result.filter((topic) => topic.Status === "Resolvido");
+    if (view === "resolved") result = result.filter((topic) => topic.Status === "Resolvido" || topic.Status === "Encerrado");
     if (view === "pinned") result = result.filter((topic) => topic.Fixado);
     if (categoryId) result = result.filter((topic) => topic.CategoriaId === categoryId);
     if (tagId) result = result.filter((topic) => topic.tags.some((tag) => tag.Id === tagId));
@@ -184,13 +184,6 @@ const service = {
     answer.Conteudo = contentFormat === "HtmlSeguroV1" ? sanitizeRichText(content) : content.trim();
     answer.FormatoConteudo = contentFormat;
     return { answerId: answer.Id, topicId: answer.TopicoId };
-  },
-  async archiveAnswer(id) {
-    const answer = answers.find((item) => item.Id === Number(id));
-    const topic = topics.find((item) => item.Id === answer.TopicoId);
-    answer.Status = "Arquivada";
-    topic.QuantidadeRespostas = Math.max(0, topic.QuantidadeRespostas - 1);
-    return { answerId: answer.Id, topicId: answer.TopicoId, status: answer.Status };
   },
   async listReactions(publications) {
     const summary = {};

@@ -71,7 +71,6 @@ const forumServiceMethods = [
   "createAnswer",
   "getAnswerForEdit",
   "updateAnswer",
-  "archiveAnswer",
   "listReactions",
   "toggleReaction",
   "acceptAnswer",
