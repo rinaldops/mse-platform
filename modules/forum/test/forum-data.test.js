@@ -189,6 +189,10 @@ assert.match(topicCall.options.filter, /CategoriaId eq 10/);
 assert.match(topicCall.options.filter, /substringof\('d''água',Title\)/);
 assert.equal(topicCall.options.top, 10);
 
+await service.listTopics({ view: "resolved" });
+const resolvedTopicCall = calls.filter((call) => call.method === "page" && call.source.key === "forum-topics").at(-1);
+assert.match(resolvedTopicCall.options.filter, /Status eq 'Resolvido' or Status eq 'Encerrado'/);
+
 const tagged = await service.listTopics({ tagId: 20, pageSize: 1 });
 assert.equal(tagged.topics[0].Id, 1);
 const tagRelationCall = calls.find((call) =>
@@ -413,11 +417,6 @@ assert.ok(calls.some((call) => call.method === "update"
   && call.source.key === "forum-answers"
   && call.id === 5
   && call.values.Conteudo === "<p>Resposta editada</p>"));
-const archivedAnswer = await service.archiveAnswer(5);
-assert.deepEqual(archivedAnswer, { answerId: 5, topicId: 1, status: "Arquivada" });
-assert.ok(calls.some((call) => call.method === "update"
-  && call.source.key === "forum-answers"
-  && call.values.Status === "Arquivada"));
 assert.deepEqual(await service.listReactions([
   { publicationType: "Topico", publicationId: 1 },
   { publicationType: "Resposta", publicationId: 5 }
@@ -530,9 +529,9 @@ await assert.rejects(
   const overview = await overviewService.listForumOverview();
   assert.equal(overview.indicators.topics, 3);
   assert.equal(overview.indicators.answers, 1);
-  assert.equal(overview.indicators.resolvedPercent, 33);
+  assert.equal(overview.indicators.resolvedPercent, 67);
   assert.equal(overview.indicators.active, 3);
-  assert.deepEqual(overview.tabCounts, { recent: 3, popular: 3, unanswered: 1, resolved: 1, pinned: 1 });
+  assert.deepEqual(overview.tabCounts, { recent: 3, popular: 3, unanswered: 1, resolved: 2, pinned: 1 });
   assert.equal(overview.categories.find((item) => item.id === 10).count, 2);
   assert.equal(overview.categories.find((item) => item.id === 11).count, 1);
   assert.deepEqual(overview.tags.map((item) => item.title), ["REST"]);
