@@ -106,7 +106,7 @@ const service = {
     let result = topics;
     if (view === "recent") result = result.filter((topic) => topic.Status !== "Arquivado");
     if (view === "unanswered") result = result.filter((topic) => topic.QuantidadeRespostas === 0);
-    if (view === "resolved") result = result.filter((topic) => topic.Status === "Resolvido" || topic.Status === "Encerrado");
+    if (view === "resolved") result = result.filter((topic) => topic.Status === "Resolvido" || topic.Status === "Fechado");
     if (view === "pinned") result = result.filter((topic) => topic.Fixado);
     if (categoryId) result = result.filter((topic) => topic.CategoriaId === categoryId);
     if (tagId) result = result.filter((topic) => topic.tags.some((tag) => tag.Id === tagId));
@@ -263,15 +263,9 @@ const service = {
     topic.tags = taxonomy.filter((item) => tagIds.includes(item.Id));
     return { topicId: topic.Id, tagIds };
   },
-  async archiveTopic(id) {
-    const topic = topics.find((item) => item.Id === Number(id));
-    topic.Status = "Arquivado";
-    topic.canEdit = false;
-    return { topicId: topic.Id, status: topic.Status };
-  },
   async closeTopic(id) {
     const topic = topics.find((item) => item.Id === Number(id));
-    topic.Status = "Encerrado";
+    topic.Status = "Fechado";
     return { topicId: topic.Id, status: topic.Status };
   },
   async setTopicPinned(id, pinned) {

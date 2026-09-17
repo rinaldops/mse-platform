@@ -78,7 +78,6 @@ const forumServiceMethods = [
   "createTopic",
   "getTopicForEdit",
   "updateTopic",
-  "archiveTopic",
   "closeTopic",
   "loadTopicDraft",
   "saveTopicDraft",
