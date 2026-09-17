@@ -3,7 +3,7 @@ import { defineListSchema } from "../../../core/list-provisioning.js";
 import { FORUM_LIST_SCHEMAS, FORUM_SCHEMA_VERSION } from "../forum-schema.js";
 
 const schemas = FORUM_LIST_SCHEMAS.map(defineListSchema);
-assert.equal(FORUM_SCHEMA_VERSION, 5);
+assert.equal(FORUM_SCHEMA_VERSION, 6);
 assert.equal(schemas.length, 7);
 assert.equal(new Set(schemas.map((schema) => schema.key)).size, 7);
 assert.equal(new Set(schemas.map((schema) => schema.internalName)).size, 7);
@@ -28,6 +28,10 @@ assert.equal(topics.fields.find((field) => field.internalName === "Conteudo").ri
 assert.deepEqual(
   topics.fields.find((field) => field.internalName === "FormatoConteudo").choices,
   ["TextoSimples", "HtmlSeguroV1"]
+);
+assert.deepEqual(
+  topics.fields.find((field) => field.internalName === "Status").choices,
+  ["Aberto", "Resolvido", "Fechado"]
 );
 assert.equal(topics.fields.find((field) => field.internalName === "UltimaAtividade").indexed, true);
 

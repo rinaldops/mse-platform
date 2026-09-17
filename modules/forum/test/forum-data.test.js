@@ -197,7 +197,7 @@ for (const sort of ["primeiras", "categorias", "respostas", "menosRespostas", "v
 
 await service.listTopics({ view: "resolved" });
 const resolvedTopicCall = calls.filter((call) => call.method === "page" && call.source.key === "forum-topics").at(-1);
-assert.match(resolvedTopicCall.options.filter, /Status eq 'Resolvido' or Status eq 'Encerrado'/);
+assert.match(resolvedTopicCall.options.filter, /Status eq 'Resolvido' or Status eq 'Fechado'/);
 
 const tagged = await service.listTopics({ tagId: 20, pageSize: 1 });
 assert.equal(tagged.topics[0].Id, 1);
@@ -355,7 +355,7 @@ const ownerService = createForumReadService({
 assert.equal((await ownerService.getTopic(1)).canEdit, false);
 assert.equal((await ownerService.getTopic(1)).canClose, true);
 assert.equal((await ownerService.getTopic(1)).canPin, true);
-assert.deepEqual(await ownerService.closeTopic(1), { topicId: 1, status: "Encerrado" });
+assert.deepEqual(await ownerService.closeTopic(1), { topicId: 1, status: "Fechado" });
 assert.deepEqual(await ownerService.setTopicPinned(1, true), { topicId: 1, pinned: true });
 assert.ok(calls.some((call) => call.method === "update" && call.values.Fixado === true));
 await assert.rejects(service.setTopicPinned(1, true), (error) => error.code === "access-denied");
@@ -375,10 +375,8 @@ assert.equal(updateCall.options.etag, '"topic-1"');
 assert.ok(calls.some((call) => call.method === "delete" && call.source.key === "forum-topic-tags" && call.id === 40));
 assert.ok(calls.some((call) => call.method === "create"
   && call.source.key === "forum-topic-tags" && call.values.Title === "1:21"));
-assert.deepEqual(await service.closeTopic(1), { topicId: 1, status: "Encerrado" });
-assert.ok(calls.some((call) => call.method === "update" && call.values.Status === "Encerrado"));
-assert.deepEqual(await service.archiveTopic(1), { topicId: 1, status: "Arquivado" });
-assert.ok(calls.some((call) => call.method === "update" && call.values.Status === "Arquivado"));
+assert.deepEqual(await service.closeTopic(1), { topicId: 1, status: "Fechado" });
+assert.ok(calls.some((call) => call.method === "update" && call.values.Status === "Fechado"));
 const answers = await service.listAnswers(1);
 assert.equal(answers.answers[0].Id, 5);
 assert.equal(answers.answers[0].canEdit, true);
@@ -402,7 +400,7 @@ const closedTopicService = createForumReadService({
       ...client,
       async getListItem(source, id, options) {
         if (source.key === "forum-topics") {
-          return { item: { Id: id, Status: "Encerrado", QuantidadeRespostas: 0, UltimaAtividade: "2026-01-01T00:00:00Z" }, etag: '"closed-topic"' };
+          return { item: { Id: id, Status: "Fechado", QuantidadeRespostas: 0, UltimaAtividade: "2026-01-01T00:00:00Z" }, etag: '"closed-topic"' };
         }
         return client.getListItem(source, id, options);
       }
@@ -524,7 +522,7 @@ await assert.rejects(
         if (source.key === "forum-topics") return [
           { Id: 1, CategoriaId: 10, Status: "Resolvido", Fixado: true, QuantidadeRespostas: 2, UltimaAtividade: recentDate, Author: { Id: 1 } },
           { Id: 2, CategoriaId: 10, Status: "Aberto", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: old, Author: { Id: 2 } },
-          { Id: 3, CategoriaId: 11, Status: "Encerrado", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: recentDate, Author: { Id: 1 } }
+          { Id: 3, CategoriaId: 11, Status: "Fechado", Fixado: false, QuantidadeRespostas: 0, UltimaAtividade: recentDate, Author: { Id: 1 } }
         ];
         if (source.key === "forum-answers") return [{ Id: 5, Author: { Id: 3 } }];
         if (source.key === "forum-topic-tags") return [{ TagId: 20 }, { TagId: 20 }];
