@@ -14,10 +14,15 @@ Current version: `0.4.0`.
 - Topic creation, editing, closing and drafts.
 - Configurable safe rich-text editor: Quill, Summernote Lite or native fallback.
 - Answers with pagination and editing.
+- E-mail notification to the topic author when another user posts an answer, with author, excerpt and direct answer link.
 - Reactions.
 - Accepted answer / solved topic flow.
 - Related topics.
 - Sample community ranking.
+
+E-mail delivery uses SharePoint's `SP.Utilities.Utility.SendEmail`. A delivery
+failure never rolls back the answer; the UI reports the partial failure and
+links to the answer already published so the user does not submit it twice.
 
 ## Layout particulars (page bar redesign)
 

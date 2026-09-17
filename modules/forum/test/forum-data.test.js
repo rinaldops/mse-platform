@@ -62,6 +62,18 @@ const client = {
   async getListItem(source, id, options) {
     calls.push({ method: "item", source, id, options });
     if (source.key === "forum-topics") {
+      if (options?.select?.includes("Author/EMail")) {
+        return {
+          item: {
+            Id: id,
+            Title: "Detalhe",
+            Status: "Aberto",
+            QuantidadeRespostas: 0,
+            Author: { Id: 8, EMail: "bruno@example.test" }
+          },
+          etag: '"topic-1"'
+        };
+      }
       return { item: { Id: id, Title: "Detalhe", Conteudo: "Texto", CategoriaId: 10, Status: "Aberto", Author: { Id: 7 } }, etag: '"topic-1"' };
     }
     if (source.key === "forum-answers") {
@@ -92,9 +104,10 @@ const client = {
     if (source.key === "forum-reactions") reactionRecord = null;
     return { status: 204 };
   },
-  async request(path) {
-    calls.push({ method: "request", path });
-    return { data: { Id: 7 } };
+  async request(path, options) {
+    calls.push({ method: "request", path, options });
+    if (path === "/_api/SP.Utilities.Utility.SendEmail") return { data: {} };
+    return { data: { Id: 7, Title: "Ana Silva" } };
   },
   async uploadFile(source, options) {
     calls.push({ method: "upload", source, options });
@@ -116,6 +129,7 @@ const dataSources = {
 let sanitizeCalls = 0;
 const service = createForumReadService({
   dataSources,
+  forumPageUrl: "https://example.test/teams/td/SitePages/Forum.aspx",
   sanitizeRichText(input) {
     sanitizeCalls += 1;
     return input.replace(/ onclick="[^"]*"/g, "");
@@ -386,13 +400,19 @@ const createdAnswer = await service.createAnswer({
   content: '<p onclick="alert(1)">Resposta <strong>nova</strong></p>',
   contentFormat: "HtmlSeguroV1"
 });
-assert.deepEqual(createdAnswer, { answerId: 50, topicId: 1 });
+assert.deepEqual(createdAnswer, { answerId: 50, topicId: 1, notification: { sent: true } });
 const createdAnswerCall = calls.find((call) => call.method === "create" && call.source.key === "forum-answers");
 assert.equal(createdAnswerCall.values.FormatoConteudo, "HtmlSeguroV1");
 assert.equal(createdAnswerCall.values.Conteudo, "<p>Resposta <strong>nova</strong></p>");
 assert.ok(calls.some((call) => call.method === "update"
   && call.source.key === "forum-topics"
   && call.values.QuantidadeRespostas === 1));
+const emailCall = calls.find((call) => call.path === "/_api/SP.Utilities.Utility.SendEmail");
+assert.deepEqual(emailCall.options.body.properties.To.results, ["bruno@example.test"]);
+assert.equal(emailCall.options.body.properties.Subject, "Nova resposta: Detalhe");
+assert.match(emailCall.options.body.properties.Body, /Ana Silva/);
+assert.match(emailCall.options.body.properties.Body, /Resposta nova/);
+assert.match(emailCall.options.body.properties.Body, /forumTopic=1&amp;forumAnswer=50/);
 const closedTopicService = createForumReadService({
   dataSources: {
     get: dataSources.get,
