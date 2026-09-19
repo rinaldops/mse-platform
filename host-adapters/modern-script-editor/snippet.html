@@ -1,0 +1,23 @@
+<div
+  data-mse-module="__MODULE_ID__"
+  data-mse-instance="__INSTANCE_ID__"
+  data-mse-view="full"
+  data-mse-manifest="__RELEASE_BASE__/__MANIFEST_PATH__">
+</div>
+<script type="module">
+  import { mountAllMseModules } from "__RELEASE_BASE__/host-adapters/modern-script-editor/bootstrap.js";
+  import { createSiteIntegration } from "__RELEASE_BASE__/host-adapters/modern-script-editor/site-integration.js";
+
+  const integration = await createSiteIntegration({
+    releaseBase: "__RELEASE_BASE__",
+    enabledModules: __ENABLED_MODULES__
+  });
+  const results = await mountAllMseModules({
+    coreVersion: "__CORE_VERSION__",
+    config: { admin: { releaseBase: "__RELEASE_BASE__", coreVersion: "__CORE_VERSION__" } },
+    configurationStore: integration.configurationStore,
+    services: integration.services,
+    manifestResolver: integration.manifestResolver
+  });
+  results.filter((result) => result.status === "rejected").forEach((result) => console.error(result.reason));
+</script>

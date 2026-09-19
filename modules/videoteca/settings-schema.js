@@ -1,0 +1,32 @@
+export const VIDEOTECA_SETTINGS_SCHEMA = Object.freeze({
+  version: 1,
+  groups: [
+    {
+      id: "layout",
+      label: "Layout",
+      fields: [{
+        id: "layout.mode",
+        type: "select",
+        label: "Largura do módulo",
+        options: ["contained", "fullBleed"],
+        default: "contained"
+      }]
+    },
+    {
+      id: "content",
+      label: "Conteúdo",
+      fields: [{
+        id: "videoteca.presenterSuffixes",
+        type: "text",
+        label: "Sufixos ocultos nos nomes",
+        help: "Separe vários sufixos com ponto e vírgula.",
+        default: ""
+      }]
+    },
+    {
+      id: "summary",
+      label: "Resumo",
+      fields: [{ id: "videotecaSummary.pageHref", type: "page", label: "Página da Videoteca" }]
+    }
+  ]
+});

@@ -1,0 +1,1031 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="videoteca"][data-mse-module="videoteca"] {
+  --vt-surface: #FFFFFF;
+  --vt-line: #E3E9ED;
+  --vt-text: #000000;
+  --vt-text-muted: #006298;
+  --vt-mono: ui-monospace, Consolas, monospace;
+
+  background: transparent;
+  color: var(--vt-text);
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+  overflow: hidden;
+}
+
+[data-mse-module="videoteca"].mse-app--ambient-dark {
+  --vt-surface: transparent;
+  --vt-line: #FFFFFF;
+  --vt-text: #FFFFFF;
+  --vt-text-muted: #FFFFFF;
+}
+
+[data-mse-module="videoteca"] *,
+[data-mse-module="videoteca"] *::before,
+[data-mse-module="videoteca"] *::after {
+  box-sizing: border-box;
+}
+
+.mse-videoteca__status {
+  color: var(--vt-text-muted);
+  margin: 0;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.mse-videoteca__status--error {
+  color: var(--vt-text);
+  border-left: 0.25rem solid #ED8B00;
+}
+
+/* ── Barra de página (substitui o Hero nas páginas internas) ──────────────── */
+
+.mse-videoteca__pagebar {
+  background:
+    radial-gradient(120% 160% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+    radial-gradient(40rem 20rem at 62% 15%, #267AA7, transparent 65%),
+    radial-gradient(44rem 22rem at 30% 85%, #3381AD, transparent 62%),
+    #006298;
+  color: #FFFFFF;
+  padding: 0.9rem clamp(20px, 4vw, 56px);
+}
+
+.mse-videoteca__pagebar-inner {
+  max-width: 76rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__breadcrumb {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.mse-videoteca__breadcrumb-link {
+  font-family: var(--vt-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+.mse-videoteca__breadcrumb-link:hover {
+  color: #3DDAFF;
+  opacity: 1;
+}
+
+.mse-videoteca__breadcrumb-sep {
+  font-family: var(--vt-mono);
+  font-size: 0.72rem;
+  opacity: 0.55;
+}
+
+.mse-videoteca__pagebar-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #FFFFFF;
+}
+
+.mse-videoteca__search {
+  display: flex;
+  align-items: center;
+  flex: 1 1 18rem;
+  max-width: 34rem;
+  border: 1px solid #FFFFFF;
+}
+
+.mse-videoteca__search-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  color: #FFFFFF;
+}
+
+.mse-videoteca__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  padding: 0.55em 0.6em 0.55em 0;
+  color: #FFFFFF;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.mse-videoteca__search-input::placeholder {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.mse-videoteca__pagebar-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.mse-videoteca__pagebar-button {
+  padding: 0.6em 1.2em;
+  border: 1px solid transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-videoteca__pagebar-button--primary {
+  border-color: transparent;
+  color: #000000;
+  background: #FDC82F;
+}
+
+.mse-videoteca__pagebar-button--primary:hover {
+  border-color: #000000;
+}
+
+.mse-videoteca__pagebar-button--ghost {
+  border-color: #FFFFFF;
+  background: transparent;
+}
+
+.mse-videoteca__pagebar-button--ghost:hover {
+  border-color: #3DDAFF;
+  color: #3DDAFF;
+}
+
+.mse-videoteca__pagebar :is(.mse-videoteca__search-input, .mse-videoteca__pagebar-button, .mse-videoteca__breadcrumb-link):focus-visible {
+  outline-color: #FFFFFF;
+}
+
+/* ── Página / filtros ───────────────────────────────────────────────────────── */
+
+.mse-videoteca__page {
+  width: 100%;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(20px, 4vw, 56px) 4rem;
+  display: grid;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.mse-videoteca__filterbar {
+  display: grid;
+  gap: 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-videoteca__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--vt-line);
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.mse-videoteca__chip:hover {
+  border-color: var(--vt-text-muted);
+}
+
+.mse-videoteca__chip--active {
+  border-color: var(--vt-text-muted);
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.mse-videoteca__chip-count {
+  font-family: var(--vt-mono);
+  font-size: 0.7rem;
+}
+
+.mse-videoteca__row2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mse-videoteca__sort-label {
+  font-size: 0.85rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__select {
+  min-height: 2.4rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--vt-line);
+  background: var(--vt-surface);
+  color: inherit;
+  font: inherit;
+}
+
+.mse-videoteca__view-toggle {
+  display: flex;
+}
+
+.mse-videoteca__view-button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--vt-text-muted);
+  border-left-width: 0;
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-videoteca__view-button:first-child {
+  border-left-width: 1px;
+}
+
+.mse-videoteca__view-button--active {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+}
+
+.mse-videoteca__filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__clear-filters {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--vt-line);
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* ── Carrossel de destaques ─────────────────────────────────────────────────── */
+/* root (mountCarousel) recebe track + prev + next + dots + status como irmãos
+   diretos — o grid abaixo reposiciona esses irmãos sem precisar de wrapper novo:
+   a trilha ocupa a linha 1 inteira; setas e dots ficam centrados na linha 2. */
+
+.mse-videoteca__carousel {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto 1fr;
+  align-items: center;
+  column-gap: 0.6rem;
+  row-gap: 0.6rem;
+}
+
+.mse-videoteca__showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.mse-videoteca__showcase > * {
+  min-width: 0;
+}
+
+.mse-videoteca__carousel-track {
+  grid-column: 1 / -1;
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--vt-line);
+  overflow: hidden;
+}
+
+.mse-videoteca__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.mse-videoteca__slide-content {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__slide-media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background-color: var(--accent, #006298);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__latest {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  aspect-ratio: 8 / 9;
+  min-height: 0;
+  border-top: 4px solid #FDC82F;
+  border-bottom: 1px solid #008542;
+}
+
+.mse-videoteca__latest-title {
+  margin: 0;
+  padding: 0.7rem 0;
+  color: var(--vt-text);
+  font-size: 1rem;
+}
+
+.mse-videoteca__latest-list {
+  display: grid;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__latest-item {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--vt-line);
+  color: var(--vt-text);
+  text-decoration: none;
+}
+
+.mse-videoteca__latest-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  aspect-ratio: 16 / 9;
+  background: #006298 center / cover no-repeat;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__latest-meta {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.mse-videoteca__latest-name {
+  display: -webkit-box;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vt-text-muted);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mse-videoteca__latest-date {
+  color: var(--vt-text-muted);
+  font-size: 0.72rem;
+}
+
+.mse-videoteca__slide-text {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  color: #FFFFFF;
+}
+
+.mse-videoteca__slide-text::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: #006298;
+  content: "";
+  opacity: 0.7;
+}
+
+.mse-videoteca__slide-eyebrow {
+  display: none;
+}
+
+.mse-videoteca__slide-title {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  overflow: hidden;
+  margin: 0;
+  font-size: clamp(0.88rem, 0.3vw + 0.82rem, 1.05rem);
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-videoteca__slide-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mse-videoteca__slide-description {
+  display: none;
+}
+
+.mse-videoteca__slide-sub {
+  grid-column: 1;
+  grid-row: 2;
+  overflow: hidden;
+  color: #FDC82F;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-videoteca__slide-actions {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+
+.mse-videoteca__slide-watch {
+  border: 0;
+  padding: 0.6em 1.2em;
+  background: #FDC82F;
+  color: #000000;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__slide-list {
+  padding: 0.6em 1.2em;
+  border: 1px solid #FFFFFF;
+  background: transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-videoteca__nav {
+  grid-row: 2;
+  width: 2.2rem;
+  height: 2rem;
+  border: 1px solid var(--vt-line);
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mse-videoteca__nav:hover {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+}
+
+.mse-videoteca__nav--prev {
+  grid-column: 2;
+}
+
+.mse-videoteca__nav--next {
+  grid-column: 4;
+}
+
+.mse-videoteca__carousel-dots {
+  grid-row: 2;
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mse-videoteca__dot {
+  width: 2.2rem;
+  height: 0.5rem;
+  border: none;
+  background: var(--vt-line);
+  cursor: pointer;
+  padding: 0;
+}
+
+.mse-videoteca__dot--active {
+  background: #FDC82F;
+}
+
+/* ── Trilhas por categoria / continuar assistindo ──────────────────────────── */
+
+.mse-videoteca__rows {
+  display: grid;
+  gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.mse-videoteca__row-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mse-videoteca__row-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__row-header .mse-videoteca__row-title {
+  margin-bottom: 0;
+}
+
+.mse-videoteca__row-mark {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--accent, #006298);
+}
+
+.mse-videoteca__row-count {
+  font-family: var(--vt-mono);
+  font-size: 0.7rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__catalog-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.mse-videoteca__card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 10rem) minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border: 1px solid var(--vt-line);
+  border-left: 3px solid var(--accent, #006298);
+  background: var(--vt-surface);
+  text-decoration: none;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__row[data-category="SAP"] .mse-videoteca__card {
+  border-left-color: #008542;
+}
+
+.mse-videoteca__thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: var(--accent, #006298);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--vt-line);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__card-accent {
+  display: none;
+  background: var(--accent, #006298);
+}
+
+.mse-videoteca__duration {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  color: #FFFFFF;
+  background: #4CAF507D;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+.mse-videoteca__meta {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.mse-videoteca__title {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vt-text-muted);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.mse-videoteca__sub {
+  color: var(--vt-text-muted);
+  font-size: 0.75rem;
+}
+
+.mse-videoteca__date,
+.mse-videoteca__summary-date {
+  align-self: flex-start;
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  background: #FFC10730;
+  color: #000000;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.mse-videoteca__presenter {
+  color: var(--vt-text-muted);
+  font-size: 0.75rem;
+}
+
+.mse-videoteca__pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mse-videoteca__page-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--vt-text-muted);
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mse-videoteca__page-button[aria-current="page"] {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.mse-videoteca__page-button:disabled {
+  border-color: var(--vt-line);
+  color: var(--vt-line);
+  cursor: default;
+}
+
+.mse-videoteca__card-chip {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--vt-text-muted);
+  color: var(--vt-text-muted);
+  font-size: 0.72rem;
+}
+
+/* ── Grade "Todos os vídeos" ────────────────────────────────────────────────── */
+
+.mse-videoteca__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1.25rem 1rem;
+}
+
+.mse-videoteca__grid .mse-videoteca__card {
+  flex: initial;
+}
+
+/* ── Estado vazio (filtro/busca sem resultado) ─────────────────────────────── */
+
+.mse-videoteca__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  border: 1px solid var(--vt-line);
+  text-align: center;
+}
+
+.mse-videoteca__empty-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__empty-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--vt-text-muted);
+}
+
+.mse-videoteca__button {
+  margin-top: 0.5rem;
+  padding: 0.6em 1.2em;
+  border: 1px solid transparent;
+  background: #008542;
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-videoteca__button:hover {
+  background: var(--vt-text-muted);
+}
+
+.mse-videoteca__pagebar-button:focus-visible,
+.mse-videoteca__breadcrumb-link:focus-visible,
+.mse-videoteca__search-input:focus-visible,
+.mse-videoteca__chip:focus-visible,
+.mse-videoteca__view-button:focus-visible,
+.mse-videoteca__clear-filters:focus-visible,
+.mse-videoteca__card:focus-visible,
+.mse-videoteca__slide:focus-visible,
+.mse-videoteca__nav:focus-visible,
+.mse-videoteca__dot:focus-visible,
+.mse-videoteca__button:focus-visible,
+.mse-videoteca__select:focus-visible,
+.mse-videoteca__slide-list:focus-visible {
+  outline: 0.18rem solid var(--vt-text-muted);
+  outline-offset: 0.15rem;
+}
+
+@media (max-width: 47.99rem) {
+  .mse-videoteca__carousel {
+    column-gap: 0.3rem;
+  }
+
+  .mse-videoteca__dot {
+    width: 0.9rem;
+  }
+
+  .mse-videoteca__slide-text {
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .mse-videoteca__slide-title {
+    display: -webkit-box;
+    font-size: 0.82rem;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .mse-videoteca__slide-sub {
+    font-size: 0.62rem;
+  }
+
+.mse-videoteca__slide-watch {
+    padding: 0.45em 0.8em;
+    font-size: 0.78rem;
+  }
+
+  .mse-videoteca__showcase,
+  .mse-videoteca__catalog-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mse-videoteca__latest {
+    aspect-ratio: auto;
+  }
+
+  .mse-videoteca__card {
+    grid-template-columns: minmax(6.5rem, 8rem) minmax(0, 1fr);
+  }
+
+  .mse-videoteca__chips {
+    overflow-x: auto;
+  }
+
+  .mse-videoteca__pagebar-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .mse-videoteca__pagebar-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-videoteca__carousel-track {
+    transition: none;
+  }
+}
+
+/* Home-page teaser (createVideotecaSummaryView) — separate module instance
+   (data-mse-module="videoteca-summary"). Featured videos with category-chip
+   filtering and one button through to Videoteca.aspx. The panel never paints
+   its own background: it blends into the SharePoint section colour. On a
+   light section the default dark palette stays legible; on a dark section
+   core adds .mse-app--ambient-dark and the palette flips (see
+   ARQUITETURA-MSE.md #18.7-18.8). The panel is borderless by design. */
+[data-mse-module="videoteca-summary"][data-mse-module="videoteca-summary"] {
+  --vs-text: #000000;
+  --vs-muted: #006298;
+  --vs-line: #75787B;
+
+  background: transparent;
+  color: var(--vs-text);
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+}
+
+[data-mse-module="videoteca-summary"].mse-app--ambient-dark {
+  --vs-text: #FFFFFF;
+  --vs-muted: #FFFFFF;
+  --vs-line: #FFFFFF;
+}
+
+.mse-videoteca__summary {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: 1.5rem clamp(1.5rem, 3vw, 3.5rem);
+}
+
+.mse-videoteca__summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-videoteca__summary-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--vs-text);
+}
+
+.mse-videoteca__summary-cta {
+  padding: 0.55rem 1.1rem;
+  border: 1px solid transparent;
+  background: #FDC82F;
+  color: #000000;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mse-videoteca__summary-cta:hover,
+.mse-videoteca__summary-cta:focus-visible {
+  border-color: #000000;
+}
+
+.mse-videoteca__summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-videoteca__summary-chip-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--vs-line);
+  background: transparent;
+  color: var(--vs-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.mse-videoteca__summary-chip-btn:hover {
+  border-color: var(--accent, #006298);
+}
+
+.mse-videoteca__summary-chip-btn--on {
+  border-color: var(--accent, #006298);
+  background: var(--accent, #006298);
+  color: #FFFFFF;
+}
+
+.mse-videoteca__summary-list {
+  display: grid;
+  grid-template-columns: repeat(var(--summary-columns, 1), minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.mse-videoteca__summary-item {
+  display: grid;
+  gap: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mse-videoteca__summary-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: var(--accent, #006298);
+  background-position: center;
+  background-size: cover;
+}
+
+.mse-videoteca__summary-duration {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  color: #000000;
+  background: #FDC82F;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.mse-videoteca__summary-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mse-videoteca__summary-item-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  line-height: 1.3;
+  color: var(--vs-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mse-videoteca__summary-sub {
+  color: var(--vs-muted);
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-videoteca__summary-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--vs-line);
+  color: var(--vs-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}

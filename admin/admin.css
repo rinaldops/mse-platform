@@ -1,0 +1,37 @@
+.mse-admin {
+  --admin-border: var(--mse-color-border, #d6d6d6);
+  --admin-text: var(--mse-color-text, #242424);
+  --admin-primary: var(--mse-color-primary, #0f6cbd);
+  display: grid;
+  gap: 1rem;
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  color: var(--admin-text);
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-admin h1 { margin: 0; font-size: 1.5rem; }
+.mse-admin label, .mse-admin-settings__field { display: grid; gap: .35rem; }
+.mse-admin input, .mse-admin select, .mse-admin button {
+  box-sizing: border-box;
+  min-height: 2.5rem;
+  padding: .45rem .65rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 0;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+}
+.mse-admin button { width: fit-content; cursor: pointer; font-weight: 700; }
+.mse-admin button:disabled { cursor: not-allowed; opacity: .55; }
+.mse-admin fieldset { margin: 0 0 1rem; padding: 1rem 0 0; border: 0; border-top: 1px solid var(--admin-border); }
+.mse-admin textarea { width: 100%; min-height: 12rem; font-family: ui-monospace, Consolas, monospace; }
+.mse-admin legend { padding: 0 .5rem 0 0; font-weight: 700; }
+.mse-admin-settings__field { margin-bottom: 1rem; }
+.mse-admin-settings__actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.mse-admin__new-instance, .mse-admin__actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.mse-admin__new-instance input { flex: 1 1 14rem; }
+.mse-admin__diagnostic[data-status="ready"] { border-left: .25rem solid #107c10; padding-left: .75rem; }
+.mse-admin__diagnostic[data-status="conflict"] { border-left: .25rem solid #a4262c; padding-left: .75rem; }
+.mse-admin__diagnostic[data-status="installation-required"] { border-left: .25rem solid #986f0b; padding-left: .75rem; }

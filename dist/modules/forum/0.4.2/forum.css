@@ -1,0 +1,1405 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="forum"][data-mse-module="forum"] {
+  --forum-surface: #FFFFFF;
+  --forum-surface-2: #FFFFFF;
+  /* Every use of --forum-line in this file is a 1px border — kept as a
+     distinct token from --forum-border-soft (same value) since one reads
+     as "the module's line color" and the other as "the soft-border
+     exception", but both must render the same light gray. */
+  --forum-line: #E3E9ED;
+  --forum-text: #000000;
+  --forum-text-muted: #75787B;
+  --forum-accent: #006298;
+  --forum-verde: #008542;
+  --forum-danger: #ED8B00;
+  --forum-amarelo: #FDC82F;
+  /* Documented local exceptions (IDENTIDADE-PETROBRAS.md secao 4): light
+     tints of azul-escuro/cinza for hover/active surfaces and 1px borders on
+     inactive items — never a predominant background. */
+  --forum-border-soft: #E3E9ED;
+  --forum-surface-soft: #F2F7FA;
+  --forum-mono: ui-monospace, Consolas, monospace;
+
+  background: #FFFFFF;
+  color: var(--forum-text);
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+  overflow: hidden;
+}
+
+.mse-forum {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem);
+}
+
+/* List and detail views both open with the same full-bleed .mse-forum__pagebar
+   (so a reader always sees which section they're in), so both opt out of the
+   shared .mse-forum content padding/max-width — .mse-forum__pagebar and
+   .mse-forum__page manage width and padding per section instead (README
+   "Barra de página"). Compose is the one view still on the plain box above. */
+.mse-forum.mse-forum--list,
+.mse-forum.mse-forum--detail {
+  display: block;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mse-forum__title,
+.mse-forum__description,
+.mse-forum__meta,
+.mse-forum__status,
+.mse-forum__answers-title {
+  color: var(--forum-text);
+  font-weight: 400;
+  margin: 0;
+}
+
+.mse-forum__title {
+  color: var(--forum-text);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Same breathing room as the RESPOSTAS label below (.mse-forum__answers-title
+   margin-top) — the title shouldn't read as glued to the question text. */
+.mse-forum__title + .mse-forum__body {
+  margin-top: 1.5rem;
+}
+
+.mse-forum__detail-category {
+  display: flex;
+  margin: 0.65rem 0 1.5rem;
+}
+
+.mse-forum__description,
+.mse-forum__meta {
+  color: var(--forum-text-muted);
+}
+
+.mse-forum__status--empty {
+  color: var(--forum-text-muted);
+}
+
+.mse-forum__description {
+  max-width: 70ch;
+  margin-top: 0.4rem;
+}
+
+.mse-forum__back {
+  color: var(--forum-accent);
+  text-decoration: none;
+}
+
+.mse-forum__tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.mse-forum__tab {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.7rem 1rem;
+  color: var(--forum-accent);
+  font-size: 0.95rem;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.mse-forum__tab:hover {
+  border-bottom-color: var(--forum-line);
+}
+
+.mse-forum__tab--active {
+  font-weight: 700;
+  border-bottom-color: #FDC82F;
+}
+
+.mse-forum__tab-count {
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.mse-forum__tab:focus-visible,
+.mse-forum__back:focus-visible,
+.mse-forum__topic-link:focus-visible,
+.mse-forum__badge--tag:focus-visible,
+.mse-forum__button:focus-visible,
+.mse-forum__editor-button:focus-visible,
+.mse-forum__editor-select:focus-visible,
+.mse-forum__rich-editor:focus-visible,
+.mse-forum__reaction:focus-visible,
+.mse-forum__input:focus-visible,
+.mse-forum__textarea:focus-visible,
+.mse-forum__select:focus-visible,
+.mse-forum__search-input:focus-visible,
+.mse-forum__pagebar-button:focus-visible,
+.mse-forum__breadcrumb-link:focus-visible,
+.mse-forum__category-item:focus-visible,
+.mse-forum__tag-chip:focus-visible,
+.mse-forum__unanswered-button:focus-visible,
+.mse-forum__clear-filters:focus-visible,
+.mse-forum__icon-button:focus-visible,
+.mse-forum__topic-card-title:focus-visible {
+  outline: 0.18rem solid var(--forum-accent);
+  outline-offset: 0.15rem;
+}
+
+.mse-forum__field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.mse-forum__field-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.mse-forum__input,
+.mse-forum__textarea,
+.mse-forum__select,
+.mse-forum__button {
+  min-height: 2.6rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  font: inherit;
+}
+
+.mse-forum__input,
+.mse-forum__textarea,
+.mse-forum__select {
+  width: 100%;
+  color: inherit;
+  background: var(--forum-surface);
+}
+
+.mse-forum__textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.mse-forum__editor {
+  overflow: hidden;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  background: var(--forum-surface);
+}
+
+.mse-forum__editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--forum-line);
+  background: var(--forum-surface-2);
+}
+
+.mse-forum__editor-button,
+.mse-forum__editor-select {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  color: inherit;
+  background: var(--forum-surface);
+  font: inherit;
+}
+
+.mse-forum__editor-button {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mse-forum__editor-button:hover {
+  border-color: var(--forum-accent);
+}
+
+.mse-forum__rich-editor {
+  min-height: 12rem;
+  max-width: none;
+  padding: 0.75rem;
+  color: inherit;
+  background: var(--forum-surface);
+}
+
+.mse-forum__rich-editor:empty::before {
+  color: var(--forum-text-muted);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.mse-forum__button {
+  display: inline-grid;
+  place-items: center;
+  border-color: var(--forum-verde);
+  color: #FFFFFF;
+  background: var(--forum-verde);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-forum__button--danger {
+  border-color: var(--forum-danger);
+  background: var(--forum-danger);
+  color: #000000;
+}
+
+.mse-forum__topic-actions,
+.mse-forum__answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #E3E9ED;
+}
+
+.mse-forum__answer-actions {
+  margin-top: 0.75rem;
+}
+
+/* .mse-forum__answer already insets its content by its own 1rem padding;
+   the topic has no such card wrapper, so its meta would otherwise sit 1rem
+   further right than every answer's — this closes that gap without adding
+   a border/card look to the topic itself. */
+.mse-forum__topic-actions {
+  padding-right: 1rem;
+}
+
+.mse-forum__answer-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Icon-only action row: reactions, permalink, edit/archive/mark-solution all
+   read as quiet metadata so the question/answer text above stays the loudest
+   thing on the page. The author · date meta line joins the same row, last —
+   the least important fact, not the first thing the eye meets. */
+.mse-forum__icon {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+}
+
+.mse-forum__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mse-forum__icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--forum-border-soft);
+  border-radius: 0;
+  color: var(--forum-text-muted);
+  background: #FFFFFF;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-forum__icon-button:hover {
+  border-color: var(--forum-accent);
+  color: var(--forum-accent);
+}
+
+.mse-forum__icon-button--danger:hover {
+  border-color: var(--forum-danger);
+  color: var(--forum-danger);
+}
+
+.mse-forum__icon-button--active {
+  background: var(--forum-surface-soft);
+}
+
+.mse-forum__icon-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.mse-forum__topic-actions .mse-forum__meta,
+.mse-forum__answer-actions .mse-forum__meta {
+  margin-left: auto;
+}
+
+.mse-forum__related {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.mse-forum__compose-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 60rem;
+}
+
+.mse-forum__compose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.mse-forum__compose-actions .mse-forum__button--secondary {
+  margin-top: 0;
+}
+
+.mse-forum__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.mse-forum__pagination .mse-forum__button--secondary {
+  margin-top: 0;
+}
+
+.mse-forum__pagination-status {
+  min-width: 5rem;
+  text-align: center;
+  color: var(--forum-muted);
+  font-size: 0.9rem;
+}
+
+.mse-forum__tag-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mse-forum__tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+}
+
+.mse-forum__tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mse-forum__compose-feedback:empty {
+  display: none;
+}
+
+.mse-forum__compose-preview {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--forum-line);
+  border-radius: 0;
+  background: var(--forum-surface);
+}
+
+.mse-forum__compose-preview[hidden] {
+  display: none;
+}
+
+.mse-forum__preview-label,
+.mse-forum__preview-title {
+  margin: 0;
+}
+
+.mse-forum__preview-label {
+  color: var(--forum-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.mse-forum__preview-title {
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.mse-forum__button--secondary {
+  justify-self: center;
+  margin-top: 1rem;
+  color: var(--forum-accent);
+  background: #FFFFFF;
+  border-color: var(--forum-line);
+}
+
+.mse-forum__button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.mse-forum__topic-list,
+.mse-forum__answers {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mse-forum__topic {
+  --accent: var(--forum-accent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--forum-line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  background: var(--forum-surface);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.mse-forum__topic:hover {
+  background: var(--forum-surface-2);
+}
+
+.mse-forum__topic:first-child {
+  border-top: 1px solid var(--forum-line);
+}
+
+.mse-forum__topic-link {
+  color: var(--forum-text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mse-forum__topic-link:hover {
+  color: var(--forum-accent);
+  text-decoration: underline;
+}
+
+.mse-forum__meta {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.mse-forum__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.mse-forum__badge {
+  padding: 0.18rem 0.5rem;
+  border-radius: 0;
+  color: var(--forum-text);
+  background: var(--forum-surface-2);
+  font-size: 0.78rem;
+}
+
+.mse-forum__badge--category {
+  color: #FFFFFF;
+  background: var(--forum-verde);
+}
+
+.mse-forum__badge--tag {
+  color: var(--forum-accent);
+  background: #FFFFFF;
+  border: 1px solid var(--forum-accent);
+  text-decoration: none;
+}
+
+.mse-forum__reactions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mse-forum__reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--forum-border-soft);
+  border-radius: 0;
+  color: var(--forum-text-muted);
+  background: #FFFFFF;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mse-forum__reaction-count {
+  font-size: 0.8rem;
+}
+
+/* The icon carries the color, always, like a little emoji — heart/check/star
+   keep their identity whether or not anyone has reacted yet. The block
+   around it is what changes: no fill at zero (as before), a light gray fill
+   once it has a reaction — never a full saturated background, "selected"
+   tops out at the same light gray as merely "has a count" (per feedback:
+   solid color blocks pull too much attention). */
+.mse-forum__reaction--gostei .mse-forum__icon {
+  color: var(--forum-danger);
+}
+
+.mse-forum__reaction--util .mse-forum__icon {
+  color: var(--forum-verde);
+}
+
+.mse-forum__reaction--excelente .mse-forum__icon {
+  color: var(--forum-amarelo);
+}
+
+.mse-forum__reaction--counted,
+.mse-forum__reaction--active {
+  background: var(--forum-surface-soft);
+}
+
+.mse-forum__metrics {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  text-align: center;
+}
+
+.mse-forum__metric dt {
+  color: var(--forum-text-muted);
+  font-size: 0.72rem;
+}
+
+.mse-forum__metric dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.mse-forum__body,
+.mse-forum__answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mse-forum__body {
+  width: 100%;
+  max-width: none;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.mse-forum__body--rich {
+  overflow-x: auto;
+  white-space: normal;
+}
+
+.mse-forum__body > :first-child {
+  margin-top: 0;
+}
+
+.mse-forum__body > :last-child {
+  margin-bottom: 0;
+}
+
+.mse-forum__body a {
+  color: var(--forum-accent);
+}
+
+.mse-forum__body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mse-forum__body pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.75rem;
+  border-radius: 0;
+  background: var(--forum-surface-2);
+  white-space: pre-wrap;
+}
+
+.mse-forum__body code {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.mse-forum__body table {
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+.mse-forum__body th,
+.mse-forum__body td {
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--forum-line);
+  text-align: left;
+}
+
+.mse-forum__answers-title {
+  margin-top: 1.5rem;
+  color: var(--forum-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mse-forum__answer {
+  padding: 1rem;
+  border-left: 0.25rem solid var(--forum-amarelo);
+  background: var(--forum-surface);
+}
+
+.mse-forum__answer--highlight {
+  border-left-color: var(--forum-accent);
+  background: var(--forum-surface-2);
+}
+
+.mse-forum__answer--accepted {
+  border-left-color: var(--forum-verde);
+}
+
+@media (max-width: 47.99rem) {
+  .mse-forum__button {
+    width: 100%;
+  }
+
+  .mse-forum__topic {
+    grid-template-columns: 1fr;
+  }
+
+  .mse-forum__metrics {
+    justify-content: space-between;
+  }
+
+  .mse-forum__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mse-forum__sidebar {
+    position: static;
+  }
+
+  .mse-forum__tag-chips,
+  .mse-forum__category-list {
+    overflow-x: auto;
+  }
+
+  .mse-forum__pagebar-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .mse-forum__pagebar-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
+/* ── Barra de página (substitui o Hero nas páginas internas) ──────────────── */
+
+.mse-forum__pagebar {
+  /* Mesma linguagem do Hero da home (home.css), versão baixa e sem animação —
+     valores reaproveitados por especificação do handoff, não reinventados. */
+  background:
+    radial-gradient(120% 160% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+    radial-gradient(40rem 20rem at 62% 15%, #267AA7, transparent 65%),
+    radial-gradient(44rem 22rem at 30% 85%, #3381AD, transparent 62%),
+    #006298;
+  color: #FFFFFF;
+  padding: 0.9rem clamp(20px, 4vw, 56px);
+}
+
+.mse-forum__pagebar-inner {
+  max-width: 76rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  flex-wrap: wrap;
+}
+
+.mse-forum__breadcrumb {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.mse-forum__breadcrumb-link {
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+.mse-forum__breadcrumb-link:hover {
+  color: #3DDAFF;
+  opacity: 1;
+}
+
+.mse-forum__breadcrumb-sep {
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  opacity: 0.55;
+}
+
+/* Detail page's third breadcrumb segment (the topic title) — same look as
+   a crumb link minus the hover, and bounded so a long title still fits
+   the bar instead of overflowing it. */
+.mse-forum__breadcrumb-current {
+  overflow: hidden;
+  max-width: 40ch;
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-forum__pagebar-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #FFFFFF;
+}
+
+.mse-forum__search {
+  display: flex;
+  align-items: center;
+  flex: 1 1 18rem;
+  max-width: 34rem;
+  border: 1px solid #FFFFFF;
+}
+
+.mse-forum__search-icon {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  color: #FFFFFF;
+}
+
+.mse-forum__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  padding: 0.55em 0.6em 0.55em 0;
+  color: #FFFFFF;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.mse-forum__search-input::placeholder {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.mse-forum__pagebar-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.mse-forum__pagebar-button {
+  padding: 0.6em 1.2em;
+  border: 1px solid transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mse-forum__pagebar-button--primary {
+  border-color: transparent;
+  color: #000000;
+  background: #FDC82F;
+}
+
+.mse-forum__pagebar-button--primary:hover {
+  border-color: var(--forum-border-soft);
+}
+
+.mse-forum__pagebar-button--ghost {
+  border-color: var(--forum-accent);
+  background: #FFFFFF;
+  color: var(--forum-accent);
+}
+
+.mse-forum__pagebar-button--ghost:hover,
+.mse-forum__pagebar-button--active {
+  border-color: var(--forum-accent);
+  background: var(--forum-accent);
+  color: #FFFFFF;
+}
+
+.mse-forum__pagebar :is(.mse-forum__search-input, .mse-forum__pagebar-button, .mse-forum__breadcrumb-link):focus-visible {
+  outline-color: #FFFFFF;
+}
+
+/* The ghost button has a white fill (no more transparent-on-blue buttons),
+   so the white outline above would vanish against it. */
+.mse-forum__pagebar-button--ghost:focus-visible {
+  outline-color: var(--forum-accent);
+}
+
+/* ── Página / abas / ordenação ─────────────────────────────────────────────── */
+
+.mse-forum__page {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(20px, 4vw, 56px) 4rem;
+}
+
+.mse-forum__tabbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-bottom: 1px solid var(--forum-line);
+  margin-bottom: 1.5rem;
+}
+
+.mse-forum__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.mse-forum__sort-label {
+  font-size: 0.85rem;
+  color: var(--forum-accent);
+}
+
+.mse-forum__sort .mse-forum__select {
+  min-height: 2.4rem;
+  width: auto;
+}
+
+/* ── Grade principal (sidebar + lista) ─────────────────────────────────────── */
+
+.mse-forum__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  align-items: start;
+}
+
+.mse-forum__sidebar {
+  position: sticky;
+  top: 1rem;
+  display: grid;
+  gap: 1.75rem;
+}
+
+.mse-forum__indicators {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem 1rem;
+  padding-top: 0.9rem;
+  border-top: 3px solid #FDC82F;
+}
+
+.mse-forum__indicator {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.mse-forum__indicator-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--forum-accent);
+}
+
+.mse-forum__indicator-value--resolved {
+  color: var(--forum-verde);
+}
+
+.mse-forum__indicator-label {
+  font-family: var(--forum-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  color: var(--forum-accent);
+}
+
+.mse-forum__sidebar-title {
+  margin: 0 0 0.7rem;
+  font-family: var(--forum-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--forum-accent);
+}
+
+.mse-forum__category-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mse-forum__category-item {
+  --accent: var(--forum-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-left: 3px solid #E3E9ED;
+  background: #FFFFFF;
+  color: #000000;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mse-forum__category-item:hover {
+  background: #F2F7FA;
+}
+
+.mse-forum__category-item--active {
+  border-left-color: var(--accent);
+  background: #F2F7FA;
+  color: var(--forum-accent);
+}
+
+.mse-forum__category-item-count {
+  font-family: var(--forum-mono);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.mse-forum__tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-forum__tag-chip {
+  padding: 0.22rem 0.55rem;
+  border: 1px solid var(--forum-line);
+  background: #FFFFFF;
+  color: var(--forum-accent);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.mse-forum__tag-chip--active {
+  border-color: var(--forum-accent);
+  background: var(--forum-accent);
+  color: #FFFFFF;
+}
+
+.mse-forum__unanswered-panel {
+  padding: 1rem;
+  border: 1px solid var(--forum-line);
+}
+
+.mse-forum__unanswered-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--forum-text);
+}
+
+.mse-forum__unanswered-button {
+  width: 100%;
+  min-height: 2.6rem;
+  margin-top: 0.9rem;
+  border: 0;
+  background: var(--forum-verde);
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mse-forum__unanswered-button:hover {
+  background: var(--forum-accent);
+}
+
+/* ── Lista de tópicos ───────────────────────────────────────────────────────── */
+
+.mse-forum__main {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+}
+
+.mse-forum__filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--forum-accent);
+}
+
+.mse-forum__clear-filters {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--forum-line);
+  background: #FFFFFF;
+  color: var(--forum-accent);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.mse-forum__topic-card {
+  --accent: var(--forum-accent);
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--forum-line);
+  border-left: 3px solid var(--accent);
+  background: #FFFFFF;
+  transition: background 0.15s ease;
+}
+
+.mse-forum__topic-card:hover {
+  background: #F2F7FA;
+}
+
+.mse-forum__topic-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  background: var(--forum-accent);
+  color: #FFFFFF;
+  font-family: var(--forum-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.mse-forum__topic-card-body {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.mse-forum__topic-pinned {
+  font-family: var(--forum-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--forum-danger);
+}
+
+.mse-forum__topic-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #000000;
+  text-decoration: none;
+}
+
+.mse-forum__topic-card-title:hover {
+  color: var(--forum-accent);
+  text-decoration: underline;
+}
+
+.mse-forum__topic-card-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--forum-accent);
+}
+
+.mse-forum__topic-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.mse-forum__topic-badge {
+  --accent: var(--forum-accent);
+  padding: 0.18rem 0.5rem;
+  font-size: 0.76rem;
+}
+
+.mse-forum__topic-badge--category {
+  background: var(--accent);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.mse-forum__topic-badge--resolved {
+  border: 1px solid var(--forum-verde);
+  background: #FFFFFF;
+  color: var(--forum-verde);
+}
+
+.mse-forum__topic-badge--waiting {
+  background: #FDC82F;
+  color: #000000;
+}
+
+.mse-forum__topic-badge--closed {
+  border: 1px solid var(--forum-accent);
+  background: #FFFFFF;
+  color: var(--forum-accent);
+  font-weight: 700;
+}
+
+.mse-forum__topic-badge--tag {
+  border: 1px solid var(--forum-accent);
+  background: #FFFFFF;
+  color: var(--forum-accent);
+}
+
+.mse-forum__topic-card-metrics {
+  display: flex;
+  align-self: start;
+  gap: 1.1rem;
+  margin: 0;
+  text-align: center;
+}
+
+.mse-forum__topic-card-metric-value {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--forum-verde);
+}
+
+.mse-forum__topic-card-metric-value--zero {
+  color: var(--forum-danger);
+}
+
+.mse-forum__topic-card-metric-label {
+  font-family: var(--forum-mono);
+  font-size: 0.66rem;
+  color: var(--forum-accent);
+}
+
+.mse-forum__empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  border: 1px solid var(--forum-line);
+  text-align: center;
+}
+
+.mse-forum__empty-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--forum-text);
+}
+
+.mse-forum__empty-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--forum-accent);
+}
+
+.mse-forum__empty .mse-forum__button {
+  margin-top: 0.5rem;
+}
+
+/* Home-page teaser (createForumSummaryView) — separate module instance
+   (data-mse-module="forum-summary"). A two-column preview of recent topics
+   with excerpts and category-chip filtering, plus one button through to
+   Forum.aspx. The panel never paints its own background: it blends into the
+   SharePoint section colour. On a light section the default dark palette
+   stays legible; on a dark section core adds .mse-app--ambient-dark and the
+   text/borders/card fill flip (see ARQUITETURA-MSE.md #18.7-18.8). The panel
+   itself is borderless by design; the item cards keep the module's
+   category-accent border-left. */
+[data-mse-module="forum-summary"][data-mse-module="forum-summary"] {
+  --fs-text: #000000;
+  --fs-muted: #006298;
+  --fs-line: #E3E9ED;
+  --fs-card: #FFFFFF;
+  --fs-hover: #F2F7FA;
+
+  background: transparent;
+  color: var(--fs-text);
+  font-family: "Petrobras Sans", Arial, sans-serif;
+  border-radius: var(--mse-section-radius, 0);
+}
+
+[data-mse-module="forum-summary"].mse-app--ambient-dark {
+  --fs-text: #FFFFFF;
+  --fs-muted: #FFFFFF;
+  --fs-line: #FFFFFF;
+  --fs-card: transparent;
+  --fs-hover: transparent;
+}
+
+.mse-forum__summary {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.mse-forum__summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mse-forum__summary-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--fs-text);
+}
+
+.mse-forum__summary-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid transparent;
+  background: #FDC82F;
+  color: #000000;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  justify-self: end;
+}
+
+.mse-forum__summary-cta:hover,
+.mse-forum__summary-cta:focus-visible {
+  border-color: var(--fs-line);
+}
+
+.mse-forum__summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mse-forum__summary-chip-btn {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--fs-line);
+  background: var(--fs-card);
+  color: var(--fs-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.mse-forum__summary-chip-btn:hover {
+  border-color: var(--accent, #006298);
+}
+
+.mse-forum__summary-chip-btn--on {
+  border-color: var(--accent, #006298);
+  background: var(--accent, #006298);
+  color: #FFFFFF;
+}
+
+.mse-forum__summary-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.mse-forum__summary-card {
+  --accent: #006298;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--fs-line);
+  border-left: 3px solid var(--accent);
+  background: var(--fs-card);
+  color: var(--fs-text);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.mse-forum__summary-card:hover,
+.mse-forum__summary-card:focus-visible {
+  background: var(--fs-hover);
+}
+
+.mse-forum__summary-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mse-forum__summary-card-excerpt {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--fs-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mse-forum__summary-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--fs-muted);
+}
+
+.mse-forum__summary-card-tag {
+  padding: 0.05rem 0.4rem;
+  background: var(--accent, #006298);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.mse-forum__summary-card-replies {
+  color: #FDC82F;
+}
+
+.mse-forum__summary-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--fs-line);
+  color: var(--fs-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .mse-forum__summary-list {
+    grid-template-columns: 1fr;
+  }
+}
