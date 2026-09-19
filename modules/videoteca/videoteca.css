@@ -2,16 +2,29 @@
    regardless of which module's loader injects its core.css <link> last */
 [data-mse-module="videoteca"][data-mse-module="videoteca"] {
   --vt-surface: #FFFFFF;
-  --vt-line: #75787B;
+  --vt-line: #E3E9ED;
   --vt-text: #000000;
   --vt-text-muted: #006298;
   --vt-mono: ui-monospace, Consolas, monospace;
 
-  background: #FFFFFF;
+  background: transparent;
   color: var(--vt-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
+}
+
+[data-mse-module="videoteca"].mse-app--ambient-dark {
+  --vt-surface: transparent;
+  --vt-line: #FFFFFF;
+  --vt-text: #FFFFFF;
+  --vt-text-muted: #FFFFFF;
+}
+
+[data-mse-module="videoteca"] *,
+[data-mse-module="videoteca"] *::before,
+[data-mse-module="videoteca"] *::after {
+  box-sizing: border-box;
 }
 
 .mse-videoteca__status {
@@ -22,7 +35,7 @@
 }
 
 .mse-videoteca__status--error {
-  color: #000000;
+  color: var(--vt-text);
   border-left: 0.25rem solid #ED8B00;
 }
 
@@ -160,6 +173,7 @@
 /* ── Página / filtros ───────────────────────────────────────────────────────── */
 
 .mse-videoteca__page {
+  width: 100%;
   max-width: 76rem;
   margin: 0 auto;
   padding: clamp(1.5rem, 3vw, 2.5rem) clamp(20px, 4vw, 56px) 4rem;
@@ -169,7 +183,9 @@
 
 .mse-videoteca__filterbar {
   display: grid;
-  gap: 0.9rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem 1rem;
   padding-bottom: 0.9rem;
   border-bottom: 1px solid var(--vt-line);
 }
@@ -184,9 +200,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  min-height: 2.4rem;
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--vt-line);
-  background: #FFFFFF;
+  background: var(--vt-surface);
   color: var(--vt-text-muted);
   font: inherit;
   font-size: 0.82rem;
@@ -215,7 +232,10 @@
   align-items: center;
   justify-content: flex-end;
   gap: 1rem;
-  flex-wrap: wrap;
+}
+
+.mse-videoteca__filter-summary {
+  grid-column: 1 / -1;
 }
 
 .mse-videoteca__sort {
@@ -233,7 +253,7 @@
   min-height: 2.4rem;
   padding: 0.3rem 0.5rem;
   border: 1px solid var(--vt-line);
-  background: #FFFFFF;
+  background: var(--vt-surface);
   color: inherit;
   font: inherit;
 }
@@ -246,7 +266,7 @@
   padding: 0.5rem 0.9rem;
   border: 1px solid var(--vt-text-muted);
   border-left-width: 0;
-  background: #FFFFFF;
+  background: var(--vt-surface);
   color: var(--vt-text-muted);
   font: inherit;
   font-size: 0.82rem;
@@ -275,7 +295,7 @@
 .mse-videoteca__clear-filters {
   padding: 0.3rem 0.6rem;
   border: 1px solid var(--vt-line);
-  background: #FFFFFF;
+  background: var(--vt-surface);
   color: var(--vt-text-muted);
   font: inherit;
   font-size: 0.8rem;
@@ -295,80 +315,205 @@
   row-gap: 0.6rem;
 }
 
+.mse-videoteca__showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  min-width: 0;
+}
+
+.mse-videoteca__showcase > * {
+  min-width: 0;
+}
+
 .mse-videoteca__carousel-track {
   grid-column: 1 / -1;
   display: flex;
   width: 100%;
-  min-height: 17rem;
   border: 1px solid var(--vt-line);
   overflow: hidden;
-  transition: transform 0.5s ease;
 }
 
 .mse-videoteca__slide {
   flex: 0 0 100%;
+  min-width: 0;
+}
+
+.mse-videoteca__slide-content {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  color: var(--vt-text);
+}
+
+.mse-videoteca__slide-media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background-color: var(--accent, #006298);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__latest {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  min-height: 17rem;
+  grid-template-rows: auto minmax(0, 1fr);
+  aspect-ratio: 8 / 9;
+  min-height: 0;
+  border-top: 4px solid #FDC82F;
+  border-bottom: 1px solid #008542;
+}
+
+.mse-videoteca__latest-title {
+  margin: 0;
+  padding: 0.7rem 0;
+  color: var(--vt-text);
+  font-size: 1rem;
+}
+
+.mse-videoteca__latest-list {
+  display: grid;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: 1px solid var(--vt-line);
+}
+
+.mse-videoteca__latest-item {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--vt-line);
   color: var(--vt-text);
   text-decoration: none;
 }
 
-.mse-videoteca__slide-media {
-  background-color: var(--accent, #006298);
-  background-size: cover;
-  background-position: center;
+.mse-videoteca__latest-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  aspect-ratio: 16 / 9;
+  background: #006298 center / cover no-repeat;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mse-videoteca__latest-meta {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.mse-videoteca__latest-name {
+  display: -webkit-box;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vt-text-muted);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mse-videoteca__latest-date {
+  color: var(--vt-text-muted);
+  font-size: 0.72rem;
 }
 
 .mse-videoteca__slide-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.55rem;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
-  background: #006298;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
   color: #FFFFFF;
 }
 
+.mse-videoteca__slide-text::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: #006298;
+  content: "";
+  opacity: 0.7;
+}
+
 .mse-videoteca__slide-eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #FDC82F;
+  display: none;
 }
 
 .mse-videoteca__slide-title {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  overflow: hidden;
   margin: 0;
-  font-size: clamp(1.3rem, 1.4vw + 1rem, 1.8rem);
+  font-size: clamp(0.88rem, 0.3vw + 0.82rem, 1.05rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mse-videoteca__slide-title-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 .mse-videoteca__slide-description {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  opacity: 0.9;
+  display: none;
 }
 
 .mse-videoteca__slide-sub {
-  font-size: 0.82rem;
+  grid-column: 1;
+  grid-row: 2;
+  overflow: hidden;
+  color: #FDC82F;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mse-videoteca__slide-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
 }
 
 .mse-videoteca__slide-watch {
+  border: 0;
   padding: 0.6em 1.2em;
   background: #FDC82F;
   color: #000000;
   font-weight: 700;
   font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .mse-videoteca__slide-list {
@@ -387,7 +532,7 @@
   width: 2.2rem;
   height: 2rem;
   border: 1px solid var(--vt-line);
-  background: #FFFFFF;
+  background: var(--vt-surface);
   color: var(--vt-text-muted);
   font-size: 1.2rem;
   line-height: 1;
@@ -469,37 +614,45 @@
   color: var(--vt-text-muted);
 }
 
-.mse-videoteca__row-track {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-color: var(--vt-line) #FFFFFF;
-  scrollbar-width: thin;
+.mse-videoteca__catalog-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
 }
 
 .mse-videoteca__card {
-  flex: 0 0 15rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 10rem) minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border: 1px solid var(--vt-line);
+  border-left: 3px solid var(--accent, #006298);
+  background: var(--vt-surface);
   text-decoration: none;
   color: var(--vt-text);
 }
 
+.mse-videoteca__row[data-category="SAP"] .mse-videoteca__card {
+  border-left-color: #008542;
+}
+
 .mse-videoteca__thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
   position: relative;
   aspect-ratio: 16 / 9;
   background-color: var(--accent, #006298);
   background-size: cover;
   background-position: center;
   border: 1px solid var(--vt-line);
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .mse-videoteca__card-accent {
-  display: block;
-  height: 4px;
-  margin-top: -0.45rem;
+  display: none;
   background: var(--accent, #006298);
 }
 
@@ -507,8 +660,8 @@
   position: absolute;
   right: 0.4rem;
   bottom: 0.4rem;
-  color: #000000;
-  background: #FDC82F;
+  color: #FFFFFF;
+  background: #4CAF507D;
   padding: 0.1rem 0.4rem;
   font-size: 0.7rem;
 }
@@ -516,13 +669,22 @@
 .mse-videoteca__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-content: center;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
 .mse-videoteca__title {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vt-text-muted);
+  text-align: left;
+  cursor: pointer;
   font-weight: 600;
   font-size: 0.9rem;
   line-height: 1.35;
+  text-decoration: none;
 }
 
 .mse-videoteca__sub {
@@ -530,9 +692,66 @@
   font-size: 0.75rem;
 }
 
-.mse-videoteca__card-chip {
+.mse-videoteca__date,
+.mse-videoteca__summary-date {
   align-self: flex-start;
-  margin-top: 0.2rem;
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  background: #FFC10730;
+  color: #000000;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.mse-videoteca__presenter {
+  color: var(--vt-text-muted);
+  font-size: 0.75rem;
+}
+
+.mse-videoteca__presenters,
+.mse-videoteca__card-taxonomy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  min-width: 0;
+}
+
+.mse-videoteca__presenters .mse-videoteca__presenter {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mse-videoteca__pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mse-videoteca__page-button {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--vt-text-muted);
+  background: var(--vt-surface);
+  color: var(--vt-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.mse-videoteca__page-button[aria-current="page"] {
+  background: var(--vt-text-muted);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.mse-videoteca__page-button:disabled {
+  border-color: var(--vt-line);
+  color: var(--vt-line);
+  cursor: default;
+}
+
+.mse-videoteca__card-chip {
   padding: 0.1rem 0.45rem;
   border: 1px solid var(--vt-text-muted);
   color: var(--vt-text-muted);
@@ -608,8 +827,55 @@
 }
 
 @media (max-width: 47.99rem) {
-  .mse-videoteca__slide {
+  .mse-videoteca__filterbar {
     grid-template-columns: 1fr;
+  }
+
+  .mse-videoteca__row2 {
+    justify-content: flex-start;
+  }
+
+  .mse-videoteca__carousel {
+    column-gap: 0.3rem;
+  }
+
+  .mse-videoteca__dot {
+    width: 0.9rem;
+  }
+
+  .mse-videoteca__slide-text {
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .mse-videoteca__slide-title {
+    display: -webkit-box;
+    font-size: 0.82rem;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .mse-videoteca__slide-sub {
+    font-size: 0.62rem;
+  }
+
+.mse-videoteca__slide-watch {
+    padding: 0.45em 0.8em;
+    font-size: 0.78rem;
+  }
+
+  .mse-videoteca__showcase,
+  .mse-videoteca__catalog-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mse-videoteca__latest {
+    aspect-ratio: auto;
+  }
+
+  .mse-videoteca__card {
+    grid-template-columns: minmax(6.5rem, 8rem) minmax(0, 1fr);
   }
 
   .mse-videoteca__chips {
@@ -643,24 +909,26 @@
 [data-mse-module="videoteca-summary"][data-mse-module="videoteca-summary"] {
   --vs-text: #000000;
   --vs-muted: #006298;
-  --vs-line: #75787B;
+  --vs-line: #E3E9ED;
 
   background: transparent;
   color: var(--vs-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
 }
 
 [data-mse-module="videoteca-summary"].mse-app--ambient-dark {
   --vs-text: #FFFFFF;
   --vs-muted: #FFFFFF;
-  --vs-line: #FFFFFF;
+  --vs-line: #E3E9ED;
 }
 
 .mse-videoteca__summary {
+  --vs-spacing: clamp(1.5rem, 3vw, 3.5rem);
+  --vs-side-spacing: clamp(3rem, 6vw, 7rem);
   display: grid;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: 1.5rem var(--vs-side-spacing);
 }
 
 .mse-videoteca__summary-header {
@@ -679,14 +947,17 @@
 }
 
 .mse-videoteca__summary-cta {
-  padding: 0.55rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
   border: 1px solid transparent;
   background: #FDC82F;
   color: #000000;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  justify-self: end;
 }
 
 .mse-videoteca__summary-cta:hover,
@@ -709,6 +980,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
   transition: border-color 0.15s ease;
 }
 
@@ -724,12 +996,15 @@
 
 .mse-videoteca__summary-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(var(--summary-columns, 1), minmax(0, 1fr));
+  column-gap: var(--vs-spacing);
+  row-gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 .mse-videoteca__summary-item {
   display: grid;
+  align-content: start;
+  min-width: 0;
   gap: 0.4rem;
   color: inherit;
   text-decoration: none;
@@ -737,8 +1012,12 @@
 
 .mse-videoteca__summary-thumb {
   position: relative;
+  display: block;
+  width: 100%;
   aspect-ratio: 16 / 9;
   background-color: var(--accent, #006298);
+  background-position: center;
+  background-size: cover;
 }
 
 .mse-videoteca__summary-duration {
@@ -755,7 +1034,7 @@
 .mse-videoteca__summary-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.3rem;
 }
 
 .mse-videoteca__summary-item-title {

@@ -1,9 +1,9 @@
 {
   "name": "mse-home",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/home-view.test.js"
+    "test": "node test/contract.test.js && node test/module.test.js && node test/home-view.test.js"
   }
 }

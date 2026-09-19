@@ -1,7 +1,7 @@
 import { mountModule } from "../../../core/0.3.0/core.js";
 import { createRecursosView, createRecursosSummaryView } from "./recursos-view.js";
 
-export const RECURSOS_VERSION = "0.3.0";
+export const RECURSOS_VERSION = "0.4.6";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 // Lean panel for the Home page — see createRecursosSummaryView. Separate

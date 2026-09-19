@@ -2,17 +2,32 @@ import assert from "node:assert/strict";
 import { createVideotecaReadService } from "../videoteca-data.js";
 
 const items = [
-  { Id: 1, Title: "WS0038 - Treinamento", Categoria: "Power Platform", Destaque: true, OrdemCarrossel: 20 },
-  { Id: 2, Title: "WS0037 - Checklist", Categoria: "SAP", Destaque: true, OrdemCarrossel: 10 },
-  { Id: 3, Title: "WS0036 - RTI", Categoria: "SAP", Destaque: false, OrdemCarrossel: 0 }
+  { Id: 1, Title: "WS0038 - Treinamento", FileRef: "/teams/td/VideotecaVideos/ws0038.mp4", CategoriaId: 11, Destaque: true, OrdemCarrossel: 20 },
+  { Id: 2, Title: "WS0037 - Checklist", FileRef: "/teams/td/VideotecaVideos/ws0037.mp4", CategoriaId: 10, Destaque: true, OrdemCarrossel: 10 },
+  { Id: 3, Title: "WS0036 - RTI", FileRef: "/teams/td/VideotecaVideos/ws0036.mp4", CategoriaId: 10, Destaque: false, OrdemCarrossel: 0 }
 ];
+const taxonomy = [
+  { Id: 10, Title: "SAP", Tipo: "Categoria", Ordem: 10 },
+  { Id: 11, Title: "Power Platform", Tipo: "Categoria", Ordem: 20 },
+  { Id: 20, Title: "Power Platform", Tipo: "Tag", Ordem: 10 }
+];
+const relations = [{ VideoId: 2, TagId: 20 }];
 
 const dataSources = {
-  get: (key) => ({ key }),
+  get: (key) => ({ key, listId: "194ee687-703d-4cea-93f1-2ecb0eb99466", webUrl: "/teams/td" }),
   getClient: () => ({
+    request: async () => ({ data: { value: [{
+      id: "drive-id",
+      webUrl: "https://example.test/teams/td/VideotecaVideos",
+      sharepointIds: { listId: "194ee687-703d-4cea-93f1-2ecb0eb99466" }
+    }] } }),
     getListItems: async (source, options) => {
+      if (source.key === "videoteca-taxonomy") return taxonomy;
+      if (source.key === "videoteca-video-tags") return relations;
       assert.equal(source.key, "videoteca-videos");
-      assert.equal(options.filter, "Ativo eq 1");
+      assert.equal(options.filter, "FSObjType eq 0 and Ativo eq 1");
+      assert.ok(options.select.includes("Apresentadores/Title"));
+      assert.equal(options.expand, "Apresentadores");
       return items;
     }
   })
@@ -27,6 +42,10 @@ assert.deepEqual(featured.map((v) => v.Id), [2, 1]);
 assert.equal(groups.length, 2);
 assert.equal(groups.find((g) => g.category === "SAP").videos.length, 2);
 assert.equal(groups.find((g) => g.category === "Power Platform").videos.length, 1);
+assert.deepEqual(featured[0].Tags, ["Power Platform"]);
+assert.equal(featured[0].URL, "/teams/td/VideotecaVideos/ws0037.mp4");
+assert.match(groups.find((g) => g.category === "SAP").videos[0].Miniatura, /\/drives\/drive-id\//);
+assert.match(groups.find((g) => g.category === "SAP").videos[0].Miniatura, /c1280x720\/content$/);
 
 assert.throws(() => createVideotecaReadService({}), TypeError);
 

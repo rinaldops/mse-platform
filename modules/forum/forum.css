@@ -14,16 +14,14 @@
   --forum-verde: #008542;
   --forum-danger: #ED8B00;
   --forum-amarelo: #FDC82F;
-  /* Documented local exceptions (IDENTIDADE-PETROBRAS.md secao 4): light
-     tints of azul-escuro/cinza for hover/active surfaces and 1px borders on
-     inactive items — never a predominant background. */
+  /* Light tints are used only for hover/active surfaces and subtle borders. */
   --forum-border-soft: #E3E9ED;
   --forum-surface-soft: #F2F7FA;
   --forum-mono: ui-monospace, Consolas, monospace;
 
   background: #FFFFFF;
   color: var(--forum-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
 }
@@ -361,14 +359,26 @@
 
 .mse-forum__pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.35rem;
   margin-top: 1.25rem;
 }
 
 .mse-forum__pagination .mse-forum__button--secondary {
   margin-top: 0;
+}
+
+.mse-forum__pagination .mse-forum__button--current {
+  border-color: var(--forum-accent);
+  background: var(--forum-accent);
+  color: #ffffff;
+}
+
+.mse-forum__pagination-ellipsis {
+  padding: 0 0.25rem;
+  color: var(--forum-muted);
 }
 
 .mse-forum__pagination-status {
@@ -1241,7 +1251,7 @@
 
   background: transparent;
   color: var(--fs-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
 }
 
@@ -1275,14 +1285,17 @@
 }
 
 .mse-forum__summary-cta {
-  padding: 0.55rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
   border: 1px solid transparent;
   background: #FDC82F;
   color: #000000;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  justify-self: end;
 }
 
 .mse-forum__summary-cta:hover,
@@ -1379,6 +1392,10 @@
   color: #FFFFFF;
   font-weight: 700;
   font-size: 0.68rem;
+}
+
+.mse-forum__summary-card-replies {
+  color: #FDC82F;
 }
 
 .mse-forum__summary-empty {

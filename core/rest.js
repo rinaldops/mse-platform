@@ -142,7 +142,7 @@ function unwrapPage(data) {
   }
   return {
     items: value,
-    next: data?.["@odata.nextLink"] ?? data?.d?.__next ?? null
+    next: data?.["@odata.nextLink"] ?? data?.["odata.nextLink"] ?? data?.d?.__next ?? null
   };
 }
 

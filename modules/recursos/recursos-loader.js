@@ -1,6 +1,6 @@
 (async function loadRecursos() {
-  const CORE_VERSION = "0.3.0";
-  const RECURSOS_VERSION = "0.3.0";
+  const CORE_VERSION = "0.3.2";
+  const RECURSOS_VERSION = "0.4.6";
   const LISTS = [["recursos-links", "RecursosLinks"]];
 
   const script = document.currentScript
@@ -12,7 +12,7 @@
     root.id = "mse-recursos-home";
     root.dataset.mseModule = "recursos";
     root.dataset.configKey = "recursos-home";
-    root.textContent = "Carregando recursos...";
+    root.textContent = "Carregando links...";
     script.parentNode.insertBefore(root, script);
     roots.push(root);
   }
@@ -33,7 +33,7 @@
     const webUrl = (allRoots[0].dataset.webUrl || assetBase.replace(/\/SiteAssets$/, "")).replace(/\/+$/, "");
     if (!webUrl || !assetBase) throw new Error("Unable to infer webUrl or SiteAssets path.");
 
-    write("Carregando recursos...");
+    write("Carregando links...");
 
     const [{ createSharePointDataSourceRegistry }, { createRecursosReadService }, { mountRecursos, mountRecursosSummary }] =
       await Promise.all([
@@ -85,7 +85,7 @@
       });
     }
   } catch (error) {
-    write(`Falha ao carregar recursos: ${error?.message || error}`);
+    write(`Falha ao carregar links: ${error?.message || error}`);
     console.error(error);
   }
 })();

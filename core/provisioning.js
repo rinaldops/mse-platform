@@ -1,13 +1,14 @@
 const DEFAULT_LIST_TITLE = "MSEConfiguracoes";
 const ADD_TO_ALL_CONTENT_TYPES_WITH_INTERNAL_NAME_HINT = 12;
-const CONFIGURATION_FIELDS = "Id,Title,Escopo,Modulo,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,Ativo";
+const CONFIGURATION_FIELDS = "Id,Title,Escopo,Modulo,TipoInstancia,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,Estado,Ativo";
 const CONFIGURATION_KEYS = new Set([
-  "key", "scope", "module", "layout", "theme", "configuration", "active"
+  "key", "scope", "module", "view", "layout", "theme", "configuration", "settingsVersion",
+  "moduleVersion", "state", "active"
 ]);
 const FORBIDDEN_JSON_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
-  version: 1,
+  version: 2,
   title: Object.freeze({
     internalName: "Title",
     displayName: "Chave",
@@ -32,6 +33,14 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       required: false,
       indexed: true,
       schemaXml: "<Field Type='Text' DisplayName='Módulo' Name='Modulo' StaticName='Modulo' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
+    }),
+    Object.freeze({
+      internalName: "TipoInstancia",
+      displayName: "Tipo de instância",
+      type: "Choice",
+      required: true,
+      choices: Object.freeze(["Full", "Summary"]),
+      schemaXml: "<Field Type='Choice' DisplayName='Tipo de instância' Name='TipoInstancia' StaticName='TipoInstancia' Required='TRUE' Format='Dropdown'><Default>Full</Default><CHOICES><CHOICE>Full</CHOICE><CHOICE>Summary</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
       internalName: "Layout",
@@ -61,6 +70,28 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Number",
       required: true,
       schemaXml: "<Field Type='Number' DisplayName='Versão da configuração' Name='VersaoConfiguracao' StaticName='VersaoConfiguracao' Required='TRUE' Decimals='0' Min='1'><Default>1</Default></Field>"
+    }),
+    Object.freeze({
+      internalName: "VersaoSettings",
+      displayName: "Versão dos settings",
+      type: "Number",
+      required: true,
+      schemaXml: "<Field Type='Number' DisplayName='Versão dos settings' Name='VersaoSettings' StaticName='VersaoSettings' Required='TRUE' Decimals='0' Min='1'><Default>1</Default></Field>"
+    }),
+    Object.freeze({
+      internalName: "VersaoModulo",
+      displayName: "Versão do módulo",
+      type: "Text",
+      required: false,
+      schemaXml: "<Field Type='Text' DisplayName='Versão do módulo' Name='VersaoModulo' StaticName='VersaoModulo' Required='FALSE' MaxLength='64' />"
+    }),
+    Object.freeze({
+      internalName: "Estado",
+      displayName: "Estado",
+      type: "Choice",
+      required: true,
+      choices: Object.freeze(["Rascunho", "Publicado"]),
+      schemaXml: "<Field Type='Choice' DisplayName='Estado' Name='Estado' StaticName='Estado' Required='TRUE' Format='Dropdown'><Default>Publicado</Default><CHOICES><CHOICE>Rascunho</CHOICE><CHOICE>Publicado</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
       internalName: "Ativo",
@@ -455,6 +486,7 @@ async function insertGlobal({ webUrl, listTitle, itemType, fetchImpl, digest }) 
       __metadata: { type: itemType },
       Title: "global",
       Escopo: "Global",
+      TipoInstancia: "Full",
       Layout: "Contained",
       Tema: "default",
       ConfiguracaoJson: JSON.stringify({
@@ -468,6 +500,9 @@ async function insertGlobal({ webUrl, listTitle, itemType, fetchImpl, digest }) 
         }
       }),
       VersaoConfiguracao: 1,
+      VersaoSettings: 1,
+      VersaoModulo: null,
+      Estado: "Publicado",
       Ativo: true
     }
   });
@@ -513,9 +548,13 @@ function validateEditableItem(item) {
     ...item,
     key: validateName(item.key, "Chave"),
     scope: String(item.scope || ""),
+    view: String(item.view || "Full"),
     layout: String(item.layout || ""),
     theme: item.theme ? validateName(item.theme, "Tema") : null,
-    configuration: normalizeConfiguration(item.configuration)
+    configuration: normalizeConfiguration(item.configuration),
+    settingsVersion: item.settingsVersion ?? 1,
+    moduleVersion: item.moduleVersion ?? null,
+    state: String(item.state || "Publicado")
   };
 
   if (!new Set(["Global", "Instancia"]).has(normalized.scope)) {
@@ -526,6 +565,19 @@ function validateEditableItem(item) {
   }
   if (typeof normalized.active !== "boolean") {
     throw provisioningError("invalid-item", "Ativo deve ser booleano.");
+  }
+  if (!new Set(["Full", "Summary"]).has(normalized.view)) {
+    throw provisioningError("invalid-item", "Tipo de instância deve ser Full ou Summary.");
+  }
+  if (!Number.isInteger(normalized.settingsVersion) || normalized.settingsVersion < 1) {
+    throw provisioningError("invalid-item", "Versão dos settings deve ser um inteiro positivo.");
+  }
+  if (normalized.moduleVersion !== null
+    && (typeof normalized.moduleVersion !== "string" || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(normalized.moduleVersion))) {
+    throw provisioningError("invalid-item", "Versão do módulo deve usar SemVer.");
+  }
+  if (!new Set(["Rascunho", "Publicado"]).has(normalized.state)) {
+    throw provisioningError("invalid-item", "Estado deve ser Rascunho ou Publicado.");
   }
   if (normalized.scope === "Global") {
     if (normalized.key.toLowerCase() !== "global") {
@@ -582,9 +634,13 @@ async function readConfigurationItem({ webUrl, listTitle, itemId, fetchImpl }) {
     key: value.Title,
     scope: value.Escopo,
     module: value.Modulo || null,
+    view: value.TipoInstancia || "Full",
     layout: value.Layout,
     theme: value.Tema || null,
     configuration,
+    settingsVersion: value.VersaoSettings || 1,
+    moduleVersion: value.VersaoModulo || null,
+    state: value.Estado || "Publicado",
     version: value.VersaoConfiguracao,
     active: Boolean(value.Ativo)
   });
@@ -612,6 +668,105 @@ export async function loadConfigurationItemForEdit({
     itemId,
     fetchImpl
   })).record;
+}
+
+export async function listConfigurationItems({
+  webUrl,
+  listTitle = DEFAULT_LIST_TITLE,
+  module,
+  fetchImpl = globalThis.fetch
+} = {}) {
+  const normalizedWebUrl = normalizeWebUrl(webUrl);
+  const normalizedTitle = normalizeListTitle(listTitle);
+  if (typeof fetchImpl !== "function") {
+    throw provisioningError("fetch-unavailable", "A API fetch não está disponível.");
+  }
+  const moduleFilter = module
+    ? `&$filter=Modulo eq '${validateName(module, "Módulo").replaceAll("'", "''")}'`
+    : "";
+  const response = await fetchResponse(
+    fetchImpl,
+    `${normalizedWebUrl}${listPath(normalizedTitle)}/items?$select=${CONFIGURATION_FIELDS}${moduleFilter}&$orderby=Title`,
+    { headers: { Accept: "application/json;odata=nometadata" } },
+    `listar configurações da lista ${normalizedTitle}`
+  );
+  throwForResponse(response, `listar configurações da lista ${normalizedTitle}`);
+  const items = unwrap(await readJson(response, `listar configurações da lista ${normalizedTitle}`));
+  if (!Array.isArray(items)) {
+    throw provisioningError("invalid-response", `A lista ${normalizedTitle} retornou itens inválidos.`);
+  }
+  return Object.freeze(items.map((item) => Object.freeze({
+    id: item.Id,
+    key: item.Title,
+    scope: item.Escopo,
+    module: item.Modulo || null,
+    view: item.TipoInstancia || "Full",
+    layout: item.Layout,
+    theme: item.Tema || null,
+    version: item.VersaoConfiguracao,
+    settingsVersion: item.VersaoSettings || 1,
+    moduleVersion: item.VersaoModulo || null,
+    state: item.Estado || "Publicado",
+    active: Boolean(item.Ativo)
+  })));
+}
+
+export async function createConfigurationItem({
+  webUrl,
+  listTitle = DEFAULT_LIST_TITLE,
+  item,
+  fetchImpl = globalThis.fetch
+} = {}) {
+  const normalizedWebUrl = normalizeWebUrl(webUrl);
+  const normalizedTitle = normalizeListTitle(listTitle);
+  if (typeof fetchImpl !== "function") {
+    throw provisioningError("fetch-unavailable", "A API fetch não está disponível.");
+  }
+  const normalized = validateEditableItem(item);
+  const listResponse = await fetchResponse(
+    fetchImpl,
+    `${normalizedWebUrl}${listPath(normalizedTitle)}?$select=ListItemEntityTypeFullName`,
+    { headers: { Accept: "application/json;odata=nometadata" } },
+    `consultar o tipo de item da lista ${normalizedTitle}`
+  );
+  throwForResponse(listResponse, `consultar o tipo de item da lista ${normalizedTitle}`);
+  const list = unwrap(await readJson(listResponse, `consultar o tipo de item da lista ${normalizedTitle}`));
+  if (!list?.ListItemEntityTypeFullName) {
+    throw provisioningError("invalid-response", `A lista ${normalizedTitle} não informou o tipo de item.`);
+  }
+  const digest = await getDigest({ webUrl: normalizedWebUrl, fetchImpl });
+  const response = await writeJson({
+    fetchImpl,
+    url: `${normalizedWebUrl}${listPath(normalizedTitle)}/items`,
+    digest,
+    context: `criar a configuração ${normalized.key}`,
+    body: {
+      __metadata: { type: list.ListItemEntityTypeFullName },
+      Title: normalized.key,
+      Escopo: normalized.scope,
+      Modulo: normalized.module,
+      TipoInstancia: normalized.view,
+      Layout: normalized.layout,
+      Tema: normalized.theme,
+      ConfiguracaoJson: JSON.stringify(normalized.configuration),
+      VersaoConfiguracao: 1,
+      VersaoSettings: normalized.settingsVersion,
+      VersaoModulo: normalized.moduleVersion,
+      Estado: normalized.state,
+      Ativo: normalized.active
+    }
+  });
+  const created = unwrap(await readJson(response, `criar a configuração ${normalized.key}`));
+  const itemId = Number(created?.Id);
+  if (!Number.isInteger(itemId) || itemId < 1) {
+    throw provisioningError("invalid-response", "O SharePoint não informou o ID da configuração criada.");
+  }
+  return loadConfigurationItemForEdit({
+    webUrl: normalizedWebUrl,
+    listTitle: normalizedTitle,
+    itemId,
+    fetchImpl
+  });
 }
 
 export async function updateConfigurationItem({
@@ -666,10 +821,14 @@ export async function updateConfigurationItem({
       Title: updated.key,
       Escopo: updated.scope,
       Modulo: updated.module,
+      TipoInstancia: updated.view,
       Layout: updated.layout,
       Tema: updated.theme,
       ConfiguracaoJson: JSON.stringify(updated.configuration),
       VersaoConfiguracao: current.record.version + 1,
+      VersaoSettings: updated.settingsVersion,
+      VersaoModulo: updated.moduleVersion,
+      Estado: updated.state,
       Ativo: updated.active
     }
   });

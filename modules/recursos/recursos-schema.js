@@ -1,15 +1,16 @@
-export const RECURSOS_SCHEMA_VERSION = 1;
+export const RECURSOS_SCHEMA_VERSION = 3;
 
 export const RECURSOS_CATEGORIES = Object.freeze([
-  "Power Platform", "Microsoft 365", "SAP", "Azure e APIs", "Governança", "Dicas rápidas"
+  "Power Platform", "Microsoft 365", "SAP", "Azure e APIs", "Governança", "Dicas rápidas",
+  "Outras Comunidades"
 ]);
 
 export const RECURSOS_LIST_SCHEMAS = [
   {
     key: "recursos-links",
     internalName: "RecursosLinks",
-    displayName: "Recursos — Links",
-    description: "Links e dicas curados exibidos no módulo Recursos.",
+    displayName: "Explore Mais — Links",
+    description: "Links e dicas curados exibidos no módulo Explore Mais.",
     version: RECURSOS_SCHEMA_VERSION,
     versioning: true,
     readSecurity: 1,

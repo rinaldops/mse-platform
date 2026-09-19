@@ -1,6 +1,6 @@
 import { createSharePointThemeConfig } from "./theme-adapter.js";
 
-export const CORE_VERSION = "0.3.0";
+export const CORE_VERSION = "0.7.7";
 
 const PETROBRAS_COLORS = new Set([
   "#008542", "#FDC82F", "#FFFFFF", "#00B2A9", "#C4D600",
@@ -302,9 +302,9 @@ function mapConfigurationItems(items) {
 
 async function requestConfiguration({ webUrl, listTitle, fetchImpl }) {
   const escapedTitle = listTitle.replaceAll("'", "''");
-  const fields = "Title,Escopo,Modulo,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,Ativo";
+  const fields = "Title,Escopo,Modulo,TipoInstancia,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,Estado,Ativo";
   const url = `${webUrl}/_api/web/lists/getbytitle('${escapedTitle}')/items` +
-    `?$select=${fields}&$filter=Ativo eq 1&$top=5000`;
+    `?$select=${fields}&$filter=Ativo eq 1 and Estado eq 'Publicado'&$top=5000`;
 
   let response;
   try {

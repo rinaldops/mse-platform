@@ -24,6 +24,14 @@ export const DEFAULT_STATS = Object.freeze([
   { value: "—", label: "MENSAGENS NO FÓRUM" }
 ]);
 
+export const DEFAULT_CONTENT = Object.freeze({
+  eyebrow: "Digital workspace",
+  title: "Connect people, knowledge and technology.",
+  description: "A shared space for useful content, discussions and learning.",
+  primaryAction: Object.freeze({ label: "Open discussions", href: "#discussions" }),
+  secondaryAction: Object.freeze({ label: "Browse videos", href: "#videos" })
+});
+
 export function normalizeStats(stats) {
   if (!Array.isArray(stats) || !stats.length) return DEFAULT_STATS;
   const normalized = stats
@@ -231,13 +239,19 @@ function initConstellation(canvas, { reducedMotion, windowImpl }) {
   };
 }
 
-export function createHomeView({ root, stats } = {}) {
+export function createHomeView({ root, stats, content = {} } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root deve ser um elemento do DOM.");
 
   const document = root.ownerDocument;
   const windowImpl = document.defaultView || globalThis;
   const reducedMotion = windowImpl.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   const normalizedStats = normalizeStats(stats);
+  const copy = {
+    ...DEFAULT_CONTENT,
+    ...content,
+    primaryAction: { ...DEFAULT_CONTENT.primaryAction, ...content.primaryAction },
+    secondaryAction: { ...DEFAULT_CONTENT.secondaryAction, ...content.secondaryAction }
+  };
 
   const shell = element(document, "section", "mse-home");
 
@@ -250,35 +264,24 @@ export function createHomeView({ root, stats } = {}) {
   if (!reducedMotion) shell.append(renderFloaters(document));
 
   const inner = element(document, "div", "mse-home__inner");
-  const eyebrow = element(document, "span", "mse-home__eyebrow");
-  eyebrow.append(
-    element(document, "span", "mse-home__eyebrow-mark", "Hub"),
-    document.createTextNode(" de Tecnologias Digitais")
-  );
+  const eyebrow = element(document, "span", "mse-home__eyebrow", copy.eyebrow);
   inner.append(eyebrow);
 
-  const heading = element(document, "h1", "mse-home__title");
-  heading.append(
-    document.createTextNode("Tecnologia que "),
-    element(document, "em", "mse-home__accent", "conecta"),
-    document.createTextNode(". Pessoas que "),
-    element(document, "em", "mse-home__accent mse-home__accent--warm", "transformam"),
-    document.createTextNode(".")
-  );
+  const heading = element(document, "h1", "mse-home__title", copy.title);
   inner.append(heading);
 
   inner.append(element(
     document,
     "p",
     "mse-home__sub",
-    "SAP, Azure, Databricks, AIDA, Microsoft 365, Power Platform, Fabric, IA e outras ferramentas do ambiente corporativo — reunidas em um só lugar para automatizar processos, resolver problemas do dia a dia e aprender com quem já resolveu."
+    copy.description
   ));
 
   const actions = element(document, "div", "mse-home__actions");
-  const forumLink = element(document, "a", "mse-home__button mse-home__button--primary", "Entrar no fórum");
-  forumLink.href = "#forum";
-  const videotecaLink = element(document, "a", "mse-home__button mse-home__button--ghost", "Ver workshops gravados");
-  videotecaLink.href = "#videoteca";
+  const forumLink = element(document, "a", "mse-home__button mse-home__button--primary", copy.primaryAction.label);
+  forumLink.href = copy.primaryAction.href;
+  const videotecaLink = element(document, "a", "mse-home__button mse-home__button--ghost", copy.secondaryAction.label);
+  videotecaLink.href = copy.secondaryAction.href;
   actions.append(forumLink, videotecaLink);
   inner.append(actions);
 

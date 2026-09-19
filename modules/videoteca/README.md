@@ -2,23 +2,26 @@
 
 Video catalog module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
 
-Current version: `0.4.0`.
+Current version: `0.7.7`.
 
 ## Features in this MVP
 
-- Declarative SharePoint list schema (single list, admin-curated).
-- Runtime auto-provisioning of the required SharePoint list/schema before rendering.
+- Declarative SharePoint document-library schema (single library, admin-curated).
+- Runtime auto-provisioning of the required library/schema before rendering.
 - Compact full-bleed page bar (breadcrumb, debounced search, "Minha lista" and "+ Sugerir tema" actions — both inert placeholders, see below).
 - Filter bar: category chips, sort (recentes/mais assistidos), trilhas/grade view toggle.
 - "Continuar assistindo" section based on recently opened videos (`localStorage`, see below).
-- Auto-advancing carousel of featured videos (`Destaque` = yes), pausing on hover/focus, no
+- Auto-advancing carousel with six videos selected randomly on each load, pausing on hover/focus, no
   autoplay under `prefers-reduced-motion`; controls repositioned below the frame via CSS Grid
   without changes to the shared `modules/ui/carousel/carousel.js`.
-- Videos grouped by category into horizontal rows ("Por tema") or a flat grid ("Todos os vídeos").
-- Read-only: each item stores a `URL` pointing to wherever the recording actually lives
-  (a document library, Stream replacement, etc.) — clicking a card opens that URL in a new tab.
-  A document-library integration (auto-listing uploaded files) was intentionally left out of this
-  MVP to keep the first version small; add it if curators need something more than pasting a link.
+- Six most recent videos beside the carousel.
+- Compact catalog grouped by category, with 12 videos per page and no horizontal overflow.
+- Native SharePoint video thumbnails resolved through the document library drive.
+- Multiple presenters in the multi-value Person or Group field `Apresentadores`.
+- Read-only: each card opens the library file from `FileRef`; `URL` is retained only as a
+  compatibility fallback for older records.
+- Same-title lists are resolved by `BaseTemplate`, preventing a generic list from being selected
+  when the module requires the document library.
 
 ## Layout particulars (page bar redesign)
 
@@ -45,7 +48,9 @@ Besides the full module above (meant for Videoteca's own page), `mountVideotecaS
 
 ## Data structures
 
-The module declares one SharePoint list: `VideotecaVideos`.
+The module declares one SharePoint document library: `VideotecaVideos`
+(`BaseTemplate 101`, schema version 3). Video metadata lives on each file item;
+folders are excluded by `FSObjType`.
 
 ## Local tests
 

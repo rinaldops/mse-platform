@@ -86,7 +86,6 @@ export function mountCarousel({
   });
 
   function render() {
-    track.style.transform = `translateX(-${index * 100}%)`;
     slides.forEach((slide, slideIndex) => {
       slide.hidden = slideIndex !== index;
       slide.setAttribute("aria-hidden", String(slideIndex !== index));

@@ -27,7 +27,9 @@ const approvedColors = new Set([
   // derivados de uma mistura clara de #006298, usados nas páginas internas
   // (barra de página compacta) para hover/estado ativo de superfície e borda
   // inativa de item de lista — não são cor de marca, só estado de interface.
-  "#F2F7FA", "#E3E9ED"
+  "#F2F7FA", "#E3E9ED",
+  // Exceções aprovadas para metadados e links da Videoteca (revisão 0.6.10).
+  "#4CAF507D", "#FFC10730", "#1872A1", "#9E9E9E", "#006297"
 ]);
 
 function normalizeHex(value) {

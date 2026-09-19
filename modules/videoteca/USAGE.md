@@ -7,21 +7,21 @@ This guide uses placeholders. Replace:
 
 ## 1. Publish the files
 
-Upload preserving version folders (core and UI `0.4.0` must already be published):
+Upload preserving version folders (core and UI `0.7.7` must already be published):
 
 ```text
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca.css
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-data.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-view.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-schema.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/videoteca-loader.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.4.0/provision-videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca.css
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-data.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-view.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-schema.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-loader.js
+__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/provision-videoteca.js
 ```
 
 Do not overwrite an existing version folder — publish a new one when the code changes.
 
-## 2. Provision the SharePoint list
+## 2. Provision the SharePoint library
 
 The runtime loader provisions `VideotecaVideos` automatically when the page loads.
 
@@ -29,14 +29,14 @@ Optional: create a temporary Modern Script Editor webpart and paste [`snippets/p
 
 ## 3. Add a few videos
 
-Open the list `Videoteca — Vídeos` and create some items:
+Upload files to the `VideotecaVideos` library and edit their properties:
 
 | Field | Value |
 |---|---|
 | Título | WS0038 — Usando o SAP Scripting para treinamento |
-| URL | link para a gravação |
+| URL | leave empty when the recording is the current file |
 | Categoria | SAP |
-| Apresentador | Fulano |
+| Apresentadores | Fulano; Beltrana (campo Pessoa ou Grupo com seleção múltipla) |
 | Duração | 48:15 |
 | Destaque | Yes (para aparecer no carrossel) |
 | Ordem no carrossel | 10 |
@@ -54,4 +54,4 @@ Add a Modern Script Editor webpart and paste [`snippets/modern-script-editor.htm
 2. Confirm featured videos (`Destaque` = Yes) appear in the carousel and auto-advance.
 3. Hover/focus the carousel — auto-advance pauses; prev/next buttons and dots work.
 4. Confirm videos are grouped correctly by category below the carousel.
-5. Click a video card — it opens the stored URL in a new tab.
+5. Click a video card — it opens the file from `FileRef` in a new tab.

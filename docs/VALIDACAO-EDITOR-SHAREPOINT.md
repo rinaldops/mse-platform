@@ -40,12 +40,12 @@ Confirmar que todos os assets dos editores (Quill/Summernote) estão publicados 
 ```javascript
 // Execute no console do navegador
 const assetsToCheck = [
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/editor.js',
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/editor-quill.js',
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/editor-summernote.js',
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.js',
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/vendor/summernote/0.9.0/summernote-lite.js',
-    '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/vendor/jquery/3.7.1/jquery.min.js'
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/editor.js',
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/editor-quill.js',
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/editor-summernote.js',
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/vendor/quill/2.0.3/quill.js',
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/vendor/summernote/0.9.0/summernote-lite.js',
+    '/sites/demo/SiteAssets/mse-platform/core/0.3.0/vendor/jquery/3.7.1/jquery.min.js'
 ];
 
 console.log('🔍 Verificando assets do editor...\n');
@@ -120,11 +120,11 @@ Testar editores Quill e Summernote em módulo real (forum).
   Carregando fórum...
 </div>
 
-<link rel="stylesheet" href="/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/core.css">
-<link rel="stylesheet" href="/sites/tecnologiasdigitais/SiteAssets/mse-platform/modules/forum/0.3.0/forum.css">
+<link rel="stylesheet" href="/sites/demo/SiteAssets/mse-platform/core/0.3.0/core.css">
+<link rel="stylesheet" href="/sites/demo/SiteAssets/mse-platform/modules/forum/0.3.0/forum.css">
 <script type="module">
-  import MSE from '/sites/tecnologiasdigitais/SiteAssets/mse-platform/core/0.3.0/core.js';
-  import Forum from '/sites/tecnologiasdigitais/SiteAssets/mse-platform/modules/forum/0.3.0/forum.js';
+  import MSE from '/sites/demo/SiteAssets/mse-platform/core/0.3.0/core.js';
+  import Forum from '/sites/demo/SiteAssets/mse-platform/modules/forum/0.3.0/forum.js';
   
   MSE.core.mount(document.getElementById('mse-forum-home'));
 </script>

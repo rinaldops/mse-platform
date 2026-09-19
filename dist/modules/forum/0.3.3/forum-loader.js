@@ -1,5 +1,5 @@
 (async function loadForum() {
-  const CORE_VERSION = "0.3.3";
+  const CORE_VERSION = "0.3.2";
   const FORUM_VERSION = "0.3.3";
   const LISTS = [
     ["forum-taxonomy", "ForumTaxonomia"],
@@ -69,7 +69,7 @@
       sources
     });
 
-    const service = createForumReadService({ dataSources, sanitizeRichText });
+    const service = createForumReadService({ dataSources, sanitizeRichText, forumPageUrl: globalThis.location?.href });
 
     if (roots.length) {
       mountForum({
@@ -104,4 +104,3 @@
     console.error(error);
   }
 })();
-

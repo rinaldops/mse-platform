@@ -1,6 +1,6 @@
 (async function loadVideoteca() {
-  const CORE_VERSION = "0.3.0";
-  const VIDEOTECA_VERSION = "0.3.0";
+  const CORE_VERSION = "0.7.7";
+  const VIDEOTECA_VERSION = "0.7.7";
 
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/videoteca/"));
@@ -36,7 +36,7 @@
 
     const [
       { createSharePointDataSourceRegistry },
-      { provisionLists },
+      { resolveListSources },
       { createVideotecaReadService },
       { mountVideoteca, mountVideotecaSummary },
       { VIDEOTECA_LIST_SCHEMAS }
@@ -49,12 +49,14 @@
         import(`${assetBase}/mse-platform/modules/videoteca/${VIDEOTECA_VERSION}/videoteca-schema.js`)
       ]);
 
-    write("Preparando videoteca...");
-    const { lists: sources } = await provisionLists({
-      webUrl,
-      schemas: VIDEOTECA_LIST_SCHEMAS,
-      confirm: () => true
-    });
+    write("Validando instalação da videoteca...");
+    const configuredListId = allRoots.find((root) => root.dataset.listId)?.dataset.listId;
+    const schemas = VIDEOTECA_LIST_SCHEMAS.map((schema) => (
+      schema.key === "videoteca-videos" && configuredListId
+        ? { ...schema, listId: configuredListId }
+        : schema
+    ));
+    const { lists: sources } = await resolveListSources({ webUrl, schemas });
 
     const dataSources = createSharePointDataSourceRegistry({
       allowedWebUrls: [webUrl],

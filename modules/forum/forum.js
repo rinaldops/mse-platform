@@ -3,7 +3,7 @@ import { selectRichTextEditor } from "../../../core/0.3.0/editor.js";
 import { renderRichText, sanitizeRichText } from "../../../core/0.3.0/rich-text.js";
 import { createForumView, createForumSummaryView } from "./forum-view.js";
 
-export const FORUM_VERSION = "0.3.0";
+export const FORUM_VERSION = "0.4.6";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 // Lean panel for the Home page — see createForumSummaryView. Separate module

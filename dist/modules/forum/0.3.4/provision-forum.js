@@ -1,6 +1,6 @@
 (async function provisionForum() {
-  const CORE_VERSION = "0.3.3";
-  const FORUM_VERSION = "0.3.4";
+  const CORE_VERSION = "0.3.0";
+  const FORUM_VERSION = "0.3.0";
   const TAXONOMY_LIST_TITLE = "Fórum — Taxonomia";
 
   const script = document.currentScript
@@ -153,4 +153,3 @@
     console.error(error);
   }
 })();
-

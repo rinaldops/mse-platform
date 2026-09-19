@@ -6,7 +6,8 @@ function normalizeWebUrl(value) {
   if (typeof value !== "string" || !value.trim().startsWith("/")) {
     throw new TypeError("webUrl deve ser uma URL server-relative.");
   }
-  const normalized = value.trim().replace(/\/+$/, "");
+  const trimmed = value.trim();
+  const normalized = trimmed === "/" ? "/" : trimmed.replace(/\/+$/, "");
   if (!normalized || normalized.startsWith("//") || /[?#]/.test(normalized)) {
     throw new TypeError("webUrl deve ser uma URL server-relative.");
   }

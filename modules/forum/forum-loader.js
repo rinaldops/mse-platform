@@ -1,6 +1,6 @@
 (async function loadForum() {
-  const CORE_VERSION = "0.3.0";
-  const FORUM_VERSION = "0.3.0";
+  const CORE_VERSION = "0.6.12";
+  const FORUM_VERSION = "0.4.6";
   const LISTS = [
     ["forum-taxonomy", "ForumTaxonomia"],
     ["forum-topics", "ForumTopicos"],

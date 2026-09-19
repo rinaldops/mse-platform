@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import {
   ListProvisioningError,
   defineListSchema,
-  provisionLists
+  inspectLists,
+  provisionLists,
+  resolveListSources,
+  verifyLists
 } from "../list-provisioning.js";
 
 const schemas = [
@@ -41,6 +44,11 @@ const schemas = [
         richText: true
       },
       {
+        internalName: "Responsaveis",
+        displayName: "Responsáveis",
+        type: "UserMulti"
+      },
+      {
         internalName: "Ativo",
         displayName: "Ativo",
         type: "Boolean",
@@ -73,7 +81,8 @@ function createFakeClient() {
       return {
         data: { value: [...state.lists.values()].map((list) => ({
           Id: list.id,
-          RootFolder: { Name: list.internalName }
+          BaseTemplate: list.template,
+          RootFolder: { Name: list.internalName, ServerRelativeUrl: `/Lists/${list.internalName}` }
         })) },
         etag: null,
         status: 200
@@ -149,6 +158,14 @@ function createFakeClient() {
         etag: null,
         status: 200
       };
+    }
+    if (path.includes("/fields/getbyinternalnameortitle('") && method === "MERGE") {
+      state.writes.push({ path, options });
+      assert.equal(options.etag, "*");
+      assert.equal(options.allowWildcardEtag, true);
+      const internalName = path.match(/getbyinternalnameortitle\('([^']+)'\)/)?.[1];
+      Object.assign(list.fields.find((candidate) => candidate.InternalName === internalName), options.body);
+      return { data: null, etag: null, status: 204 };
     }
     if (method === "MERGE") {
       state.writes.push({ path, options });
@@ -260,7 +277,12 @@ assert.equal(server.state.lists.get("ModuloItens").internalName, "ModuloItens");
 assert.equal(server.state.lists.get("ModuloMidia").template, 101);
 assert.equal(server.state.lists.get("ModuloItens").versioning, true);
 assert.equal(server.state.lists.get("ModuloItens").writeSecurity, 2);
-assert.equal(server.state.lists.get("ModuloItens").fields.length, 5);
+assert.equal(server.state.lists.get("ModuloItens").fields.length, 6);
+assert.equal(
+  server.state.lists.get("ModuloItens").fields.find((field) => field.InternalName === "Responsaveis")
+    .TypeAsString,
+  "UserMulti"
+);
 assert.equal(
   server.state.lists.get("ModuloItens").fields.find((field) => field.InternalName === "Chave")
     .EnforceUniqueValues,
@@ -279,6 +301,36 @@ const unchanged = await provisionLists({
 assert.equal(unchanged.status, "unchanged");
 assert.equal(unchanged.lists[1].key, "module-media");
 assert.equal(repeatedConfirmation, false);
+
+const statusField = server.state.lists.get("ModuloItens").fields.find((field) => field.InternalName === "Status");
+statusField.Indexed = false;
+const indexPlan = await inspectLists({ schemas, client: server.client });
+assert.deepEqual(indexPlan.plan.lists[0].fieldsToUpdate, [{ internalName: "Status", indexed: true }]);
+const indexed = await provisionLists({ schemas, client: server.client, confirm: () => true });
+assert.equal(indexed.status, "provisioned");
+assert.equal(statusField.Indexed, true);
+
+const ready = await resolveListSources({ schemas, client: server.client });
+assert.equal(ready.status, "ready");
+assert.equal(ready.lists.length, 2);
+assert.equal(server.state.writes.length > 0, true);
+assert.equal((await verifyLists({ schemas, client: server.client })).status, "ready");
+
+const missingRuntimeServer = createFakeClient();
+const missingInspection = await inspectLists({ schemas, client: missingRuntimeServer.client });
+assert.equal(missingInspection.status, "changes-required");
+assert.equal(missingInspection.plan.lists.every((list) => list.createList), true);
+await assert.rejects(
+  resolveListSources({ schemas, client: missingRuntimeServer.client }),
+  (error) => error instanceof ListProvisioningError
+    && error.code === "provisioning-required"
+    && error.plan.lists.every((list) => list.createList)
+);
+await assert.rejects(
+  verifyLists({ schemas, client: missingRuntimeServer.client }),
+  (error) => error.code === "verification-failed" && error.plan.lists.length === 2
+);
+assert.equal(missingRuntimeServer.state.writes.length, 0);
 
 const conflictServer = createFakeClient();
 conflictServer.state.lists.set("ModuloItens", {

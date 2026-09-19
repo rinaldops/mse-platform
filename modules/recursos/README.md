@@ -1,6 +1,6 @@
-# MSE Recursos
+# MSE Explore Mais
 
-Curated links/tips hub module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
+Curated links/tips hub module for SharePoint Modern Script Editor, built on top of `mse-platform/core`. Its public name is Explore Mais; the `recursos` namespace remains stable for compatibility.
 
 Current version: `0.4.0`.
 
@@ -11,7 +11,7 @@ Current version: `0.4.0`.
 - Filter bar: category chips, sort, cards/compact-list view toggle.
 - "Atalhos mais usados" shortcuts section.
 - Links grouped by category, rendered as always-open groups (no accordion — every category is visible at once, filterable by the search/chip bar).
-- Read-only: content is managed directly in the `Recursos — Links` list by site owners, no in-page editor.
+- Read-only: content is managed directly in the `Explore Mais — Links` list by site owners, no in-page editor.
 
 ## Layout particulars (page bar redesign)
 
@@ -22,7 +22,7 @@ Current version: `0.4.0`.
 
 ## Home-page summary panel
 
-Besides the full module above (meant for Recursos' own page), `mountRecursosSummary()`/`createRecursosSummaryView()` render a separate read-only panel for the site's main page: the top link of each category ("Mais usados") with category-chip filtering and a single button through to the full page. It mounts on `data-mse-module="recursos-summary"` (a different selector, so it never collides with the full `mountRecursos()`), and `recursos-loader.js` mounts whichever of the two roots it finds on the page (or both). Unlike the full page's shortcuts, every item here links to Recursos' own page, never straight to the external resource — this panel is a teaser, not a shortcut bar. The panel paints no background of its own — it blends into the SharePoint section colour and flips to a light palette on a dark section (`.mse-app--ambient-dark`, set by core). See `TD/webparts/recursos/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
+Besides the full module above (meant for Explore Mais' own page), `mountRecursosSummary()`/`createRecursosSummaryView()` render a separate read-only panel for the site's main page: the top link of each category ("Mais usados") with category-chip filtering and a single button through to the full page. It mounts on `data-mse-module="recursos-summary"` (a different selector, so it never collides with the full `mountRecursos()`), and `recursos-loader.js` mounts whichever of the two roots it finds on the page (or both). Unlike the full page's shortcuts, every item here links to Explore Mais' own page, never straight to the external resource — this panel is a teaser, not a shortcut bar. The panel paints no background of its own — it blends into the SharePoint section colour and flips to a light palette on a dark section (`.mse-app--ambient-dark`, set by core). See `TD/webparts/recursos/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
 
 ## Data structures
 

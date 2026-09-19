@@ -38,6 +38,7 @@ export function readForumRoute(input = globalThis.location?.href) {
     view: VIEWS.has(requestedView) ? requestedView : "recent",
     sort: SORTS.has(requestedSort) ? requestedSort : "recentes",
     pageSize: PAGE_SIZES.has(requestedPageSize) ? requestedPageSize : 20,
+    page: positiveInteger(url.searchParams.get("forumPage")) ?? 1,
     categoryId: positiveInteger(url.searchParams.get("forumCategory")),
     tagId: positiveInteger(url.searchParams.get("forumTag")),
     topicId: positiveInteger(url.searchParams.get("forumTopic")),
@@ -57,6 +58,7 @@ export function forumRouteUrl(input, changes = {}) {
     ["forumView", next.view === "recent" ? null : next.view],
     ["forumSort", next.sort === "recentes" ? null : next.sort],
     ["forumPageSize", next.pageSize === 20 ? null : next.pageSize],
+    ["forumPage", next.page === 1 ? null : next.page],
     ["forumCategory", next.categoryId],
     ["forumTag", next.tagId],
     ["forumTopic", next.topicId],
@@ -158,6 +160,7 @@ export function createForumView({
     || typeof service.listForumOverview !== "function"
     || typeof service.whoAmI !== "function"
     || typeof service.getTopic !== "function"
+    || typeof service.recordTopicView !== "function"
     || typeof service.listAnswers !== "function"
     || typeof service.createAnswer !== "function"
     || typeof service.getAnswerForEdit !== "function"
@@ -639,7 +642,23 @@ export function createForumView({
       let currentPage = firstPage;
       let pageIndex = 0;
       const cursors = [undefined];
-      const topics = filterMine(firstPage.topics);
+      const pages = [firstPage];
+      while (pages.at(-1).next) {
+        cursors.push(pages.at(-1).next);
+        pages.push(await service.listTopics({
+          view: route.view,
+          categoryId: route.categoryId,
+          tagId: route.tagId,
+          search: route.search,
+          sort: route.sort,
+          pageSize: route.pageSize,
+          cursor: pages.at(-1).next
+        }));
+        if (disposed || sequence !== renderSequence) return;
+      }
+      pageIndex = Math.min(route.page - 1, pages.length - 1);
+      currentPage = pages[pageIndex];
+      const topics = filterMine(currentPage.topics);
       const drawTopics = (items) => list.replaceChildren(...items.map(topicListCard));
       drawTopics(topics);
 
@@ -653,48 +672,45 @@ export function createForumView({
         newMain.append(list);
         const pagination = element(document, "nav", "mse-forum__pagination");
         pagination.setAttribute("aria-label", "Paginação dos tópicos");
-        const previous = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Anterior");
-        const pageNumber = element(document, "span", "mse-forum__pagination-status");
-        const next = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Próxima");
-        previous.type = "button";
-        next.type = "button";
-        const updatePagination = () => {
-          previous.disabled = pageIndex === 0;
-          next.disabled = !currentPage.next;
-          pageNumber.textContent = `Página ${pageIndex + 1}`;
+        const loadPage = (targetIndex) => {
+          currentPage = pages[targetIndex];
+          pageIndex = targetIndex;
+          historyImpl?.replaceState?.({}, "", forumRouteUrl(currentHref(), { page: pageIndex + 1 }));
+          drawTopics(filterMine(currentPage.topics));
+          drawPagination();
+          list.scrollIntoView?.({ block: "start", behavior: "smooth" });
         };
-        const loadPage = async (targetIndex, cursor) => {
-          previous.disabled = true;
-          next.disabled = true;
-          pageNumber.textContent = "Carregando…";
-          try {
-            const loaded = await service.listTopics({
-              view: route.view,
-              categoryId: route.categoryId,
-              tagId: route.tagId,
-              search: route.search,
-              sort: route.sort,
-              pageSize: route.pageSize,
-              cursor
-            });
-            if (disposed || sequence !== renderSequence) return;
-            currentPage = loaded;
-            pageIndex = targetIndex;
-            drawTopics(filterMine(loaded.topics));
-            updatePagination();
-            list.scrollIntoView?.({ block: "start", behavior: "smooth" });
-          } catch (error) {
-            updatePagination();
-            newMain.append(status(errorMessage(error), "alert"));
+        const pageButton = (label, targetIndex, { current = false, disabled = false } = {}) => {
+          const button = element(document, "button", "mse-forum__button mse-forum__button--secondary", label);
+          button.type = "button";
+          button.disabled = disabled;
+          if (current) {
+            button.classList.add("mse-forum__button--current");
+            button.setAttribute("aria-current", "page");
           }
+          button.addEventListener("click", () => loadPage(targetIndex));
+          return button;
         };
-        previous.addEventListener("click", () => loadPage(pageIndex - 1, cursors[pageIndex - 1]));
-        next.addEventListener("click", () => {
-          cursors[pageIndex + 1] = currentPage.next;
-          loadPage(pageIndex + 1, currentPage.next);
-        });
-        pagination.append(previous, pageNumber, next);
-        updatePagination();
+        const drawPagination = () => {
+          const lastIndex = pages.length - 1;
+          const numbered = new Set([0, lastIndex, pageIndex - 1, pageIndex, pageIndex + 1]);
+          const controls = [
+            pageButton("Primeira", 0, { disabled: pageIndex === 0 }),
+            pageButton("Anterior", Math.max(0, pageIndex - 1), { disabled: pageIndex === 0 })
+          ];
+          let previousIndex = -1;
+          for (const index of [...numbered].filter((value) => value >= 0 && value <= lastIndex).sort((a, b) => a - b)) {
+            if (previousIndex >= 0 && index - previousIndex > 1) controls.push(element(document, "span", "mse-forum__pagination-ellipsis", "…"));
+            controls.push(pageButton(String(index + 1), index, { current: index === pageIndex }));
+            previousIndex = index;
+          }
+          controls.push(
+            pageButton("Próxima", Math.min(lastIndex, pageIndex + 1), { disabled: pageIndex === lastIndex }),
+            pageButton("Última", lastIndex, { disabled: pageIndex === lastIndex })
+          );
+          pagination.replaceChildren(...controls);
+        };
+        drawPagination();
         newMain.append(pagination);
       }
 
@@ -977,7 +993,16 @@ export function createForumView({
     const sep = element(document, "span", "mse-forum__breadcrumb-sep", "/");
     sep.setAttribute("aria-hidden", "true");
     breadcrumb.append(home, sep, forumLink);
-    barInner.append(breadcrumb);
+    const back = element(document, "a", "mse-forum__pagebar-button mse-forum__pagebar-button--ghost", "← Voltar");
+    back.href = forumRouteUrl(currentHref(), { topicId: null, answerId: null, page: readForumRoute(currentHref()).page });
+    back.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      navigate({ topicId: null, answerId: null });
+    });
+    const backActions = element(document, "div", "mse-forum__pagebar-actions");
+    backActions.append(back);
+    barInner.append(breadcrumb, backActions);
     bar.append(barInner);
 
     const content = element(document, "div", "mse-forum__content mse-forum__page");
@@ -986,7 +1011,7 @@ export function createForumView({
     root.replaceChildren(shell);
 
     try {
-      const [topic, answerPage] = await Promise.all([
+      let [topic, answerPage] = await Promise.all([
         service.getTopic(route.topicId),
         service.listAnswers(route.topicId, { pageSize: 50 })
       ]);
@@ -1046,6 +1071,12 @@ export function createForumView({
         const badge = element(document, "span", "mse-forum__topic-badge mse-forum__topic-badge--category", topic.category.Title);
         badge.style.setProperty("--accent", topic.category.Cor || "#006298");
         category.append(badge);
+      }
+      try {
+        const views = await service.recordTopicView(topic.Id);
+        if (views !== null) topic = { ...topic, QuantidadeVisualizacoes: views };
+      } catch {
+        // A leitura do tópico não deve falhar caso a política da lista bloqueie a telemetria.
       }
       const body = publicationBody(topic.Conteudo, topic.FormatoConteudo);
       const topicActions = element(document, "div", "mse-forum__topic-actions");
@@ -1393,10 +1424,16 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
     for (const topic of allTopics) {
       const id = topic.category?.Id;
       if (id && !seen.has(id)) {
-        seen.set(id, { id, name: topic.category.Nome || topic.category.Title || "Categoria", color: topic.category.Cor || "#006298" });
+        seen.set(id, {
+          id,
+          name: topic.category.Nome || topic.category.Title || "Categoria",
+          color: topic.category.Cor || "#006298",
+          order: Number(topic.category.Ordem) || 0
+        });
       }
     }
-    return [...seen.values()];
+    return [...seen.values()].sort((left, right) => left.order - right.order
+      || left.name.localeCompare(right.name, "pt-BR"));
   }
 
   function visibleTopics() {
@@ -1408,7 +1445,6 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
 
   function chipRow() {
     const categories = categoriesFromTopics();
-    if (categories.length < 2) return null;
     const row = element(document, "div", "mse-forum__summary-chips");
     row.setAttribute("role", "group");
     row.setAttribute("aria-label", "Filtrar por categoria");
@@ -1428,8 +1464,10 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
       return chip;
     };
 
-    row.append(make("Todas", null, "#006298"));
-    for (const category of categories) row.append(make(category.name, category.id, category.color));
+    if (categories.length >= 2) {
+      row.append(make("Todos", null, "#006298"));
+      for (const category of categories) row.append(make(category.name, category.id, category.color));
+    }
     return row;
   }
 
@@ -1446,7 +1484,7 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
     const meta = element(document, "span", "mse-forum__summary-card-meta");
     const tag = element(document, "span", "mse-forum__summary-card-tag", topic.category?.Nome || topic.category?.Title || "Geral");
     const count = Number(topic.QuantidadeRespostas ?? 0);
-    meta.append(tag, element(document, "span", null, `${count} resposta${count === 1 ? "" : "s"}`));
+    meta.append(tag, element(document, "span", "mse-forum__summary-card-replies", `${count} resposta${count === 1 ? "" : "s"}`));
     card.append(meta);
     return card;
   }
@@ -1454,15 +1492,8 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
   function renderShell() {
     const panel = element(document, "section", "mse-forum__summary");
 
-    const header = element(document, "div", "mse-forum__summary-header");
-    header.append(element(document, "h2", "mse-forum__summary-title", "Fórum"));
-    const cta = element(document, "a", "mse-forum__summary-cta", "Ver fórum completo");
-    cta.href = pageHref;
-    header.append(cta);
-    panel.append(header);
-
     const chips = chipRow();
-    if (chips) panel.append(chips);
+    panel.append(chips);
 
     const list = element(document, "div", "mse-forum__summary-list");
     const topics = visibleTopics();
@@ -1470,6 +1501,10 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
       ? topics.map(topicCard)
       : [element(document, "p", "mse-forum__summary-empty", "Nenhum tópico nesta categoria.")]));
     panel.append(list);
+
+    const cta = element(document, "a", "mse-forum__summary-cta", "Veja mais tópicos...");
+    cta.href = pageHref;
+    panel.append(cta);
 
     root.replaceChildren(panel);
   }

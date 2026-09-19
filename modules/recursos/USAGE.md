@@ -37,7 +37,7 @@ Open the list `Recursos — Links` and create some items:
 | Ordem | 10 |
 | Ativo | Yes |
 
-Without at least one active item the module renders "Nenhum recurso publicado ainda."
+Without at least one active item the module renders "Nenhum link publicado ainda."
 
 ## 4. Insert the recursos webpart
 

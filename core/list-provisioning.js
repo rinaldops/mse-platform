@@ -1,6 +1,6 @@
 import { createSharePointRestClient } from "./rest.js";
 
-const FIELD_TYPES = new Set(["Text", "Note", "Choice", "Number", "Boolean", "DateTime"]);
+const FIELD_TYPES = new Set(["Text", "Note", "Choice", "MultiChoice", "Number", "Boolean", "DateTime", "UserMulti"]);
 const INDEXABLE_TYPES = new Set(["Text", "Choice", "Number", "Boolean", "DateTime"]);
 const UNIQUE_TYPES = new Set(["Text", "Choice", "Number", "DateTime"]);
 
@@ -11,6 +11,7 @@ export class ListProvisioningError extends Error {
     this.code = code;
     if (details.listTitle) this.listTitle = details.listTitle;
     if (details.fieldName) this.fieldName = details.fieldName;
+    if (details.plan) this.plan = details.plan;
   }
 }
 
@@ -93,7 +94,7 @@ function normalizeField(value, listTitle) {
       throw new TypeError(`${internalName}.lines deve estar entre 1 e 1000.`);
     }
   }
-  if (type === "Choice") {
+  if (type === "Choice" || type === "MultiChoice") {
     if (!Array.isArray(value.choices) || value.choices.length < 2) {
       throw new TypeError(`${internalName}.choices deve possuir ao menos duas opções.`);
     }
@@ -125,7 +126,6 @@ function normalizeField(value, listTitle) {
     }
   }
   if (type === "Boolean") field.defaultValue = Boolean(value.defaultValue);
-
   return field;
 }
 
@@ -215,7 +215,7 @@ function fieldXml(field) {
     attributes.push(`NumLines='${field.lines}'`, `RichText='${field.richText ? "TRUE" : "FALSE"}'`);
     if (field.richText) attributes.push("RichTextMode='FullHtml'", "IsolateStyles='TRUE'");
   }
-  if (field.type === "Choice") attributes.push("Format='Dropdown'", "FillInChoice='FALSE'");
+  if (field.type === "Choice" || field.type === "MultiChoice") attributes.push("Format='Dropdown'", "FillInChoice='FALSE'");
   if (field.type === "Number") {
     attributes.push(`Decimals='${field.decimals}'`);
     if (field.min !== undefined) attributes.push(`Min='${field.min}'`);
@@ -223,9 +223,12 @@ function fieldXml(field) {
   if (field.type === "DateTime") {
     attributes.push("Format='DateTime'", "IncludeTimeValue='TRUE'");
   }
+  if (field.type === "UserMulti") {
+    attributes.push("UserSelectionMode='PeopleOnly'", "UserSelectionScope='0'", "Mult='TRUE'");
+  }
 
   let content = "";
-  if (field.type === "Choice") {
+  if (field.type === "Choice" || field.type === "MultiChoice") {
     content += `<CHOICES>${field.choices.map((choice) =>
       `<CHOICE>${escapeXml(choice)}</CHOICE>`
     ).join("")}</CHOICES>`;
@@ -252,9 +255,10 @@ function fieldChoices(field) {
 
 function validateExistingField(actual, expected, listTitle) {
   const conflicts = [];
+  const updates = {};
   if (actual.TypeAsString !== expected.type) conflicts.push(`tipo ${actual.TypeAsString}`);
   if (Boolean(actual.Required) !== expected.required) conflicts.push(`Required=${Boolean(actual.Required)}`);
-  if (expected.indexed && !actual.Indexed) conflicts.push("sem índice");
+  if (expected.indexed && !actual.Indexed) updates.Indexed = true;
   if (Boolean(actual.EnforceUniqueValues) !== expected.unique) conflicts.push("unicidade divergente");
   if (expected.choices) {
     const actualChoices = fieldChoices(actual);
@@ -270,12 +274,13 @@ function validateExistingField(actual, expected, listTitle) {
       { listTitle, fieldName: expected.internalName }
     );
   }
+  return updates;
 }
 
 async function discoverListId(client, schema) {
   if (schema.listId) return schema.listId;
   const result = await client.request(
-    "/_api/web/lists?$select=Id,RootFolder/Name&$expand=RootFolder&$top=5000"
+    "/_api/web/lists?$select=Id,BaseTemplate,RootFolder/Name,RootFolder/ServerRelativeUrl&$expand=RootFolder&$top=5000"
   );
   const lists = unwrap(result.data);
   if (!Array.isArray(lists)) {
@@ -283,6 +288,7 @@ async function discoverListId(client, schema) {
   }
   return lists.find((list) =>
     list.RootFolder?.Name?.toLowerCase() === schema.internalName.toLowerCase()
+    && Number(list.BaseTemplate) === schema.template
   )?.Id?.toLowerCase() ?? null;
 }
 
@@ -298,7 +304,8 @@ async function inspectList(client, schema) {
       configureTitle: true,
       enableVersioning: schema.versioning,
       configureSecurity: schema.readSecurity !== 1 || schema.writeSecurity !== 1,
-      missingFields: [...schema.fields]
+      missingFields: [...schema.fields],
+      fieldsToUpdate: []
     };
   }
 
@@ -377,6 +384,7 @@ async function inspectList(client, schema) {
   if (configureTitle && !titleEtag) titleEtag = "*";
 
   const missingFields = [];
+  const fieldsToUpdate = [];
   for (const expected of schema.fields) {
     const field = byName.get(expected.internalName);
     const renamed = fields.find((candidate) =>
@@ -391,7 +399,10 @@ async function inspectList(client, schema) {
       );
     }
     if (!field) missingFields.push(expected);
-    else validateExistingField(field, expected, schema.displayName);
+    else {
+      const updates = validateExistingField(field, expected, schema.displayName);
+      if (Object.keys(updates).length) fieldsToUpdate.push({ field: expected, updates });
+    }
   }
 
   if (schema.versioning && !list.EnableVersioning && !listResult.etag) {
@@ -407,7 +418,8 @@ async function inspectList(client, schema) {
     enableVersioning: schema.versioning && !list.EnableVersioning,
     configureSecurity: actualReadSecurity !== schema.readSecurity
       || actualWriteSecurity !== schema.writeSecurity,
-    missingFields
+    missingFields,
+    fieldsToUpdate
   };
 }
 
@@ -433,6 +445,10 @@ function publicPlan(schemas, inspections) {
         type: field.type,
         indexed: field.indexed,
         unique: field.unique
+      })),
+      fieldsToUpdate: inspections[index].fieldsToUpdate.map(({ field, updates }) => ({
+        internalName: field.internalName,
+        indexed: updates.Indexed === true
       }))
     }))
   });
@@ -441,8 +457,79 @@ function publicPlan(schemas, inspections) {
 function hasChanges(plan) {
   return plan.lists.some((list) =>
     list.createList || list.configureDisplayName || list.configureTitle || list.enableVersioning
-      || list.configureSecurity || list.fieldsToCreate.length
+      || list.configureSecurity || list.fieldsToCreate.length || list.fieldsToUpdate.length
   );
+}
+
+function normalizeSchemas(schemas) {
+  if (!Array.isArray(schemas) || !schemas.length) {
+    throw new TypeError("schemas deve conter ao menos uma lista.");
+  }
+  const normalized = schemas.map(defineListSchema);
+  if (new Set(normalized.map((schema) => schema.key)).size !== normalized.length
+    || new Set(normalized.map((schema) => schema.internalName.toLowerCase())).size !== normalized.length) {
+    throw new TypeError("schemas não pode conter listas duplicadas.");
+  }
+  return normalized;
+}
+
+function provisioningClient({ client, webUrl, fetchImpl }) {
+  const rest = client ?? createSharePointRestClient({ webUrl, fetchImpl });
+  if (!rest || typeof rest.request !== "function") {
+    throw new TypeError("client deve expor request(path, options).");
+  }
+  return rest;
+}
+
+async function inspectSchemas(rest, schemas) {
+  const inspections = [];
+  for (const schema of schemas) inspections.push(await inspectList(rest, schema));
+  return inspections;
+}
+
+function resolvedLists(rest, webUrl, schemas, inspections) {
+  return schemas.map((schema, index) => ({
+    key: schema.key,
+    webUrl: rest.webUrl ?? webUrl ?? null,
+    listId: inspections[index].listId
+  }));
+}
+
+export async function inspectLists({ schemas, client, webUrl, fetchImpl } = {}) {
+  const normalized = normalizeSchemas(schemas);
+  const rest = provisioningClient({ client, webUrl, fetchImpl });
+  const inspections = await inspectSchemas(rest, normalized);
+  const plan = publicPlan(normalized, inspections);
+  return deepFreeze({
+    status: hasChanges(plan) ? "changes-required" : "ready",
+    plan,
+    lists: resolvedLists(rest, webUrl, normalized, inspections)
+  });
+}
+
+export async function resolveListSources(options = {}) {
+  const inspection = await inspectLists(options);
+  const { plan } = inspection;
+  if (hasChanges(plan)) {
+    throw provisioningError(
+      "provisioning-required",
+      "A instalação ou atualização das estruturas do módulo deve ser concluída antes de usá-lo.",
+      { plan }
+    );
+  }
+  return inspection;
+}
+
+export async function verifyLists(options = {}) {
+  const inspection = await inspectLists(options);
+  if (inspection.status !== "ready") {
+    throw provisioningError(
+      "verification-failed",
+      "A verificação encontrou pendências nas estruturas do módulo.",
+      { plan: inspection.plan }
+    );
+  }
+  return inspection;
 }
 
 async function applyList(client, schema, initialInspection) {
@@ -509,6 +596,15 @@ async function applyList(client, schema, initialInspection) {
       }
     });
   }
+  for (const { field, updates } of inspection.fieldsToUpdate) {
+    await client.request(`${path}/fields/getbyinternalnameortitle('${field.internalName}')`, {
+      method: "MERGE",
+      etag: "*",
+      allowWildcardEtag: true,
+      headers: { "Content-Type": "application/json;odata=verbose" },
+      body: { __metadata: { type: "SP.Field" }, ...updates }
+    });
+  }
 }
 
 export async function provisionLists({
@@ -518,43 +614,27 @@ export async function provisionLists({
   webUrl,
   fetchImpl
 } = {}) {
-  if (!Array.isArray(schemas) || !schemas.length) {
-    throw new TypeError("schemas deve conter ao menos uma lista.");
-  }
   if (typeof confirm !== "function") {
     throw provisioningError(
       "confirmation-required",
       "O provisionamento exige um callback de confirmação visível."
     );
   }
-  const normalized = schemas.map(defineListSchema);
-  if (new Set(normalized.map((schema) => schema.key)).size !== normalized.length
-    || new Set(normalized.map((schema) => schema.internalName.toLowerCase())).size !== normalized.length) {
-    throw new TypeError("schemas não pode conter listas duplicadas.");
-  }
+  const normalized = normalizeSchemas(schemas);
+  const rest = provisioningClient({ client, webUrl, fetchImpl });
 
-  const rest = client ?? createSharePointRestClient({ webUrl, fetchImpl });
-  if (!rest || typeof rest.request !== "function") {
-    throw new TypeError("client deve expor request(path, options).");
-  }
-
-  let inspections = [];
-  for (const schema of normalized) inspections.push(await inspectList(rest, schema));
+  let inspections = await inspectSchemas(rest, normalized);
   const plan = publicPlan(normalized, inspections);
-  const resolvedLists = () => normalized.map((schema, index) => ({
-    key: schema.key,
-    webUrl: rest.webUrl ?? webUrl ?? null,
-    listId: inspections[index].listId
-  }));
-  if (!hasChanges(plan)) return deepFreeze({ status: "unchanged", plan, lists: resolvedLists() });
+  if (!hasChanges(plan)) {
+    return deepFreeze({ status: "unchanged", plan, lists: resolvedLists(rest, webUrl, normalized, inspections) });
+  }
   if (await confirm(plan) !== true) return deepFreeze({ status: "cancelled", plan });
 
   for (let index = 0; index < normalized.length; index += 1) {
     await applyList(rest, normalized[index], inspections[index]);
   }
 
-  inspections = [];
-  for (const schema of normalized) inspections.push(await inspectList(rest, schema));
+  inspections = await inspectSchemas(rest, normalized);
   const remaining = publicPlan(normalized, inspections);
   if (hasChanges(remaining)) {
     throw provisioningError(
@@ -562,5 +642,9 @@ export async function provisionLists({
       "O provisionamento terminou com pendências."
     );
   }
-  return deepFreeze({ status: "provisioned", plan, lists: resolvedLists() });
+  return deepFreeze({
+    status: "provisioned",
+    plan,
+    lists: resolvedLists(rest, webUrl, normalized, inspections)
+  });
 }

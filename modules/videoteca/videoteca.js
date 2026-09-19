@@ -1,7 +1,7 @@
-import { mountModule } from "../../../core/0.3.0/core.js";
+import { mountModule } from "../../../core/0.7.7/core.js";
 import { createVideotecaView, createVideotecaSummaryView } from "./videoteca-view.js";
 
-export const VIDEOTECA_VERSION = "0.3.0";
+export const VIDEOTECA_VERSION = "0.7.7";
 export const SUPPORTED_CORE_MAJOR = 0;
 
 // Lean panel for the Home page — see createVideotecaSummaryView. Separate
@@ -17,7 +17,12 @@ export function mountVideotecaSummary({ service, globalConfig = {}, instances = 
       layout: { mode: "contained" }
     },
     render({ root, config }) {
-      return createVideotecaSummaryView({ root, service, pageHref: config.videotecaSummary?.pageHref });
+      return createVideotecaSummaryView({
+        root,
+        service,
+        pageHref: config.videotecaSummary?.pageHref,
+        presenterSuffixes: config.videoteca?.presenterSuffixes
+      });
     }
   });
 }
@@ -32,7 +37,7 @@ export function mountVideoteca({ service, globalConfig = {}, instances = {} } = 
       layout: { mode: "contained" }
     },
     render({ root }) {
-      return createVideotecaView({ root, service });
+      return createVideotecaView({ root, service, presenterSuffixes: config.videoteca?.presenterSuffixes });
     }
   });
 }

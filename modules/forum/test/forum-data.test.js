@@ -197,6 +197,10 @@ const recent = await service.listTopics({
 assert.equal(recent.topics[0].category.Title, "JavaScript");
 assert.equal(recent.topics[0].tags[0].Title, "SharePoint");
 assert.match(recent.next, /skiptoken/);
+assert.equal(await service.recordTopicView(1), 1);
+assert.ok(calls.some((call) => call.method === "update"
+  && call.source.key === "forum-topics"
+  && call.values.QuantidadeVisualizacoes === 1));
 const topicCall = calls.find((call) => call.method === "page" && call.source.key === "forum-topics");
 assert.match(topicCall.options.filter, /QuantidadeRespostas eq 0/);
 assert.match(topicCall.options.filter, /CategoriaId eq 10/);
@@ -522,7 +526,7 @@ await assert.rejects(
   assert.equal(summaries[1].count, 0);
   assert.equal(summaries[1].recentTopics.length, 0);
   assert.equal(summaries[2].title, "Legada");
-  assert.equal(summaries[2].color, "#006298");
+  assert.equal(summaries[2].color, "#123456");
 }
 
 {

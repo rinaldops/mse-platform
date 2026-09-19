@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {
   CONFIGURATION_LIST_SCHEMA,
   ConfigurationProvisioningError,
+  createConfigurationItem,
+  listConfigurationItems,
   loadConfigurationItemForEdit,
   provisionConfigurationList,
   updateConfigurationItem
@@ -163,8 +165,8 @@ function createFakeSharePoint({
   return { fetchImpl, state };
 }
 
-assert.equal(CONFIGURATION_LIST_SCHEMA.version, 1);
-assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 7);
+assert.equal(CONFIGURATION_LIST_SCHEMA.version, 2);
+assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 11);
 
 const cancelledServer = createFakeSharePoint();
 let cancelledPlan;
@@ -178,7 +180,7 @@ const cancelled = await provisionConfigurationList({
 });
 assert.equal(cancelled.status, "cancelled");
 assert.equal(cancelledPlan.createList, true);
-assert.equal(cancelledPlan.fieldsToCreate.length, 7);
+assert.equal(cancelledPlan.fieldsToCreate.length, 11);
 assert.equal(cancelledServer.state.writes.length, 0);
 
 await assert.rejects(
@@ -205,7 +207,7 @@ assert.equal(confirmedPlans.length, 1);
 assert.equal(server.state.exists, true);
 assert.equal(server.state.versioning, true);
 assert.equal(server.state.globalExists, true);
-assert.equal(server.state.fields.length, 8);
+assert.equal(server.state.fields.length, 12);
 assert.equal(
   server.state.fields.find((field) => field.InternalName === "Title").EnforceUniqueValues,
   true
@@ -395,5 +397,69 @@ await assert.rejects(
   }),
   (error) => error.code === "etag-required"
 );
+
+function createConfigurationStoreServer() {
+  const state = { nextId: 3, items: [{
+    Id: 2,
+    Title: "forum-home",
+    Escopo: "Instancia",
+    Modulo: "forum",
+    Layout: "Herdar",
+    Tema: null,
+    ConfiguracaoJson: "{}",
+    VersaoConfiguracao: 1,
+    Ativo: true
+  }] };
+  const fetchImpl = async (url, options = {}) => {
+    const method = options.method || "GET";
+    if (url.endsWith("/_api/contextinfo")) return makeResponse(200, { FormDigestValue: "digest-test" });
+    if (url.includes("?$select=ListItemEntityTypeFullName")) {
+      return makeResponse(200, { ListItemEntityTypeFullName: "SP.Data.MSEConfiguracoesListItem" });
+    }
+    if (url.includes("/items?") && method === "GET") return makeResponse(200, { value: state.items });
+    if (url.endsWith("/items") && method === "POST") {
+      const item = { ...JSON.parse(options.body), Id: state.nextId++ };
+      state.items.push(item);
+      return makeResponse(201, { d: item });
+    }
+    const id = Number(url.match(/\/items\((\d+)\)/)?.[1]);
+    if (id && method === "GET") {
+      const item = state.items.find((candidate) => candidate.Id === id);
+      return makeResponse(200, { d: {
+        ...item,
+        __metadata: { type: "SP.Data.MSEConfiguracoesListItem" }
+      } }, `\"item-etag-${id}\"`);
+    }
+    throw new Error(`Requisição de store não simulada: ${method} ${url}`);
+  };
+  return { fetchImpl, state };
+}
+
+const configurationStoreServer = createConfigurationStoreServer();
+const listedConfigurations = await listConfigurationItems({
+  webUrl: "/sites/core-test",
+  module: "forum",
+  fetchImpl: configurationStoreServer.fetchImpl
+});
+assert.equal(listedConfigurations.length, 1);
+assert.equal(listedConfigurations[0].key, "forum-home");
+assert.ok(Object.isFrozen(listedConfigurations));
+
+const createdConfiguration = await createConfigurationItem({
+  webUrl: "/sites/core-test",
+  item: {
+    key: "forum-principal",
+    scope: "Instancia",
+    module: "forum",
+    layout: "Contained",
+    theme: null,
+    configuration: { forum: { pageSize: 20 } },
+    active: true
+  },
+  fetchImpl: configurationStoreServer.fetchImpl
+});
+assert.equal(createdConfiguration.id, 3);
+assert.equal(createdConfiguration.module, "forum");
+assert.equal(createdConfiguration.configuration.forum.pageSize, 20);
 
 console.log("provisioning.test.js: verificações concluídas com sucesso.");

@@ -11,7 +11,7 @@
 
   background: #FFFFFF;
   color: var(--recursos-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
 }
@@ -618,20 +618,20 @@
 [data-mse-module="recursos-summary"][data-mse-module="recursos-summary"] {
   --rs-text: #000000;
   --rs-muted: #006298;
-  --rs-line: #75787B;
+  --rs-line: #E3E9ED;
   --rs-card: #FFFFFF;
   --rs-hover: #F2F7FA;
 
   background: transparent;
   color: var(--rs-text);
-  font-family: "Petrobras Sans", Arial, sans-serif;
+  font-family: var(--mse-font-family, Arial, sans-serif);
   border-radius: var(--mse-section-radius, 0);
 }
 
 [data-mse-module="recursos-summary"].mse-app--ambient-dark {
   --rs-text: #FFFFFF;
   --rs-muted: #FFFFFF;
-  --rs-line: #FFFFFF;
+  --rs-line: #E3E9ED;
   --rs-card: transparent;
   --rs-hover: transparent;
 }
@@ -642,68 +642,40 @@
   padding: 1.5rem;
 }
 
-.mse-recursos__summary-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.mse-recursos__summary-title {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--rs-text);
-}
-
 .mse-recursos__summary-cta {
-  padding: 0.55rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
   border: 1px solid transparent;
   background: #FDC82F;
   color: #000000;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  justify-self: end;
 }
 
 .mse-recursos__summary-cta:hover,
 .mse-recursos__summary-cta:focus-visible {
-  border-color: #000000;
+  border-color: var(--rs-line);
 }
 
-.mse-recursos__summary-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.mse-recursos__summary-group {
+  display: grid;
+  gap: 0.6rem;
 }
 
-.mse-recursos__summary-chip-btn {
-  padding: 0.3rem 0.7rem;
-  border: 1px solid var(--rs-line);
-  background: transparent;
+.mse-recursos__summary-group-title {
+  margin: 0;
   color: var(--rs-text);
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.mse-recursos__summary-chip-btn:hover {
-  border-color: #006298;
-}
-
-.mse-recursos__summary-chip-btn--on {
-  border-color: #006298;
-  background: #006298;
-  color: #FFFFFF;
+  font-size: 0.95rem;
+  font-weight: 800;
 }
 
 .mse-recursos__summary-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.6rem;
 }
 
@@ -777,4 +749,16 @@
   color: var(--rs-muted);
   font-size: 0.9rem;
   text-align: center;
+}
+
+@media (max-width: 64rem) {
+  .mse-recursos__summary-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 38rem) {
+  .mse-recursos__summary-list {
+    grid-template-columns: 1fr;
+  }
 }

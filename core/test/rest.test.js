@@ -64,7 +64,7 @@ const pagedClient = createSharePointRestClient({
     if (pageCalls.length === 1) {
       return response(200, {
         value: [{ Id: 1 }],
-        "@odata.nextLink": "https://contoso.sharepoint.com/teams/core-test/_api/page-2"
+        "odata.nextLink": "https://contoso.sharepoint.com/teams/core-test/_api/page-2"
       });
     }
     return response(200, { value: [{ Id: 2 }] });

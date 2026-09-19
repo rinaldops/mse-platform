@@ -1,12 +1,8 @@
-const PETROBRAS_CATEGORY_COLORS = new Set([
-  "#008542", "#FDC82F", "#00B2A9", "#C4D600",
-  "#EBFF00", "#ED8B00", "#006298", "#3DDAFF", "#75787B"
-]);
 const DEFAULT_CATEGORY_COLOR = "#006298";
 
 function categoryColor(value) {
   const normalized = typeof value === "string" ? value.trim().toUpperCase() : "";
-  return PETROBRAS_CATEGORY_COLORS.has(normalized) ? normalized : DEFAULT_CATEGORY_COLOR;
+  return /^#[0-9A-F]{6}$/.test(normalized) ? normalized : DEFAULT_CATEGORY_COLOR;
 }
 
 const TOPIC_FIELDS = [
@@ -512,6 +508,19 @@ export function createForumReadService({ dataSources, sanitizeRichText, forumPag
       canClose: topic.Status !== "Arquivado" && topic.Status !== "Fechado" && (isAuthor || user.isSiteOwner),
       canPin: topic.Status !== "Arquivado" && user.isSiteOwner
     });
+  }
+
+  async function recordTopicView(topicId) {
+    const id = positiveInteger(topicId, "topicId");
+    const source = dataSources.get("forum-topics");
+    const client = dataSources.getClient("forum-topics");
+    const loaded = await client.getListItem(source, id, {
+      select: ["Id", "QuantidadeVisualizacoes"]
+    });
+    if (!loaded.item) return null;
+    const count = Math.max(0, Number(loaded.item.QuantidadeVisualizacoes) || 0) + 1;
+    await client.updateListItem(source, id, { QuantidadeVisualizacoes: count }, { etag: loaded.etag });
+    return count;
   }
 
   async function getTopicForEdit(topicId) {
@@ -1232,6 +1241,7 @@ export function createForumReadService({ dataSources, sanitizeRichText, forumPag
     listTopics,
     listContributors,
     getTopic,
+    recordTopicView,
     getTopicForEdit,
     listAnswers,
     getAnswerForEdit,

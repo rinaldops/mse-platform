@@ -53,6 +53,7 @@ assert.equal(root.children[0].children[0].attributes.get("aria-hidden"), "false"
 assert.equal(root.children[0].children[1].attributes.get("aria-hidden"), "true");
 assert.equal(timers.size, 1);
 carousel.next();
+assert.equal(root.children[0].style.transform, "", "o slide ativo não deve ser deslocado para fora da trilha");
 assert.equal(root.children[0].children[0].attributes.get("aria-hidden"), "true");
 assert.equal(root.children[0].children[1].attributes.get("aria-hidden"), "false");
 root.listeners.get("keydown")({ key: "ArrowLeft", preventDefault() {} });

@@ -89,6 +89,29 @@ function optionalText(value, label, maxLength) {
   return value;
 }
 
+function plainTextExcerpt(value, maxLength = 240) {
+  return String(value ?? "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function decodeBase64(value) {
   const normalized = value.replace(/\s/g, "");
   let decoded;
@@ -125,7 +148,7 @@ function validateCursor(source, cursor) {
 function topicFilter({ view, categoryId, search }) {
   const filters = [];
   if (view === "unanswered") filters.push("Status eq 'Aberto'", "QuantidadeRespostas eq 0");
-  else if (view === "resolved") filters.push("Status eq 'Resolvido'");
+  else if (view === "resolved") filters.push("(Status eq 'Resolvido' or Status eq 'Fechado')");
   else if (view === "pinned") filters.push("Fixado eq 1", "Status ne 'Arquivado'");
   else if (view === "recent" || view === "popular") filters.push("Status ne 'Arquivado'");
   else throw new TypeError("view deve ser recent, popular, unanswered, resolved ou pinned.");
@@ -140,8 +163,12 @@ function topicFilter({ view, categoryId, search }) {
 
 const TOPIC_SORTS = Object.freeze({
   recentes: "UltimaAtividade desc,Id desc",
+  primeiras: "Created asc,Id asc",
+  categorias: "CategoriaId asc,UltimaAtividade desc,Id desc",
   respostas: "QuantidadeRespostas desc,UltimaAtividade desc,Id desc",
-  visualizacoes: "QuantidadeVisualizacoes desc,UltimaAtividade desc,Id desc"
+  menosRespostas: "QuantidadeRespostas asc,UltimaAtividade desc,Id desc",
+  visualizacoes: "QuantidadeVisualizacoes desc,UltimaAtividade desc,Id desc",
+  menosVisualizacoes: "QuantidadeVisualizacoes asc,UltimaAtividade desc,Id desc"
 });
 
 function topicOrderBy(sort) {
@@ -205,7 +232,7 @@ function reactionInput({ publicationType, publicationId, reactionType } = {}) {
   };
 }
 
-export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
+export function createForumReadService({ dataSources, sanitizeRichText, forumPageUrl = globalThis.location?.href } = {}) {
   if (!dataSources || typeof dataSources.get !== "function" || typeof dataSources.getClient !== "function") {
     throw new TypeError("dataSources deve ser um registro de fontes do núcleo.");
   }
@@ -213,6 +240,11 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
   let taxonomyPromise;
   let currentUserPromise;
   const topicIdsByTag = new Map();
+
+  function isOwnersGroup(group) {
+    const title = String(group?.Title ?? group?.title ?? "").trim();
+    return /\bowners\b/i.test(title) || /propriet[aá]rios/i.test(title);
+  }
 
   async function externalizeInlineImages(input) {
     const imagePattern = /<img\b[^>]*\bsrc\s*=\s*(["'])(data:image\/(png|jpe?g|gif|webp);base64,([a-z0-9+/=\s]+))\1[^>]*>/gi;
@@ -281,10 +313,18 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     return freezeResult([...items.values()].filter((item) => !type || item.Tipo === type));
   }
 
-  async function currentUserId() {
+  async function currentUser() {
     currentUserPromise ??= (async () => {
-      const response = await dataSources.getClient("forum-topics").request("/_api/web/currentuser?$select=Id");
-      return positiveInteger(response.data?.Id ?? response.data?.d?.Id, "currentUser.Id");
+      const response = await dataSources.getClient("forum-topics").request(
+        "/_api/web/currentuser?$select=Id,Title,IsSiteAdmin,Groups/Title&$expand=Groups"
+      );
+      const data = response.data?.d ?? response.data;
+      const groups = data?.Groups?.results ?? data?.Groups?.value ?? data?.Groups ?? [];
+      return freezeResult({
+        id: positiveInteger(data?.Id, "currentUser.Id"),
+        title: data?.Title || "Autor não informado",
+        isSiteOwner: Boolean(data?.IsSiteAdmin) || (Array.isArray(groups) && groups.some(isOwnersGroup))
+      });
     })().catch((error) => {
       currentUserPromise = null;
       throw error;
@@ -292,13 +332,12 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     return currentUserPromise;
   }
 
+  async function currentUserId() {
+    return (await currentUser()).id;
+  }
+
   async function whoAmI() {
-    const response = await dataSources.getClient("forum-topics").request("/_api/web/currentuser?$select=Id,Title");
-    const data = response.data?.d ?? response.data;
-    return freezeResult({
-      id: positiveInteger(data?.Id, "currentUser.Id"),
-      title: data?.Title || "Autor não informado"
-    });
+    return currentUser();
   }
 
   async function topicsForTag(tagId) {
@@ -361,8 +400,8 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     pageSize = 20,
     cursor
   } = {}) {
-    if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) {
-      throw new TypeError("pageSize deve ser um inteiro entre 1 e 50.");
+    if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+      throw new TypeError("pageSize deve ser um inteiro entre 1 e 100.");
     }
     const source = dataSources.get("forum-topics");
     const client = dataSources.getClient("forum-topics");
@@ -465,9 +504,13 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     });
     const topic = (await enrichTopics(page.items))[0] ?? null;
     if (!topic) return null;
+    const user = await currentUser();
+    const isAuthor = topic.Author?.Id === user.id;
     return freezeResult({
       ...topic,
-      canEdit: topic.Status !== "Arquivado" && topic.Author?.Id === await currentUserId()
+      canEdit: topic.Status !== "Arquivado" && isAuthor,
+      canClose: topic.Status !== "Arquivado" && topic.Status !== "Fechado" && (isAuthor || user.isSiteOwner),
+      canPin: topic.Status !== "Arquivado" && user.isSiteOwner
     });
   }
 
@@ -493,6 +536,25 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       throw error;
     }
     return freezeResult({ topic: (await enrichTopics([loaded.item]))[0], etag: loaded.etag });
+  }
+
+  async function getTopicForClose(topicId) {
+    const id = positiveInteger(topicId, "topicId");
+    const source = dataSources.get("forum-topics");
+    const [loaded, user] = await Promise.all([
+      dataSources.getClient("forum-topics").getListItem(source, id, {
+        select: ["Id", "Status", "Author/Id"],
+        expand: "Author"
+      }),
+      currentUser()
+    ]);
+    if (!loaded.item) return null;
+    if (loaded.item.Status === "Arquivado") throw invalidState("Tópicos arquivados não podem ser alterados.");
+    if (loaded.item.Status === "Fechado") throw invalidState("Este tópico já está encerrado.");
+    if (loaded.item.Author?.Id !== user.id && !user.isSiteOwner) {
+      throw accessDenied("Somente o autor ou um proprietário do site pode encerrar este tópico.");
+    }
+    return freezeResult({ topic: loaded.item, etag: loaded.etag });
   }
 
   async function listAnswers(topicId, { pageSize = 30, cursor } = {}) {
@@ -534,13 +596,45 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     const loaded = await dataSources.getClient("forum-topics").getListItem(
       dataSources.get("forum-topics"),
       positiveInteger(topicId, "topicId"),
-      { select: ["Id", "Status", "QuantidadeRespostas", "UltimaAtividade"] }
+      {
+        select: ["Id", "Title", "Status", "QuantidadeRespostas", "UltimaAtividade", "Author/Id", "Author/EMail"],
+        expand: "Author"
+      }
     );
     if (!loaded.item) return null;
     if (loaded.item.Status === "Arquivado" || loaded.item.Status === "Fechado") {
       throw invalidState("Este tópico não aceita novas respostas.");
     }
     return loaded;
+  }
+
+  async function notifyTopicAuthor(topic, answerId, content) {
+    const responder = await currentUser();
+    if (topic.Author?.Id === responder.id) return { sent: false, skipped: "self-reply" };
+    const recipient = String(topic.Author?.EMail ?? topic.Author?.Email ?? "").trim();
+    if (!recipient) return { sent: false, skipped: "missing-recipient" };
+
+    const url = new URL(forumPageUrl || "/SitePages/Forum.aspx", globalThis.location?.origin ?? "http://localhost");
+    url.searchParams.set("forumTopic", String(topic.Id));
+    url.searchParams.set("forumAnswer", String(answerId));
+    const excerpt = plainTextExcerpt(content) || "A resposta não possui texto para pré-visualização.";
+    await dataSources.getClient("forum-topics").request("/_api/SP.Utilities.Utility.SendEmail", {
+      method: "POST",
+      body: {
+        properties: {
+          __metadata: { type: "SP.Utilities.EmailProperties" },
+          To: { results: [recipient] },
+          Subject: `Nova resposta: ${topic.Title}`,
+          Body: [
+            "<p>Olá,</p>",
+            `<p><strong>${escapeHtml(responder.title)}</strong> respondeu ao tópico <strong>${escapeHtml(topic.Title)}</strong>.</p>`,
+            `<p>${escapeHtml(excerpt)}</p>`,
+            `<p><a href="${escapeHtml(url.href)}">Acessar a resposta completa no Fórum</a></p>`
+          ].join("")
+        }
+      }
+    });
+    return { sent: true };
   }
 
   async function updateTopicAnswerCount(topicId, delta) {
@@ -600,7 +694,14 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       },
       { etag: topic.etag }
     );
-    return freezeResult({ answerId, topicId: id });
+    let notification;
+    try {
+      notification = await notifyTopicAuthor(topic.item, answerId, normalizedContent);
+    } catch (error) {
+      console.warn("Resposta publicada, mas a notificação por e-mail falhou.", error);
+      notification = { sent: false, skipped: "send-failed" };
+    }
+    return freezeResult({ answerId, topicId: id, notification });
   }
 
   async function updateAnswer({ answerId, etag, ...input } = {}) {
@@ -616,19 +717,6 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     );
     await updateTopicAnswerCount(editable.answer.TopicoId, 0);
     return freezeResult({ answerId: editable.answer.Id, topicId: editable.answer.TopicoId });
-  }
-
-  async function archiveAnswer(answerId) {
-    const editable = await getAnswerForEdit(answerId);
-    if (!editable) return null;
-    await dataSources.getClient("forum-answers").updateListItem(
-      dataSources.get("forum-answers"),
-      editable.answer.Id,
-      { Status: "Arquivada" },
-      { etag: editable.etag }
-    );
-    await updateTopicAnswerCount(editable.answer.TopicoId, -1);
-    return freezeResult({ answerId: editable.answer.Id, topicId: editable.answer.TopicoId, status: "Arquivada" });
   }
 
   async function listReactions(publications = []) {
@@ -988,17 +1076,31 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     return freezeResult({ topicId: id, tagIds: normalizedTagIds });
   }
 
-  async function archiveTopic(topicId) {
-    const editable = await getTopicForEdit(topicId);
+  async function closeTopic(topicId) {
+    const editable = await getTopicForClose(topicId);
     if (!editable) return null;
     await dataSources.getClient("forum-topics").updateListItem(
       dataSources.get("forum-topics"),
       editable.topic.Id,
-      { Status: "Arquivado", UltimaAtividade: new Date().toISOString() },
+      { Status: "Fechado", UltimaAtividade: new Date().toISOString() },
       { etag: editable.etag }
     );
-    for (const tag of editable.topic.tags) topicIdsByTag.delete(tag.Id);
-    return freezeResult({ topicId: editable.topic.Id, status: "Arquivado" });
+    return freezeResult({ topicId: editable.topic.Id, status: "Fechado" });
+  }
+
+  async function setTopicPinned(topicId, pinned) {
+    const id = positiveInteger(topicId, "topicId");
+    if (typeof pinned !== "boolean") throw new TypeError("pinned deve ser booleano.");
+    const source = dataSources.get("forum-topics");
+    const [loaded, user] = await Promise.all([
+      dataSources.getClient("forum-topics").getListItem(source, id, { select: ["Id", "Status", "Fixado"] }),
+      currentUser()
+    ]);
+    if (!loaded.item) return null;
+    if (loaded.item.Status === "Arquivado") throw invalidState("Tópicos arquivados não podem ser alterados.");
+    if (!user.isSiteOwner) throw accessDenied("Somente um proprietário do site pode fixar tópicos.");
+    await dataSources.getClient("forum-topics").updateListItem(source, id, { Fixado: pinned }, { etag: loaded.etag });
+    return freezeResult({ topicId: id, pinned });
   }
 
   async function listCategorySummaries({ recentLimit = 3 } = {}) {
@@ -1078,9 +1180,9 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
       categoryCounts.set(topic.CategoriaId, (categoryCounts.get(topic.CategoriaId) ?? 0) + 1);
       const key = displayAuthorKey(topic);
       if (key) activeAuthors.add(key);
-      if (topic.Status === "Resolvido") resolved += 1;
+      if (topic.Status === "Resolvido" || topic.Status === "Fechado") resolved += 1;
       if (topic.Fixado) pinnedCount += 1;
-      if (Number(topic.QuantidadeRespostas ?? 0) === 0) {
+      if (topic.Status === "Aberto" && Number(topic.QuantidadeRespostas ?? 0) === 0) {
         unansweredCount += 1;
         const updated = Date.parse(topic.UltimaAtividade || "");
         if (Number.isFinite(updated) && updated <= threshold) unansweredOverdue += 1;
@@ -1135,14 +1237,14 @@ export function createForumReadService({ dataSources, sanitizeRichText } = {}) {
     getAnswerForEdit,
     createAnswer,
     updateAnswer,
-    archiveAnswer,
     listReactions,
     toggleReaction,
     acceptAnswer,
     clearAcceptedAnswer,
     createTopic,
     updateTopic,
-    archiveTopic,
+    closeTopic,
+    setTopicPinned,
     loadTopicDraft,
     saveTopicDraft,
     deleteTopicDraft

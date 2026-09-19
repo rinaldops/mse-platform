@@ -61,7 +61,9 @@ assert.equal(shell.className, "mse-recursos mse-recursos--list");
 const [pagebar, page] = shell.children;
 assert.equal(pagebar.className, "mse-recursos__pagebar");
 const title = findAll(pagebar, (node) => node.className === "mse-recursos__pagebar-title")[0];
-assert.equal(title.textContent, "Recursos");
+assert.equal(title.textContent, "Explore Mais");
+const search = findAll(pagebar, (node) => node.className === "mse-recursos__search-input")[0];
+assert.equal(search.placeholder, "Buscar no Explore Mais...");
 
 assert.equal(page.className, "mse-recursos__page");
 const chips = findAll(page, (node) => node.className?.startsWith?.("mse-recursos__chip") && node.tagName === "BUTTON");
@@ -85,7 +87,7 @@ cleanup();
 assert.equal(root.children.length, 0);
 
 // createRecursosSummaryView: Home-page panel — items link at Recursos.aspx
-// (not the resource URL itself), category chips filter, one CTA button.
+// (not the resource URL itself), up to four cards per category, one CTA.
 {
   const summaryRoot = new FakeElement("div", document);
   const summaryService = {
@@ -104,22 +106,23 @@ assert.equal(root.children.length, 0);
   const summaryCleanup = createRecursosSummaryView({
     root: summaryRoot,
     service: summaryService,
-    pageHref: "/sites/tecnologiasdigitais/SitePages/Recursos.aspx"
+    pageHref: "/sites/demo/SitePages/Explore.aspx"
   });
   await new Promise((resolve) => setImmediate(resolve));
 
   const summaryItems = findAll(summaryRoot, (node) => node.className === "mse-recursos__summary-item");
-  assert.equal(summaryItems.length, 2, "Mais usados = primeiro link de cada categoria");
-  assert.equal(summaryItems[0].href, "/sites/tecnologiasdigitais/SitePages/Recursos.aspx");
+  assert.equal(summaryItems.length, 3, "deve mostrar os links de todas as categorias");
+  assert.equal(summaryItems[0].href, "/sites/demo/SitePages/Explore.aspx");
   assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-name")[0].textContent, "Guia do Power Apps");
   assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-host")[0].textContent, "make.powerapps.com");
-  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].href, "/sites/tecnologiasdigitais/SitePages/Recursos.aspx");
-
-  const chips = findAll(summaryRoot, (n) => n.className?.startsWith?.("mse-recursos__summary-chip-btn"));
-  assert.deepEqual(chips.map((c) => c.textContent), ["Mais usados", "Power Platform", "Microsoft 365"]);
-  chips.find((c) => c.textContent === "Power Platform").listeners.get("click")();
-  await new Promise((resolve) => setImmediate(resolve));
-  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-item").length, 2, "categoria Power Platform tem 2 links");
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].href, "/sites/demo/SitePages/Explore.aspx");
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-title").length, 0);
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].textContent, "Explore Mais...");
+  assert.deepEqual(
+    findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-group-title").map((n) => n.textContent),
+    ["Power Platform", "Microsoft 365"]
+  );
+  assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-chip-btn").length, 0);
   summaryCleanup();
 }
 

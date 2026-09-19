@@ -10,17 +10,14 @@
   --home-laranja: #ED8B00;
   --home-text: #FFFFFF;
   --home-line: #FFFFFF;
-  --home-font-display: "Petrobras Sans", Arial, sans-serif;
+  --home-font-display: var(--mse-font-family, Arial, sans-serif);
   --home-font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Roboto Mono", monospace;
 
   /* three uneven light sources (an irregular triangle, not one centered blob) give the
      hero depth: each stop is azul-escuro tinted lighter — 85/80/90% color-to-white mix —
      fading to transparent over the flat azul-escuro base, so edges stay the darkest,
      full-strength approved blue. The wide, very diffuse 10% black layer on top is a
-     documented local exception (IDENTIDADE-PETROBRAS.md secao 4: exceção local exige
-     justificativa e aprovação) — approved to draw focus toward the center; at 10% and
-     confined to the outer margin it never becomes a predominant off-palette color
-     against a page that otherwise stays strictly within the Petrobras palette. */
+     subtle outer layer draws focus toward the center without dominating the base. */
   background:
     radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
     radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),

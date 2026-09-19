@@ -10,12 +10,17 @@ const VIEW_LABELS = Object.freeze({
   pinned: "Fixados"
 });
 
-const SORTS = new Set(["recentes", "respostas", "visualizacoes"]);
+const SORTS = new Set(["recentes", "primeiras", "categorias", "respostas", "menosRespostas", "visualizacoes", "menosVisualizacoes"]);
+const PAGE_SIZES = new Set([20, 50, 100]);
 
 const SORT_LABELS = Object.freeze({
-  recentes: "Última atividade",
+  recentes: "Últimas postagens",
+  primeiras: "Primeiras postagens",
+  categorias: "Categorias",
   respostas: "Mais respondidos",
-  visualizacoes: "Mais vistos"
+  menosRespostas: "Menos respondidos",
+  visualizacoes: "Mais vistos",
+  menosVisualizacoes: "Menos vistos"
 });
 
 function positiveInteger(value) {
@@ -28,9 +33,11 @@ export function readForumRoute(input = globalThis.location?.href) {
   const requestedView = url.searchParams.get("forumView");
   const requestedSort = url.searchParams.get("forumSort");
   const search = (url.searchParams.get("forumSearch") ?? "").trim().slice(0, 100);
+  const requestedPageSize = Number(url.searchParams.get("forumPageSize"));
   return Object.freeze({
     view: VIEWS.has(requestedView) ? requestedView : "recent",
     sort: SORTS.has(requestedSort) ? requestedSort : "recentes",
+    pageSize: PAGE_SIZES.has(requestedPageSize) ? requestedPageSize : 20,
     categoryId: positiveInteger(url.searchParams.get("forumCategory")),
     tagId: positiveInteger(url.searchParams.get("forumTag")),
     topicId: positiveInteger(url.searchParams.get("forumTopic")),
@@ -49,6 +56,7 @@ export function forumRouteUrl(input, changes = {}) {
   const mappings = [
     ["forumView", next.view === "recent" ? null : next.view],
     ["forumSort", next.sort === "recentes" ? null : next.sort],
+    ["forumPageSize", next.pageSize === 20 ? null : next.pageSize],
     ["forumCategory", next.categoryId],
     ["forumTag", next.tagId],
     ["forumTopic", next.topicId],
@@ -99,7 +107,7 @@ const ICON_PATHS = {
   link: '<path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/>',
   checkSquare: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
   edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
-  archive: '<polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>'
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
 };
 
 function icon(document, name) {
@@ -109,7 +117,7 @@ function icon(document, name) {
   return span;
 }
 
-// Icon-only action (edit/archive/mark solution/permalink): the visible label
+// Icon-only action (edit/pin/close/mark solution/permalink): the visible label
 // moves entirely to title/aria-label so the row stays compact single-line.
 function iconButton(document, tag, className, iconName, label) {
   const node = element(document, tag, className);
@@ -154,7 +162,6 @@ export function createForumView({
     || typeof service.createAnswer !== "function"
     || typeof service.getAnswerForEdit !== "function"
     || typeof service.updateAnswer !== "function"
-    || typeof service.archiveAnswer !== "function"
     || typeof service.listReactions !== "function"
     || typeof service.toggleReaction !== "function"
     || typeof service.acceptAnswer !== "function"
@@ -162,14 +169,15 @@ export function createForumView({
     || typeof service.createTopic !== "function"
     || typeof service.getTopicForEdit !== "function"
     || typeof service.updateTopic !== "function"
-    || typeof service.archiveTopic !== "function"
+    || typeof service.closeTopic !== "function"
+    || typeof service.setTopicPinned !== "function"
     || typeof service.loadTopicDraft !== "function"
     || typeof service.saveTopicDraft !== "function"
     || typeof service.deleteTopicDraft !== "function") {
     throw new TypeError("service deve implementar o contrato do fórum.");
   }
-  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) {
-    throw new TypeError("pageSize deve ser um inteiro entre 1 e 50.");
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    throw new TypeError("pageSize deve ser um inteiro entre 1 e 100.");
   }
   if (renderRichText !== undefined && typeof renderRichText !== "function") {
     throw new TypeError("renderRichText deve ser uma função.");
@@ -397,7 +405,19 @@ export function createForumView({
     sort.addEventListener("change", () => navigate({ sort: sort.value, topicId: null }));
     sortLabel.append(sort);
 
-    bar.append(tabs, sortLabel);
+    const sizeLabel = element(document, "label", "mse-forum__sort");
+    sizeLabel.append(element(document, "span", "mse-forum__sort-label", "Itens por página"));
+    const size = element(document, "select", "mse-forum__select");
+    for (const value of PAGE_SIZES) {
+      const option = element(document, "option", null, String(value));
+      option.value = String(value);
+      option.selected = value === route.pageSize;
+      size.append(option);
+    }
+    size.addEventListener("change", () => navigate({ pageSize: Number(size.value), topicId: null }));
+    sizeLabel.append(size);
+
+    bar.append(tabs, sortLabel, sizeLabel);
     return bar;
   }
 
@@ -530,7 +550,9 @@ export function createForumView({
       badge.style.setProperty("--accent", topic.category.Cor || "#006298");
       badges.append(badge);
     }
-    if (topic.Status === "Resolvido") {
+    if (topic.Status === "Fechado") {
+      badges.append(element(document, "span", "mse-forum__topic-badge mse-forum__topic-badge--closed", "Fechado"));
+    } else if (topic.Status === "Resolvido") {
       badges.append(element(document, "span", "mse-forum__topic-badge mse-forum__topic-badge--resolved", "✓ Resolvido"));
     } else if (Number(topic.QuantidadeRespostas ?? 0) === 0) {
       badges.append(element(document, "span", "mse-forum__topic-badge mse-forum__topic-badge--waiting", "Aguardando resposta"));
@@ -595,7 +617,7 @@ export function createForumView({
           tagId: route.tagId,
           search: route.search,
           sort: route.sort,
-          pageSize
+          pageSize: route.pageSize
         }),
         route.mine ? service.whoAmI() : null
       ]);
@@ -614,51 +636,66 @@ export function createForumView({
       if (overview.unansweredOverdue > 0) sidebar.append(unansweredPanel(overview));
 
       const list = element(document, "div", "mse-forum__topic-list");
-      const topics = [...filterMine(firstPage.topics)];
-      let next = firstPage.next;
-      const drawTopics = (items) => items.forEach((topic) => list.append(topicListCard(topic)));
+      let currentPage = firstPage;
+      let pageIndex = 0;
+      const cursors = [undefined];
+      const topics = filterMine(firstPage.topics);
+      const drawTopics = (items) => list.replaceChildren(...items.map(topicListCard));
       drawTopics(topics);
 
       const summary = filterSummary(route, overview);
       const newMain = element(document, "main", "mse-forum__main");
       if (summary) newMain.append(summary);
 
-      if (!topics.length && !next) {
+      if (!topics.length && !currentPage.next) {
         newMain.append(emptyState());
       } else {
         newMain.append(list);
-        if (next) {
-          const more = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Carregar mais tópicos");
-          more.type = "button";
-          more.addEventListener("click", async () => {
-            more.disabled = true;
-            more.textContent = "Carregando…";
-            try {
-              const nextPage = await service.listTopics({
-                view: route.view,
-                categoryId: route.categoryId,
-                tagId: route.tagId,
-                search: route.search,
-                sort: route.sort,
-                pageSize,
-                cursor: next
-              });
-              if (disposed || sequence !== renderSequence) return;
-              drawTopics(filterMine(nextPage.topics));
-              next = nextPage.next;
-              if (!next) more.remove();
-              else {
-                more.disabled = false;
-                more.textContent = "Carregar mais tópicos";
-              }
-            } catch (error) {
-              more.disabled = false;
-              more.textContent = "Tentar novamente";
-              newMain.append(status(errorMessage(error), "alert"));
-            }
-          });
-          newMain.append(more);
-        }
+        const pagination = element(document, "nav", "mse-forum__pagination");
+        pagination.setAttribute("aria-label", "Paginação dos tópicos");
+        const previous = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Anterior");
+        const pageNumber = element(document, "span", "mse-forum__pagination-status");
+        const next = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Próxima");
+        previous.type = "button";
+        next.type = "button";
+        const updatePagination = () => {
+          previous.disabled = pageIndex === 0;
+          next.disabled = !currentPage.next;
+          pageNumber.textContent = `Página ${pageIndex + 1}`;
+        };
+        const loadPage = async (targetIndex, cursor) => {
+          previous.disabled = true;
+          next.disabled = true;
+          pageNumber.textContent = "Carregando…";
+          try {
+            const loaded = await service.listTopics({
+              view: route.view,
+              categoryId: route.categoryId,
+              tagId: route.tagId,
+              search: route.search,
+              sort: route.sort,
+              pageSize: route.pageSize,
+              cursor
+            });
+            if (disposed || sequence !== renderSequence) return;
+            currentPage = loaded;
+            pageIndex = targetIndex;
+            drawTopics(filterMine(loaded.topics));
+            updatePagination();
+            list.scrollIntoView?.({ block: "start", behavior: "smooth" });
+          } catch (error) {
+            updatePagination();
+            newMain.append(status(errorMessage(error), "alert"));
+          }
+        };
+        previous.addEventListener("click", () => loadPage(pageIndex - 1, cursors[pageIndex - 1]));
+        next.addEventListener("click", () => {
+          cursors[pageIndex + 1] = currentPage.next;
+          loadPage(pageIndex + 1, currentPage.next);
+        });
+        pagination.append(previous, pageNumber, next);
+        updatePagination();
+        newMain.append(pagination);
       }
 
       grid.append(sidebar, newMain);
@@ -795,6 +832,12 @@ export function createForumView({
       const submit = element(document, "button", "mse-forum__button", editing ? "Salvar alterações" : "Publicar tópico");
       submit.type = "submit";
       actions.append(previewButton, submit);
+      if (editing) {
+        const cancel = element(document, "button", "mse-forum__button mse-forum__button--secondary", "Cancelar");
+        cancel.type = "button";
+        cancel.addEventListener("click", () => navigate({ edit: null }));
+        actions.append(cancel);
+      }
       let saveDraft;
       let discardDraft;
       const values = () => ({
@@ -998,6 +1041,12 @@ export function createForumView({
         element(document, "span", "mse-forum__breadcrumb-current", topic.Title || "Tópico sem título")
       );
       const heading = element(document, "h2", "mse-forum__title", topic.Title || "Tópico sem título");
+      const category = element(document, "div", "mse-forum__detail-category");
+      if (topic.category?.Title) {
+        const badge = element(document, "span", "mse-forum__topic-badge mse-forum__topic-badge--category", topic.category.Title);
+        badge.style.setProperty("--accent", topic.category.Cor || "#006298");
+        category.append(badge);
+      }
       const body = publicationBody(topic.Conteudo, topic.FormatoConteudo);
       const topicActions = element(document, "div", "mse-forum__topic-actions");
       topicActions.append(reactionBar("Topico", topic.Id, reactionSummary[`Topico:${topic.Id}`]));
@@ -1009,23 +1058,50 @@ export function createForumView({
           event.preventDefault();
           navigate({ edit: true });
         });
-        const archive = iconButton(document, "button", "mse-forum__icon-button mse-forum__icon-button--danger", "archive", "Arquivar tópico");
-        archive.type = "button";
-        archive.addEventListener("click", async () => {
-          if (!windowImpl?.confirm?.("Arquivar este tópico? Ele deixará de aparecer nas listagens.")) return;
-          archive.disabled = true;
-          setIconButtonLabel(archive, "Arquivando…");
+        topicActions.append(edit);
+      }
+      if (topic.canPin) {
+        const pinLabel = topic.Fixado ? "Desafixar tópico" : "Fixar tópico";
+        const pin = iconButton(
+          document,
+          "button",
+          `mse-forum__icon-button${topic.Fixado ? " mse-forum__icon-button--active" : ""}`,
+          "star",
+          pinLabel
+        );
+        pin.type = "button";
+        pin.setAttribute("aria-pressed", topic.Fixado ? "true" : "false");
+        pin.addEventListener("click", async () => {
+          pin.disabled = true;
           try {
-            await service.archiveTopic(topic.Id);
+            await service.setTopicPinned(topic.Id, !topic.Fixado);
             if (disposed || sequence !== renderSequence) return;
-            await navigate({ topicId: null, edit: null });
+            await render();
           } catch (error) {
-            archive.disabled = false;
-            setIconButtonLabel(archive, "Tentar arquivar novamente");
+            pin.disabled = false;
             content.append(status(errorMessage(error), "alert"));
           }
         });
-        topicActions.append(edit, archive);
+        topicActions.append(pin);
+      }
+      if (topic.canClose) {
+        const close = iconButton(document, "button", "mse-forum__icon-button", "lock", "Encerrar tópico");
+        close.type = "button";
+        close.addEventListener("click", async () => {
+          if (!windowImpl?.confirm?.("Encerrar este tópico? Novas respostas serão bloqueadas.")) return;
+          close.disabled = true;
+          setIconButtonLabel(close, "Encerrando…");
+          try {
+            await service.closeTopic(topic.Id);
+            if (disposed || sequence !== renderSequence) return;
+            await render();
+          } catch (error) {
+            close.disabled = false;
+            setIconButtonLabel(close, "Tentar encerrar novamente");
+            content.append(status(errorMessage(error), "alert"));
+          }
+        });
+        topicActions.append(close);
       }
       topicActions.append(element(
         document,
@@ -1097,8 +1173,6 @@ export function createForumView({
         if (answer.canEdit) {
           const editAnswer = iconButton(document, "button", "mse-forum__icon-button", "edit", "Editar resposta");
           editAnswer.type = "button";
-          const archiveAnswer = iconButton(document, "button", "mse-forum__icon-button mse-forum__icon-button--danger", "archive", "Arquivar resposta");
-          archiveAnswer.type = "button";
           editAnswer.addEventListener("click", async () => {
             editAnswer.disabled = true;
             try {
@@ -1141,21 +1215,7 @@ export function createForumView({
               article.append(status(errorMessage(error), "alert"));
             }
           });
-          archiveAnswer.addEventListener("click", async () => {
-            if (!windowImpl?.confirm?.("Arquivar esta resposta?")) return;
-            archiveAnswer.disabled = true;
-            setIconButtonLabel(archiveAnswer, "Arquivando…");
-            try {
-              await service.archiveAnswer(answer.Id);
-              if (disposed || sequence !== renderSequence) return;
-              await navigate({ answerId: null });
-            } catch (error) {
-              archiveAnswer.disabled = false;
-              setIconButtonLabel(archiveAnswer, "Tentar arquivar novamente");
-              article.append(status(errorMessage(error), "alert"));
-            }
-          });
-          answerActions.append(editAnswer, archiveAnswer);
+          answerActions.append(editAnswer);
         }
         answerActions.append(metaLine);
         article.append(publicationBody(answer.Conteudo || "", answer.FormatoConteudo), answerActions);
@@ -1213,6 +1273,16 @@ export function createForumView({
             contentFormat: replyEditor.contentFormat
           });
           if (disposed || sequence !== renderSequence) return;
+          if (!result.notification?.sent && result.notification?.skipped !== "self-reply") {
+            replySubmit.textContent = "Resposta publicada";
+            const open = element(document, "a", "mse-forum__back", "Abrir a resposta publicada");
+            open.href = forumRouteUrl(currentHref(), { answerId: result.answerId });
+            replyFeedback.replaceChildren(
+              status("A resposta foi publicada, mas não foi possível enviar o e-mail ao autor do tópico.", "alert"),
+              open
+            );
+            return;
+          }
           await navigate({ answerId: result.answerId });
         } catch (error) {
           replySubmit.disabled = false;
@@ -1231,6 +1301,7 @@ export function createForumView({
 
       content.replaceChildren(
         heading,
+        ...(category.childElementCount ? [category] : []),
         body,
         topicActions,
         answersHeading,
@@ -1337,7 +1408,6 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
 
   function chipRow() {
     const categories = categoriesFromTopics();
-    if (categories.length < 2) return null;
     const row = element(document, "div", "mse-forum__summary-chips");
     row.setAttribute("role", "group");
     row.setAttribute("aria-label", "Filtrar por categoria");
@@ -1357,8 +1427,13 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
       return chip;
     };
 
-    row.append(make("Todas", null, "#006298"));
-    for (const category of categories) row.append(make(category.name, category.id, category.color));
+    if (categories.length >= 2) {
+      row.append(make("Todas", null, "#006298"));
+      for (const category of categories) row.append(make(category.name, category.id, category.color));
+    }
+    const cta = element(document, "a", "mse-forum__summary-cta", "Ver fórum completo");
+    cta.href = pageHref;
+    row.append(cta);
     return row;
   }
 
@@ -1375,7 +1450,7 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
     const meta = element(document, "span", "mse-forum__summary-card-meta");
     const tag = element(document, "span", "mse-forum__summary-card-tag", topic.category?.Nome || topic.category?.Title || "Geral");
     const count = Number(topic.QuantidadeRespostas ?? 0);
-    meta.append(tag, element(document, "span", null, `${count} resposta${count === 1 ? "" : "s"}`));
+    meta.append(tag, element(document, "span", "mse-forum__summary-card-replies", `${count} resposta${count === 1 ? "" : "s"}`));
     card.append(meta);
     return card;
   }
@@ -1383,15 +1458,8 @@ export function createForumSummaryView({ root, service, pageHref, limit = 6, fet
   function renderShell() {
     const panel = element(document, "section", "mse-forum__summary");
 
-    const header = element(document, "div", "mse-forum__summary-header");
-    header.append(element(document, "h2", "mse-forum__summary-title", "Fórum"));
-    const cta = element(document, "a", "mse-forum__summary-cta", "Ver fórum completo");
-    cta.href = pageHref;
-    header.append(cta);
-    panel.append(header);
-
     const chips = chipRow();
-    if (chips) panel.append(chips);
+    panel.append(chips);
 
     const list = element(document, "div", "mse-forum__summary-list");
     const topics = visibleTopics();

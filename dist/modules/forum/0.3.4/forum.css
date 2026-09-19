@@ -73,6 +73,11 @@
   margin-top: 1.5rem;
 }
 
+.mse-forum__detail-category {
+  display: flex;
+  margin: 0.65rem 0 1.5rem;
+}
+
 .mse-forum__description,
 .mse-forum__meta {
   color: var(--forum-text-muted);
@@ -352,6 +357,25 @@
 
 .mse-forum__compose-actions .mse-forum__button--secondary {
   margin-top: 0;
+}
+
+.mse-forum__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.mse-forum__pagination .mse-forum__button--secondary {
+  margin-top: 0;
+}
+
+.mse-forum__pagination-status {
+  min-width: 5rem;
+  text-align: center;
+  color: var(--forum-muted);
+  font-size: 0.9rem;
 }
 
 .mse-forum__tag-fieldset {
@@ -1251,11 +1275,13 @@
 }
 
 .mse-forum__summary-cta {
-  padding: 0.55rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
   border: 1px solid transparent;
   background: #FDC82F;
   color: #000000;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
@@ -1355,6 +1381,10 @@
   color: #FFFFFF;
   font-weight: 700;
   font-size: 0.68rem;
+}
+
+.mse-forum__summary-card-replies {
+  color: #FDC82F;
 }
 
 .mse-forum__summary-empty {

@@ -1,6 +1,6 @@
 (async function provisionVideoteca() {
-  const CORE_VERSION = "0.3.0";
-  const VIDEOTECA_VERSION = "0.3.0";
+  const CORE_VERSION = "0.7.7";
+  const VIDEOTECA_VERSION = "0.7.7";
 
   const script = document.currentScript
     || [...document.scripts].find((item) => item.src.includes("/mse-platform/modules/videoteca/"));
@@ -55,9 +55,15 @@
 
     write("Inspecting SharePoint lists...");
 
+    const configuredListId = script?.dataset.listId;
+    const schemas = VIDEOTECA_LIST_SCHEMAS.map((schema) => (
+      schema.key === "videoteca-videos" && configuredListId
+        ? { ...schema, listId: configuredListId }
+        : schema
+    ));
     const result = await provisionLists({
       webUrl,
-      schemas: VIDEOTECA_LIST_SCHEMAS,
+      schemas,
       confirm(plan) {
         output.textContent = JSON.stringify(plan, null, 2);
         return window.confirm("Provision videoteca lists for this site?");

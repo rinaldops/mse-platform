@@ -1,4 +1,4 @@
-export const FORUM_SCHEMA_VERSION = 5;
+export const FORUM_SCHEMA_VERSION = 6;
 
 const LEGACY_MIGRATION_FIELDS = [
   { internalName: "LegacySourceSite", displayName: "Legado - Site", type: "Text", maxLength: 255 },
@@ -113,7 +113,7 @@ export const FORUM_LIST_SCHEMAS = [
         type: "Choice",
         required: true,
         indexed: true,
-        choices: ["Aberto", "Resolvido", "Encerrado", "Fechado", "Arquivado"],
+        choices: ["Aberto", "Resolvido", "Fechado"],
         defaultValue: "Aberto"
       },
       {
