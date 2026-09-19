@@ -26,11 +26,17 @@ export function generateMseSnippet({ moduleId, instanceId, view = "full", releas
   const enabledModules = module === "home"
     ? "[\"forum\", \"explore-mais\", \"videoteca\"]"
     : `["${module}"]`;
+
   return `<div data-mse-module="${module}" data-mse-instance="${instance}" data-mse-view="${view}" data-mse-manifest="${base}/${MODULE_PATHS[module]}"></div>\n`
-    + `<script type="module">\n`
-    + `  import { mountAllMseModules } from "${base}/host-adapters/modern-script-editor/bootstrap.js";\n`
-    + `  import { createSiteIntegration } from "${base}/host-adapters/modern-script-editor/site-integration.js";\n`
-    + `  const integration = await createSiteIntegration({ releaseBase: "${base}", enabledModules: ${enabledModules} });\n`
-    + `  await mountAllMseModules({ coreVersion: "${coreVersion}", config: { admin: { releaseBase: "${base}", coreVersion: "${coreVersion}" } }, configurationStore: integration.configurationStore, services: integration.services, manifestResolver: integration.manifestResolver });\n`
+    + `<script>\n`
+    + `  (async function () {\n`
+    + `    const { mountAllMseModules } = await import("${base}/host-adapters/modern-script-editor/bootstrap.js");\n`
+    + `    const { createSiteIntegration } = await import("${base}/host-adapters/modern-script-editor/site-integration.js");\n`
+    + `    const integration = await createSiteIntegration({ releaseBase: "${base}", enabledModules: ${enabledModules} });\n`
+    + `    const results = await mountAllMseModules({ coreVersion: "${coreVersion}", config: { admin: { releaseBase: "${base}", coreVersion: "${coreVersion}" } }, configurationStore: integration.configurationStore, services: integration.services, manifestResolver: integration.manifestResolver });\n`
+    + `    results.filter((result) => result.status === "rejected").forEach((result) => console.error(result.reason));\n`
+    + `  })().catch(function (error) {\n`
+    + `    console.error("mse-platform bootstrap failed", error);\n`
+    + `  });\n`
     + `</script>`;
 }
