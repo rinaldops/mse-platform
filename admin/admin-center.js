@@ -10,7 +10,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
   const shell = document.createElement("div");
   shell.className = "mse-admin";
   const heading = document.createElement("h1");
-  heading.textContent = "Administração de módulos";
+  heading.textContent = "Administração de EPUBs";
   const prepareButton = document.createElement("button");
   prepareButton.type = "button";
   prepareButton.textContent = "Preparar configuração";
@@ -19,18 +19,18 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
   installButton.textContent = "Instalar/atualizar estruturas";
   installButton.disabled = true;
   const label = document.createElement("label");
-  label.textContent = "Módulo";
+  label.textContent = "Família do EPUB";
   const selector = document.createElement("select");
   label.append(selector);
   const instanceLabel = document.createElement("label");
-  instanceLabel.textContent = "Instância";
+  instanceLabel.textContent = "EPUB";
   const instanceSelector = document.createElement("select");
   instanceLabel.append(instanceSelector);
   const newInstance = document.createElement("div");
   newInstance.className = "mse-admin__new-instance";
   const instanceName = document.createElement("input");
-  instanceName.placeholder = "nova-instancia";
-  instanceName.setAttribute("aria-label", "Nome da nova instância");
+  instanceName.placeholder = "novo-epub";
+  instanceName.setAttribute("aria-label", "Identificador do novo EPUB");
   const instanceType = document.createElement("select");
   instanceType.setAttribute("aria-label", "Tipo da nova instância");
   [["Full", "Módulo completo"], ["Summary", "Resumo"]].forEach(([value, text]) => {
@@ -41,7 +41,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
   });
   const createButton = document.createElement("button");
   createButton.type = "button";
-  createButton.textContent = "Criar instância";
+  createButton.textContent = "Criar EPUB";
   newInstance.append(instanceName, instanceType, createButton);
   const editor = document.createElement("div");
   const publishButton = document.createElement("button");
@@ -50,7 +50,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
   publishButton.disabled = true;
   const activationButton = document.createElement("button");
   activationButton.type = "button";
-  activationButton.textContent = "Desativar instância";
+  activationButton.textContent = "Desativar EPUB";
   activationButton.disabled = true;
   const snippetButton = document.createElement("button");
   snippetButton.type = "button";
@@ -125,7 +125,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
     });
     publishButton.disabled = !configurationStore;
     activationButton.disabled = !configurationStore;
-    activationButton.textContent = record.active === false ? "Ativar instância" : "Desativar instância";
+    activationButton.textContent = record.active === false ? "Ativar EPUB" : "Desativar EPUB";
     exportButton.disabled = false;
     importButton.disabled = false;
     historyButton.disabled = typeof configurationStore?.history !== "function";
@@ -180,7 +180,9 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
       instances.forEach((instance) => {
         const option = document.createElement("option");
         option.value = String(instance.id);
-        option.textContent = instance.key;
+        const type = instance.view === "Summary" ? "Summary"
+          : entry.manifest.id === "home" ? "Hero" : "Página inteira";
+        option.textContent = `${instance.key} — ${type}`;
         instanceSelector.append(option);
       });
       if (instances.length) await openInstance(instances[0].id);
@@ -190,7 +192,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
       }
       else {
         editor.replaceChildren();
-        status.textContent = "Crie a primeira instância deste módulo.";
+        status.textContent = "Crie o primeiro EPUB desta família.";
       }
     } catch {
       status.textContent = "Não foi possível carregar a configuração.";
@@ -286,7 +288,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
     status.textContent = active ? "Ativando..." : "Desativando...";
     try {
       currentRecord = await configurationStore.save(currentRecord, currentForm.getValue(), { active });
-      activationButton.textContent = active ? "Desativar instância" : "Ativar instância";
+      activationButton.textContent = active ? "Desativar EPUB" : "Ativar EPUB";
       status.textContent = active ? "Instância ativada." : "Instância desativada.";
     } catch (error) {
       status.textContent = error?.code === "concurrency-conflict"
