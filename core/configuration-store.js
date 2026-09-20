@@ -13,18 +13,32 @@ function webPath(value) {
 
 async function loadPublished({ webUrl, listTitle, fetchImpl }) {
   const title = listTitle.replaceAll("'", "''");
-  const fields = "Title,Escopo,Modulo,Layout,Tema,ConfiguracaoJson,Ativo,Estado";
+  const fields = "Id,Title,Escopo,Modulo,Layout,Tema,ConfiguracaoJson,Ativo,Estado";
   const response = await fetchImpl(
     `${webPath(webUrl)}/_api/web/lists/getbytitle('${title}')/items?$select=${fields}`
-      + "&$filter=Ativo eq 1 and Estado eq 'Publicado'&$top=5000",
+      + "&$filter=Ativo eq 1&$top=5000",
     { headers: { Accept: "application/json;odata=nometadata" } }
   );
   if (response.status === 404) return {};
   if (!response.ok) throw new Error(`Não foi possível carregar configurações publicadas (HTTP ${response.status}).`);
   const payload = await response.json();
   if (!Array.isArray(payload?.value)) throw new Error("A lista de configurações retornou um formato inválido.");
+  const activeItems = await Promise.all(payload.value.map(async (item) => {
+    if (String(item.Estado || "Publicado") === "Publicado") return item;
+    const versionsResponse = await fetchImpl(
+      `${webPath(webUrl)}/_api/web/lists/getbytitle('${title}')/items(${item.Id})/versions`
+        + "?$select=Layout,Tema,ConfiguracaoJson,Estado&$orderby=Created desc&$top=50",
+      { headers: { Accept: "application/json;odata=nometadata" } }
+    );
+    if (!versionsResponse.ok) throw new Error(`Não foi possível carregar a versão publicada de ${item.Title} (HTTP ${versionsResponse.status}).`);
+    const versions = (await versionsResponse.json())?.value;
+    if (!Array.isArray(versions)) throw new Error(`O histórico de ${item.Title} retornou um formato inválido.`);
+    const published = versions.find((version) => String(version.Estado) === "Publicado");
+    return published ? { ...item, ...published } : null;
+  }));
   const instancesByModule = {};
-  for (const item of payload.value) {
+  for (const item of activeItems) {
+    if (!item) continue;
     if (String(item.Escopo).toLowerCase() !== "instancia") continue;
     const moduleId = String(item.Modulo || "").toLowerCase();
     if (!moduleId || !item.Title) continue;
