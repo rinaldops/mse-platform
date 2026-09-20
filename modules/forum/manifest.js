@@ -2,7 +2,7 @@ export const FORUM_MANIFEST = Object.freeze({
   id: "forum",
   displayName: "Fórum",
   version: "0.5.0",
-  coreCompatibility: ">=0.8.0 <1.0.0",
+  coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 6,
   settingsSchemaVersion: 1,

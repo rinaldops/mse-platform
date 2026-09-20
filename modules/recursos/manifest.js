@@ -2,7 +2,7 @@ export const RECURSOS_MANIFEST = Object.freeze({
   id: "explore-mais",
   displayName: "Explore Mais",
   version: "0.5.0",
-  coreCompatibility: ">=0.8.0 <1.0.0",
+  coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 3,
   settingsSchemaVersion: 1,

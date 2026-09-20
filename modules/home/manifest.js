@@ -2,7 +2,7 @@ export const HOME_MANIFEST = Object.freeze({
   id: "home",
   displayName: "Home",
   version: "0.5.0",
-  coreCompatibility: ">=0.8.0 <1.0.0",
+  coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 0,
   settingsSchemaVersion: 1,
