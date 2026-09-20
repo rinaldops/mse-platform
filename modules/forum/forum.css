@@ -1242,7 +1242,8 @@
    text/borders/card fill flip (see ARQUITETURA-MSE.md #18.7-18.8). The panel
    itself is borderless by design; the item cards keep the module's
    category-accent border-left. */
-[data-mse-module="forum-summary"][data-mse-module="forum-summary"] {
+[data-mse-module="forum-summary"][data-mse-module="forum-summary"],
+[data-mse-module="forum"][data-mse-view="summary"] {
   --fs-text: #000000;
   --fs-muted: #006298;
   --fs-line: #E3E9ED;
@@ -1255,7 +1256,8 @@
   border-radius: var(--mse-section-radius, 0);
 }
 
-[data-mse-module="forum-summary"].mse-app--ambient-dark {
+[data-mse-module="forum-summary"].mse-app--ambient-dark,
+[data-mse-module="forum"][data-mse-view="summary"].mse-app--ambient-dark {
   --fs-text: #FFFFFF;
   --fs-muted: #FFFFFF;
   --fs-line: #FFFFFF;

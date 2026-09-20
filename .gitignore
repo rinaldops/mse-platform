@@ -2,6 +2,7 @@
 .tmp/
 .vscode/
 node_modules/
+graphify-out/
 
 # OS
 .DS_Store

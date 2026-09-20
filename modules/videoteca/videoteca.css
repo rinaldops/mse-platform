@@ -906,7 +906,8 @@
    light section the default dark palette stays legible; on a dark section
    core adds .mse-app--ambient-dark and the palette flips (see
    ARQUITETURA-MSE.md #18.7-18.8). The panel is borderless by design. */
-[data-mse-module="videoteca-summary"][data-mse-module="videoteca-summary"] {
+[data-mse-module="videoteca-summary"][data-mse-module="videoteca-summary"],
+[data-mse-module="videoteca"][data-mse-view="summary"] {
   --vs-text: #000000;
   --vs-muted: #006298;
   --vs-line: #E3E9ED;
@@ -917,7 +918,8 @@
   border-radius: var(--mse-section-radius, 0);
 }
 
-[data-mse-module="videoteca-summary"].mse-app--ambient-dark {
+[data-mse-module="videoteca-summary"].mse-app--ambient-dark,
+[data-mse-module="videoteca"][data-mse-view="summary"].mse-app--ambient-dark {
   --vs-text: #FFFFFF;
   --vs-muted: #FFFFFF;
   --vs-line: #E3E9ED;

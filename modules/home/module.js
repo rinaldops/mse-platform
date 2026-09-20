@@ -28,11 +28,31 @@ export function sectionsFromSlots(slots = {}) {
   }).filter((section) => section.moduleId && section.instanceId);
 }
 
+export async function resolveHomeStats(configuredStats, services = {}) {
+  if (Array.isArray(configuredStats) && configuredStats.length) return configuredStats;
+  if (typeof services.metrics?.itemCount !== "function") return undefined;
+  try {
+    const [videos, topics] = await Promise.all([
+      services.metrics.itemCount("videoteca-videos"),
+      services.metrics.itemCount("forum-topics")
+    ]);
+    return [
+      { value: "17", label: "ENCONTROS REALIZADOS" },
+      { value: "1×/mês", label: "ENCONTRO AO VIVO" },
+      { value: String(videos), label: "APRESENTAÇÕES REALIZADAS" },
+      { value: String(topics), label: "MENSAGENS NO FÓRUM" }
+    ];
+  } catch {
+    return undefined;
+  }
+}
+
 export async function mount({ root, services, config = {} } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
   const mountSummary = services?.host?.mountSummary;
   if (typeof mountSummary !== "function") throw new TypeError("services.host.mountSummary é obrigatório.");
-  const disposeHero = createHomeView({ root, stats: config.home?.stats, content: config.home?.content });
+  const stats = await resolveHomeStats(config.home?.stats, services);
+  const disposeHero = createHomeView({ root, stats, content: config.home?.content });
   const disposers = [];
   const sections = normalizeSections(config.home?.sections ?? sectionsFromSlots(config.home?.slots));
 

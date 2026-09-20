@@ -1,6 +1,7 @@
 /* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
    regardless of which module's loader injects its core.css <link> last */
-[data-mse-module="recursos"][data-mse-module="recursos"] {
+[data-mse-module="recursos"][data-mse-module="recursos"],
+[data-mse-module="explore-mais"][data-mse-module="explore-mais"] {
   --recursos-surface: #FFFFFF;
   --recursos-line: #75787B;
   --recursos-text: #000000;
@@ -615,7 +616,8 @@
    core adds .mse-app--ambient-dark and the palette flips (see
    ARQUITETURA-MSE.md #18.7-18.8). The panel is borderless; item cards keep
    the module's yellow accent border-left. */
-[data-mse-module="recursos-summary"][data-mse-module="recursos-summary"] {
+[data-mse-module="recursos-summary"][data-mse-module="recursos-summary"],
+[data-mse-module="explore-mais"][data-mse-view="summary"] {
   --rs-text: #000000;
   --rs-muted: #006298;
   --rs-line: #E3E9ED;
@@ -628,7 +630,8 @@
   border-radius: var(--mse-section-radius, 0);
 }
 
-[data-mse-module="recursos-summary"].mse-app--ambient-dark {
+[data-mse-module="recursos-summary"].mse-app--ambient-dark,
+[data-mse-module="explore-mais"][data-mse-view="summary"].mse-app--ambient-dark {
   --rs-text: #FFFFFF;
   --rs-muted: #FFFFFF;
   --rs-line: #E3E9ED;

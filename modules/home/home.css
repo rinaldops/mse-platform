@@ -18,19 +18,14 @@
      fading to transparent over the flat azul-escuro base, so edges stay the darkest,
      full-strength approved blue. The wide, very diffuse 10% black layer on top is a
      subtle outer layer draws focus toward the center without dominating the base. */
-  background:
-    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
-    radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),
-    radial-gradient(56rem 50rem at 37% 68%, #3381AD, transparent 62%),
-    radial-gradient(62rem 54rem at 82% 52%, #1A72A2, transparent 64%),
-    var(--home-azul-escuro);
+  background: transparent;
   color: var(--home-text);
   border-radius: var(--mse-section-radius, 0);
   overflow: hidden;
 }
 
 @media (max-width: 760px) {
-  [data-mse-module="home"][data-mse-module="home"] {
+  .mse-home {
     background:
       radial-gradient(140% 140% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
       radial-gradient(32rem 26rem at 62% 10%, #267AA7, transparent 60%),
@@ -42,6 +37,13 @@
 .mse-home {
   position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.1) 100%),
+    radial-gradient(50rem 44rem at 58% 22%, #267AA7, transparent 65%),
+    radial-gradient(56rem 50rem at 37% 68%, #3381AD, transparent 62%),
+    radial-gradient(62rem 54rem at 82% 52%, #1A72A2, transparent 64%),
+    var(--home-azul-escuro);
+  border-radius: var(--mse-section-radius, 0);
   padding: clamp(24px, 3.5vw, 40px) clamp(20px, 4vw, 56px) clamp(24px, 3.5vw, 40px);
 }
 

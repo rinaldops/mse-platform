@@ -56,6 +56,17 @@ export async function createSiteIntegration({
   const services = {
     richText: Object.freeze({ selectEditor: selectRichTextEditor, render: renderRichText, sanitize: sanitizeRichText })
   };
+  if (dataSources) {
+    services.metrics = Object.freeze({
+      async itemCount(sourceKey) {
+        const source = dataSources.get(sourceKey);
+        const response = await dataSources.getClient(sourceKey).request(
+          `/_api/web/lists(guid'${source.listId}')?$select=ItemCount`
+        );
+        return Number(response.data?.ItemCount ?? response.data?.d?.ItemCount ?? 0);
+      }
+    });
+  }
   if (enabledModules.includes("forum")) {
     services.forum = createForumReadService({ dataSources, sanitizeRichText });
   }
