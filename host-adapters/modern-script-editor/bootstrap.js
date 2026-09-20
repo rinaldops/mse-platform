@@ -50,16 +50,13 @@ function applyLayout(root, layout = {}) {
     "--mse-full-bleed-margin-left", "--mse-full-bleed-margin-right"].forEach((property) => root.style?.removeProperty(property));
   if (mode !== "fullBleed") return clean;
   const documentElement = root.ownerDocument?.documentElement;
-  const layoutHost = root.ownerDocument?.querySelector?.('[data-automation-id="contentScrollRegion"]')
-    || root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
   const update = () => {
     root.style?.removeProperty("--mse-full-bleed-margin-left");
     root.style?.removeProperty("--mse-full-bleed-margin-right");
     const rect = root.getBoundingClientRect();
-    const hostRect = layoutHost?.getBoundingClientRect();
     const viewportRight = documentElement?.clientWidth || globalThis.innerWidth || rect.right;
-    const targetLeft = (hostRect?.width > 0 ? Math.max(0, hostRect.left) : 0) + margins.left;
-    const targetRight = (hostRect?.width > 0 ? Math.min(viewportRight, hostRect.right) : viewportRight) - margins.right;
+    const targetLeft = margins.left;
+    const targetRight = viewportRight - margins.right;
     root.style?.setProperty("--mse-full-bleed-margin-left", `${targetLeft - rect.left}px`);
     root.style?.setProperty("--mse-full-bleed-margin-right", `${rect.right - targetRight}px`);
   };
@@ -75,13 +72,25 @@ function applyEpubPresentation(root, config, displayName) {
   const theme = config.theme?.name === "Lite" ? "Lite" : "Standard";
   root.dataset.mseTheme = theme;
   root.style?.setProperty("--mse-grid-gap", `${pixels(config.layout?.gridGap ?? 16, 120)}px`);
+  let heading = null;
+  let observer = null;
   if (config.title?.visible && root.ownerDocument?.createElement) {
-    const heading = root.ownerDocument.createElement("h2");
+    heading = root.ownerDocument.createElement("h2");
     heading.className = "mse-epub__title";
     heading.textContent = String(config.title.text || displayName).trim() || displayName;
-    root.prepend(heading);
+    const ensureHeading = () => {
+      if (root.firstElementChild !== heading) root.prepend(heading);
+    };
+    ensureHeading();
+    const Observer = root.ownerDocument.defaultView?.MutationObserver ?? globalThis.MutationObserver;
+    if (typeof Observer === "function") {
+      observer = new Observer(ensureHeading);
+      observer.observe(root, { childList: true });
+    }
   }
   return () => {
+    observer?.disconnect();
+    heading?.remove();
     delete root.dataset.mseTheme;
     root.style?.removeProperty("--mse-grid-gap");
   };

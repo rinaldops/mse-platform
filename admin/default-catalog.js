@@ -7,9 +7,12 @@ import { RECURSOS_SETTINGS_SCHEMA } from "../modules/recursos/settings-schema.js
 import { VIDEOTECA_MANIFEST } from "../modules/videoteca/manifest.js";
 import { VIDEOTECA_SETTINGS_SCHEMA } from "../modules/videoteca/settings-schema.js";
 import { createModuleCatalog } from "./catalog.js";
+import ADMIN_MANIFEST from "./manifest.js";
+import { ADMIN_SETTINGS_SCHEMA } from "./settings-schema.js";
 
 export function createDefaultCatalog() {
   return createModuleCatalog([
+    { manifest: ADMIN_MANIFEST, settingsSchema: ADMIN_SETTINGS_SCHEMA },
     { manifest: HOME_MANIFEST, settingsSchema: HOME_SETTINGS_SCHEMA },
     { manifest: FORUM_MANIFEST, settingsSchema: FORUM_SETTINGS_SCHEMA },
     { manifest: VIDEOTECA_MANIFEST, settingsSchema: VIDEOTECA_SETTINGS_SCHEMA },

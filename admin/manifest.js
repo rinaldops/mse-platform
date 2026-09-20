@@ -14,6 +14,6 @@ export default defineModuleManifest({
   dataSources: [
     { key: "configuration", type: "list", internalName: "MSEConfiguracoes", displayName: "MSE Configurações" }
   ],
-  capabilities: { full: true, summary: false, settings: false, provisioning: true },
+  capabilities: { full: true, summary: false, settings: true, provisioning: true },
   entrypoints: { full: "./module.js" }
 });

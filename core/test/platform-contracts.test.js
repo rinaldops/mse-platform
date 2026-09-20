@@ -66,6 +66,59 @@ assert.equal(result.context.host, "modern-script-editor");
 await unmountMseModule(root);
 assert.equal(disposed, true);
 
+const layoutProperties = new Map();
+const fullBleedRoot = {
+  dataset: {
+    mseModule: "sample",
+    mseInstance: "sample-full-bleed",
+    mseManifest: "https://example.test/sample/manifest.js"
+  },
+  ownerDocument: {
+    documentElement: { clientWidth: 1200 },
+    querySelector: () => ({ getBoundingClientRect: () => ({ left: 80, right: 1120, width: 1040 }) })
+  },
+  classList: classList(),
+  style: {
+    setProperty: (key, value) => layoutProperties.set(key, value),
+    removeProperty: (key) => layoutProperties.delete(key)
+  },
+  getBoundingClientRect: () => ({ left: 100, right: 1100, width: 1000 }),
+  replaceChildren() {}
+};
+await mountMseModule(fullBleedRoot, {
+  coreVersion: "0.8.0",
+  config: { layout: { mode: "fullBleed", marginLeft: 15, marginRight: 25 } },
+  importModule: async (url) => url.endsWith("manifest.js")
+    ? { default: sampleManifest }
+    : { mount: () => ({}) }
+});
+assert.equal(layoutProperties.get("--mse-full-bleed-margin-left"), "-85px");
+assert.equal(layoutProperties.get("--mse-full-bleed-margin-right"), "-75px");
+
+let titleMutation;
+const titleRoot = {
+  dataset: { mseModule: "sample", mseInstance: "sample-title", mseManifest: "https://example.test/sample/manifest.js" },
+  ownerDocument: {
+    createElement: () => ({ className: "", textContent: "", remove() {} }),
+    defaultView: { MutationObserver: class { constructor(callback) { titleMutation = callback; } observe() {} disconnect() {} } }
+  },
+  classList: classList(),
+  style: { setProperty() {}, removeProperty() {} },
+  firstElementChild: null,
+  prepend(element) { this.firstElementChild = element; },
+  replaceChildren() {}
+};
+await mountMseModule(titleRoot, {
+  coreVersion: "0.8.0",
+  config: { title: { visible: true, text: "Título persistente" } },
+  importModule: async (url) => url.endsWith("manifest.js") ? { default: sampleManifest } : { mount: () => ({}) }
+});
+const titleHeading = titleRoot.firstElementChild;
+titleRoot.firstElementChild = null;
+titleMutation();
+assert.equal(titleRoot.firstElementChild, titleHeading);
+assert.equal(titleHeading.textContent, "Título persistente");
+
 let serverRelativeImport;
 await mountMseModule({
   dataset: {

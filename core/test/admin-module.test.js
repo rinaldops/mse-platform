@@ -5,8 +5,9 @@ import { mount } from "../../admin/module.js";
 
 assert.equal(adminManifest.id, "mse-admin");
 assert.equal(adminManifest.styles[0], "./admin.css");
+assert.equal(adminManifest.capabilities.settings, true);
 assert.deepEqual(createDefaultCatalog().list().map(({ manifest }) => manifest.id), [
-  "home", "forum", "videoteca", "explore-mais"
+  "mse-admin", "home", "forum", "videoteca", "explore-mais"
 ]);
 assert.throws(() => mount({ root: {} }), /root/);
 assert.throws(() => mount({ root: { ownerDocument: {} }, services: {} }), /configurationStore/);
