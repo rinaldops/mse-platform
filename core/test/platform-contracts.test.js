@@ -36,12 +36,17 @@ assert.equal(recursosManifestDefault, RECURSOS_MANIFEST);
 assert.equal(videotecaManifestDefault, VIDEOTECA_MANIFEST);
 
 let disposed = false;
+function classList() {
+  const values = new Set();
+  return { add: (...items) => items.forEach((item) => values.add(item)), remove: (...items) => items.forEach((item) => values.delete(item)), toggle: (item, force) => force ? values.add(item) : values.delete(item), contains: (item) => values.has(item) };
+}
 const root = {
   dataset: {
     mseModule: "sample",
     mseInstance: "sample-home",
     mseManifest: "https://example.test/sample/manifest.js"
   },
+  classList: classList(),
   replaceChildren() {}
 };
 const result = await mountMseModule(root, {
@@ -62,6 +67,7 @@ await mountMseModule({
     mseManifest: "/teams/demo/SiteAssets/mse-platform/releases/0.8.2/examples/sample-module/manifest.js"
   },
   ownerDocument: { baseURI: "https://example.test/teams/demo/SitePages/Home.aspx" },
+  classList: classList(),
   replaceChildren() {}
 }, {
   coreVersion: "0.8.0",
@@ -77,6 +83,7 @@ assert.equal(
 
 await mountMseModule({
   dataset: { mseModule: "admin", mseInstance: "admin", mseManifest: "https://example.test/admin/manifest.js" },
+  classList: classList(),
   replaceChildren() {}
 }, {
   coreVersion: "0.8.0",
@@ -87,8 +94,8 @@ await mountMseModule({
 });
 
 const roots = [
-  { ...root, dataset: { ...root.dataset }, replaceChildren() {} },
-  { ...root, dataset: { ...root.dataset, mseInstance: "sample-second" }, replaceChildren() {} }
+  { ...root, classList: classList(), dataset: { ...root.dataset }, replaceChildren() {} },
+  { ...root, classList: classList(), dataset: { ...root.dataset, mseInstance: "sample-second" }, replaceChildren() {} }
 ];
 const allResults = await mountAllMseModules({
   document: { querySelectorAll: () => roots },
@@ -104,6 +111,7 @@ assert.equal(allResults.every((result) => result.status === "fulfilled"), true);
 let summaryContext;
 const homeRoot = {
   dataset: { mseModule: "home", mseInstance: "home", mseManifest: "https://example.test/home/manifest.js" },
+  classList: classList(),
   replaceChildren() {}
 };
 await mountMseModule(homeRoot, {
@@ -113,7 +121,7 @@ await mountMseModule(homeRoot, {
     if (url.endsWith("home/manifest.js")) return { default: { ...sampleManifest, id: "home", entrypoints: { full: "./module.js" } } };
     if (url.endsWith("sample/manifest.js")) return { default: { ...sampleManifest, capabilities: { ...sampleManifest.capabilities, summary: true }, entrypoints: { ...sampleManifest.entrypoints, summary: "./summary.js" } } };
     if (url.endsWith("home/module.js")) return { mount: async ({ services }) => {
-      const summaryRoot = { dataset: {}, replaceChildren() {} };
+      const summaryRoot = { dataset: {}, classList: classList(), replaceChildren() {} };
       await services.host.mountSummary({ root: summaryRoot, moduleId: "sample", instanceId: "sample-home" });
       return {};
     } };

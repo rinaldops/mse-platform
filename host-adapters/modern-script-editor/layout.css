@@ -1,0 +1,24 @@
+.mse-app {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mse-app *,
+.mse-app *::before,
+.mse-app *::after {
+  box-sizing: border-box;
+}
+
+.mse-app--contained {
+  width: 100%;
+  max-width: 100%;
+}
+
+.mse-app--full-bleed {
+  width: auto;
+  max-width: none;
+  margin-left: var(--mse-full-bleed-margin-left, 0);
+  margin-right: var(--mse-full-bleed-margin-right, 0);
+}

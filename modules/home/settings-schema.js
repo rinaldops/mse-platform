@@ -1,6 +1,3 @@
-const SUMMARY_MODULES = ["forum", "videoteca", "explore-mais"];
-const SUMMARY_INSTANCES = ["forum-resumo", "videoteca-resumo", "explore-mais-resumo"];
-
 export const HOME_SETTINGS_SCHEMA = Object.freeze({
   version: 1,
   groups: [
@@ -21,15 +18,6 @@ export const HOME_SETTINGS_SCHEMA = Object.freeze({
         { id: "home.content.secondaryAction.label", type: "text", label: "Botão secundário", default: "Browse videos" },
         { id: "home.content.secondaryAction.href", type: "page", label: "Destino secundário", default: "#videos" }
       ]
-    },
-    ...[1, 2, 3].map((position) => ({
-      id: `summary-${position}`,
-      label: `Resumo ${position}`,
-      fields: [
-        { id: `home.slots.${position}.enabled`, type: "boolean", label: "Exibir resumo", default: true },
-        { id: `home.slots.${position}.moduleId`, type: "select", label: "Módulo", options: SUMMARY_MODULES, default: SUMMARY_MODULES[position - 1] },
-        { id: `home.slots.${position}.instanceId`, type: "text", label: "Instância do resumo", default: SUMMARY_INSTANCES[position - 1] }
-      ]
-    }))
+    }
   ]
 });

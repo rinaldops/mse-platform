@@ -17,10 +17,13 @@
   function currentScript() {
     var s = document.currentScript;
     if (getAttr(s, "data-release-base", "")) return s;
+    var instance = "";
+    try { instance = (new URL(String(s && s.src || ""), document.baseURI).searchParams.get("mseInstance") || "").split(/[?&]/)[0]; } catch (_) {}
     var all = document.getElementsByTagName("script");
     for (var i = all.length - 1; i >= 0; i -= 1) {
       if (String(all[i].src || "").indexOf("/runner.js") >= 0
-          && getAttr(all[i], "data-release-base", "")) return all[i];
+          && getAttr(all[i], "data-release-base", "")
+          && (!instance || getAttr(all[i], "data-mse-instance", "") === instance)) return all[i];
     }
     return null;
   }
@@ -30,6 +33,7 @@
     var releaseBase = getAttr(s, "data-release-base", "");
     var coreVersion = getAttr(s, "data-core-version", "0.8.0");
     var enabledModules = parseCsv(getAttr(s, "data-enabled-modules", ""));
+    var instanceId = getAttr(s, "data-mse-instance", "");
 
     if (!releaseBase) {
       throw new Error("runner.js: data-release-base é obrigatório.");
@@ -47,17 +51,15 @@
       enabledModules: enabledModules
     });
 
-    var results = await boot.mountAllMseModules({
+    var root = instanceId && document.querySelector('[data-mse-module][data-mse-instance="' + instanceId + '"]');
+    if (!root) throw new Error("runner.js: raiz da instância não encontrada: " + instanceId);
+    await boot.mountMseModule(root, {
       coreVersion: coreVersion,
       config: { admin: { releaseBase: releaseBase, coreVersion: coreVersion } },
       configurationStore: integration.configurationStore,
       services: integration.services,
       manifestResolver: integration.manifestResolver
     });
-
-    results
-      .filter(function (result) { return result.status === "rejected"; })
-      .forEach(function (result) { console.error(result.reason); });
   }
 
   main().catch(function (error) {

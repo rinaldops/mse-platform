@@ -7,10 +7,11 @@ const errors = [];
 const attributes = {
   "data-release-base": "/sites/demo/SiteAssets/mse-platform/releases/1.0.3",
   "data-core-version": "0.8.0",
-  "data-enabled-modules": "forum"
+  "data-enabled-modules": "forum",
+  "data-mse-instance": "forum-principal"
 };
 const original = {
-  src: `${attributes["data-release-base"]}/host-adapters/modern-script-editor/runner.js`,
+  src: `${attributes["data-release-base"]}/host-adapters/modern-script-editor/runner.js?mseInstance=forum-principal`,
   getAttribute: (name) => attributes[name] ?? null
 };
 const pnpCopy = {
@@ -20,7 +21,9 @@ const pnpCopy = {
 const context = vm.createContext({
   document: {
     currentScript: pnpCopy,
-    getElementsByTagName: () => [original, pnpCopy]
+    baseURI: "https://example.invalid/",
+    getElementsByTagName: () => [original, pnpCopy],
+    querySelector: () => ({ dataset: { mseInstance: "forum-principal" } })
   },
   console: { error: (...args) => errors.push(args.map(String).join(" ")) }
 });

@@ -29,7 +29,8 @@ export function generateMseSnippet({ moduleId, instanceId, view = "full", releas
 
   return `<div data-mse-module="${module}" data-mse-instance="${instance}" data-mse-view="${view}" data-mse-manifest="${base}/${MODULE_PATHS[module]}"></div>\n`
     + `<script\n`
-    + `  src="${base}/host-adapters/modern-script-editor/runner.js"\n`
+    + `  src="${base}/host-adapters/modern-script-editor/runner.js?mseInstance=${instance}"\n`
+    + `  data-mse-instance="${instance}"\n`
     + `  data-release-base="${base}"\n`
     + `  data-core-version="${coreVersion}"\n`
     + `  data-enabled-modules="${enabledModules}"></script>`;

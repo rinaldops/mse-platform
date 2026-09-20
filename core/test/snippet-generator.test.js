@@ -10,6 +10,8 @@ const snippet = generateMseSnippet({
 assert.match(snippet, /modules\/recursos\/manifest\.js/);
 assert.match(snippet, /data-mse-view="summary"/);
 assert.match(snippet, /runner\.js/);
+assert.match(snippet, /runner\.js\?mseInstance=explore-home/);
+assert.match(snippet, /data-mse-instance="explore-home"/);
 assert.match(snippet, /data-core-version="0\.8\.0"/);
 assert.match(snippet, /data-enabled-modules="explore-mais"/);
 assert.doesNotMatch(snippet, /<script type="module"|await import/);

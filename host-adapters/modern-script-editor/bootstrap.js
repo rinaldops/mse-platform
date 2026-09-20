@@ -2,6 +2,7 @@ import { defineModuleManifest } from "../../core/module-contract.js";
 
 const mounted = new WeakMap();
 const loadedStyles = new Map();
+const coreStyleUrl = new URL("./layout.css", import.meta.url).href;
 
 function loadStyle(document, url) {
   if (!document?.head?.append || !document.createElement) return Promise.resolve();
@@ -23,6 +24,34 @@ function loadStyle(document, url) {
 
 function parseVersion(value) {
   return value.split(".").slice(0, 3).map((part) => Number.parseInt(part, 10));
+}
+
+function applyLayout(root, mode) {
+  root.classList.add("mse-app");
+  root.classList.toggle("mse-app--contained", mode === "contained");
+  root.classList.toggle("mse-app--full-bleed", mode === "fullBleed");
+  if (mode !== "fullBleed") return () => {};
+  const documentElement = root.ownerDocument?.documentElement;
+  const layoutHost = root.ownerDocument?.querySelector?.('[data-automation-id="contentScrollRegion"]')
+    || root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
+  const update = () => {
+    root.style.removeProperty("--mse-full-bleed-margin-left");
+    root.style.removeProperty("--mse-full-bleed-margin-right");
+    const rect = root.getBoundingClientRect();
+    const hostRect = layoutHost?.getBoundingClientRect();
+    const viewportRight = documentElement?.clientWidth || globalThis.innerWidth || rect.right;
+    const targetLeft = hostRect?.width > 0 ? Math.max(0, hostRect.left) : 0;
+    const targetRight = hostRect?.width > 0 ? Math.min(viewportRight, hostRect.right) : viewportRight;
+    root.style.setProperty("--mse-full-bleed-margin-left", `${targetLeft - rect.left}px`);
+    root.style.setProperty("--mse-full-bleed-margin-right", `${rect.right - targetRight}px`);
+  };
+  update();
+  globalThis.addEventListener?.("resize", update);
+  return () => {
+    globalThis.removeEventListener?.("resize", update);
+    root.style.removeProperty("--mse-full-bleed-margin-left");
+    root.style.removeProperty("--mse-full-bleed-margin-right");
+  };
 }
 
 function compare(left, right) {
@@ -60,7 +89,10 @@ export async function mountMseModule(root, {
     throw new Error(`${manifest.displayName} ${manifest.version} não é compatível com Core ${coreVersion}.`);
   }
 
-  await Promise.all(manifest.styles.map((style) => loadStyle(root.ownerDocument, new URL(style, manifestUrl).href)));
+  await Promise.all([
+    loadStyle(root.ownerDocument, coreStyleUrl),
+    ...manifest.styles.map((style) => loadStyle(root.ownerDocument, new URL(style, manifestUrl).href))
+  ]);
 
   const view = root.dataset.mseView || "full";
   if (!new Set(["full", "summary"]).has(view) || !manifest.capabilities[view]) {
@@ -77,6 +109,10 @@ export async function mountMseModule(root, {
   const storedConfig = manifest.capabilities.settings && typeof configurationStore?.load === "function"
     ? await configurationStore.load({ moduleId: manifest.id, instanceId: context.instanceId, view })
     : {};
+  const resolvedConfig = { ...config, ...storedConfig };
+  const layoutMode = resolvedConfig.layout?.mode === "fullBleed" ? "fullBleed" : "contained";
+  const disposeLayout = applyLayout(root, layoutMode);
+  root.dataset.mseCoreVersion = coreVersion;
   const hostServices = {
     ...services,
     host: {
@@ -97,8 +133,14 @@ export async function mountMseModule(root, {
       }
     }
   };
-  const mountedModule = await module.mount({ root, config: { ...config, ...storedConfig }, services: hostServices, context });
-  mounted.set(root, typeof mountedModule?.dispose === "function" ? mountedModule.dispose : module.dispose);
+  const mountedModule = await module.mount({ root, config: resolvedConfig, services: hostServices, context });
+  const disposeModule = typeof mountedModule?.dispose === "function" ? mountedModule.dispose : module.dispose;
+  mounted.set(root, async () => {
+    if (typeof disposeModule === "function") await disposeModule();
+    disposeLayout();
+    root.classList.remove("mse-app", "mse-app--contained", "mse-app--full-bleed");
+    delete root.dataset.mseCoreVersion;
+  });
   return Object.freeze({ manifest, context });
 }
 

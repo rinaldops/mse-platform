@@ -49,30 +49,11 @@ export async function resolveHomeStats(configuredStats, services = {}) {
 
 export async function mount({ root, services, config = {} } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
-  const mountSummary = services?.host?.mountSummary;
-  if (typeof mountSummary !== "function") throw new TypeError("services.host.mountSummary é obrigatório.");
   const stats = await resolveHomeStats(config.home?.stats, services);
   const disposeHero = createHomeView({ root, stats, content: config.home?.content });
-  const disposers = [];
-  const sections = normalizeSections(config.home?.sections ?? sectionsFromSlots(config.home?.slots));
-
-  for (const section of sections) {
-    const host = root.ownerDocument.createElement("section");
-    host.dataset.mseSummary = section.moduleId;
-    host.dataset.mseInstance = section.instanceId;
-    root.append(host);
-    try {
-      const mounted = await mountSummary({ root: host, ...section });
-      if (typeof mounted?.dispose === "function") disposers.push(mounted.dispose);
-    } catch {
-      host.textContent = "Este conteúdo está temporariamente indisponível.";
-      host.dataset.status = "error";
-    }
-  }
 
   return Object.freeze({
     dispose() {
-      disposers.reverse().forEach((dispose) => dispose());
       disposeHero?.();
       root.replaceChildren();
     }
