@@ -1,17 +1,9 @@
+import { epubSettingsGroups } from "../../core/epub-settings.js";
+
 export const VIDEOTECA_SETTINGS_SCHEMA = Object.freeze({
-  version: 1,
+  version: 2,
   groups: [
-    {
-      id: "layout",
-      label: "Layout",
-      fields: [{
-        id: "layout.mode",
-        type: "select",
-        label: "Largura do módulo",
-        options: ["contained", "fullBleed"],
-        default: "contained"
-      }]
-    },
+    ...epubSettingsGroups("Videoteca"),
     {
       id: "content",
       label: "Conteúdo",

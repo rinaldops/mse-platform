@@ -5,7 +5,7 @@ export const HOME_MANIFEST = Object.freeze({
   coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 0,
-  settingsSchemaVersion: 1,
+  settingsSchemaVersion: 2,
   permissions: ["read"],
   locales: ["pt-BR"],
   styles: ["./home.css"],

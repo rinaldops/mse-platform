@@ -1,8 +1,10 @@
 .mse-app {
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   min-width: 0;
   max-width: 100%;
+  margin-top: var(--mse-epub-margin-top, 0);
+  margin-bottom: var(--mse-epub-margin-bottom, 0);
 }
 
 .mse-app *,
@@ -12,8 +14,10 @@
 }
 
 .mse-app--contained {
-  width: 100%;
+  width: auto;
   max-width: 100%;
+  margin-left: var(--mse-epub-margin-left, 0);
+  margin-right: var(--mse-epub-margin-right, 0);
 }
 
 .mse-app--full-bleed {
@@ -21,4 +25,33 @@
   max-width: none;
   margin-left: var(--mse-full-bleed-margin-left, 0);
   margin-right: var(--mse-full-bleed-margin-right, 0);
+}
+
+.mse-epub__title {
+  margin: 0 0 1rem;
+  color: inherit;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.mse-app [class$="__grid"],
+.mse-app [class*="__grid "] {
+  gap: var(--mse-grid-gap, 1rem);
+}
+
+.mse-app .mse-home__stats,
+.mse-app .mse-forum__topic-list,
+.mse-app .mse-forum__summary-list,
+.mse-app .mse-videoteca__catalog-list,
+.mse-app .mse-videoteca__summary-list,
+.mse-app .mse-recursos__shortcuts-grid,
+.mse-app .mse-recursos__card-grid,
+.mse-app .mse-recursos__summary-list {
+  gap: var(--mse-grid-gap, 1rem);
+}
+
+.mse-app[data-mse-theme="Lite"] {
+  color: #202020;
+  background: #ffffff;
+  filter: grayscale(1);
 }

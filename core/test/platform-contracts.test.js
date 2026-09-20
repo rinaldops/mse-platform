@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { createModuleCatalog } from "../../admin/catalog.js";
+import { epubSettingsGroups } from "../epub-settings.js";
+import { settingsDefaults } from "../module-contract.js";
 import { expandSettings, getSettingValue, setSettingValue } from "../../admin/settings-renderer.js";
 import { mountAllMseModules, mountMseModule, supportsCore, unmountMseModule } from "../../host-adapters/modern-script-editor/bootstrap.js";
 import sampleManifest from "../../examples/sample-module/manifest.js";
@@ -16,6 +18,11 @@ assert.deepEqual(expandSettings({ "layout.mode": "contained", title: "Exemplo" }
   layout: { mode: "contained" },
   title: "Exemplo"
 });
+const epubDefaults = expandSettings(settingsDefaults({ version: 1, groups: epubSettingsGroups("Exemplo") }));
+assert.equal(epubDefaults.title.visible, false);
+assert.equal(epubDefaults.title.text, "Exemplo");
+assert.equal(epubDefaults.theme.name, "Standard");
+assert.equal(epubDefaults.layout.gridGap, 16);
 
 const catalog = createModuleCatalog([{ manifest: sampleManifest, settingsSchema: sampleSettings }]);
 assert.equal(catalog.list().length, 1);

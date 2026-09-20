@@ -5,7 +5,7 @@ export const FORUM_MANIFEST = Object.freeze({
   coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 6,
-  settingsSchemaVersion: 1,
+  settingsSchemaVersion: 2,
   permissions: ["read", "write", "manage-lists", "send-mail"],
   locales: ["pt-BR"],
   styles: ["./forum.css"],

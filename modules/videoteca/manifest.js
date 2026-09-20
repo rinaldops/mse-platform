@@ -5,7 +5,7 @@ export const VIDEOTECA_MANIFEST = Object.freeze({
   coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 7,
-  settingsSchemaVersion: 1,
+  settingsSchemaVersion: 2,
   permissions: ["read", "write", "manage-lists"],
   locales: ["pt-BR"],
   styles: ["./videoteca.css"],

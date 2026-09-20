@@ -26,31 +26,64 @@ function parseVersion(value) {
   return value.split(".").slice(0, 3).map((part) => Number.parseInt(part, 10));
 }
 
-function applyLayout(root, mode) {
+function pixels(value, maximum) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(maximum, Math.max(0, number)) : 0;
+}
+
+function applyLayout(root, layout = {}) {
+  const mode = layout.mode === "fullBleed" ? "fullBleed" : "contained";
+  const margins = {
+    top: pixels(layout.marginTop, 240),
+    right: pixels(layout.marginRight, 240),
+    bottom: pixels(layout.marginBottom, 240),
+    left: pixels(layout.marginLeft, 240)
+  };
   root.classList.add("mse-app");
   root.classList.toggle("mse-app--contained", mode === "contained");
   root.classList.toggle("mse-app--full-bleed", mode === "fullBleed");
-  if (mode !== "fullBleed") return () => {};
+  root.style?.setProperty("--mse-epub-margin-top", `${margins.top}px`);
+  root.style?.setProperty("--mse-epub-margin-right", `${margins.right}px`);
+  root.style?.setProperty("--mse-epub-margin-bottom", `${margins.bottom}px`);
+  root.style?.setProperty("--mse-epub-margin-left", `${margins.left}px`);
+  const clean = () => ["--mse-epub-margin-top", "--mse-epub-margin-right", "--mse-epub-margin-bottom", "--mse-epub-margin-left",
+    "--mse-full-bleed-margin-left", "--mse-full-bleed-margin-right"].forEach((property) => root.style?.removeProperty(property));
+  if (mode !== "fullBleed") return clean;
   const documentElement = root.ownerDocument?.documentElement;
   const layoutHost = root.ownerDocument?.querySelector?.('[data-automation-id="contentScrollRegion"]')
     || root.ownerDocument?.getElementById?.("spPageChromeAppDiv");
   const update = () => {
-    root.style.removeProperty("--mse-full-bleed-margin-left");
-    root.style.removeProperty("--mse-full-bleed-margin-right");
+    root.style?.removeProperty("--mse-full-bleed-margin-left");
+    root.style?.removeProperty("--mse-full-bleed-margin-right");
     const rect = root.getBoundingClientRect();
     const hostRect = layoutHost?.getBoundingClientRect();
     const viewportRight = documentElement?.clientWidth || globalThis.innerWidth || rect.right;
-    const targetLeft = hostRect?.width > 0 ? Math.max(0, hostRect.left) : 0;
-    const targetRight = hostRect?.width > 0 ? Math.min(viewportRight, hostRect.right) : viewportRight;
-    root.style.setProperty("--mse-full-bleed-margin-left", `${targetLeft - rect.left}px`);
-    root.style.setProperty("--mse-full-bleed-margin-right", `${rect.right - targetRight}px`);
+    const targetLeft = (hostRect?.width > 0 ? Math.max(0, hostRect.left) : 0) + margins.left;
+    const targetRight = (hostRect?.width > 0 ? Math.min(viewportRight, hostRect.right) : viewportRight) - margins.right;
+    root.style?.setProperty("--mse-full-bleed-margin-left", `${targetLeft - rect.left}px`);
+    root.style?.setProperty("--mse-full-bleed-margin-right", `${rect.right - targetRight}px`);
   };
   update();
   globalThis.addEventListener?.("resize", update);
   return () => {
     globalThis.removeEventListener?.("resize", update);
-    root.style.removeProperty("--mse-full-bleed-margin-left");
-    root.style.removeProperty("--mse-full-bleed-margin-right");
+    clean();
+  };
+}
+
+function applyEpubPresentation(root, config, displayName) {
+  const theme = config.theme?.name === "Lite" ? "Lite" : "Standard";
+  root.dataset.mseTheme = theme;
+  root.style?.setProperty("--mse-grid-gap", `${pixels(config.layout?.gridGap ?? 16, 120)}px`);
+  if (config.title?.visible && root.ownerDocument?.createElement) {
+    const heading = root.ownerDocument.createElement("h2");
+    heading.className = "mse-epub__title";
+    heading.textContent = String(config.title.text || displayName).trim() || displayName;
+    root.prepend(heading);
+  }
+  return () => {
+    delete root.dataset.mseTheme;
+    root.style?.removeProperty("--mse-grid-gap");
   };
 }
 
@@ -110,8 +143,7 @@ export async function mountMseModule(root, {
     ? await configurationStore.load({ moduleId: manifest.id, instanceId: context.instanceId, view })
     : {};
   const resolvedConfig = { ...config, ...storedConfig };
-  const layoutMode = resolvedConfig.layout?.mode === "fullBleed" ? "fullBleed" : "contained";
-  const disposeLayout = applyLayout(root, layoutMode);
+  const disposeLayout = applyLayout(root, resolvedConfig.layout);
   root.dataset.mseCoreVersion = coreVersion;
   const hostServices = {
     ...services,
@@ -134,9 +166,11 @@ export async function mountMseModule(root, {
     }
   };
   const mountedModule = await module.mount({ root, config: resolvedConfig, services: hostServices, context });
+  const disposePresentation = applyEpubPresentation(root, resolvedConfig, manifest.displayName);
   const disposeModule = typeof mountedModule?.dispose === "function" ? mountedModule.dispose : module.dispose;
   mounted.set(root, async () => {
     if (typeof disposeModule === "function") await disposeModule();
+    disposePresentation();
     disposeLayout();
     root.classList.remove("mse-app", "mse-app--contained", "mse-app--full-bleed");
     delete root.dataset.mseCoreVersion;
