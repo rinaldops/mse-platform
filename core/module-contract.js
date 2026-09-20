@@ -91,7 +91,7 @@ function normalizeSetting(field, groupId) {
   const type = text(field.type, `${id}.type`);
   if (!SETTING_TYPES.has(type)) throw new TypeError(`${id}.type não é suportado.`);
   const result = { id, type, label: text(field.label, `${id}.label`) };
-  if (["select", "multiselect", "color"].includes(type)) {
+  if (["select", "multiselect"].includes(type) || (type === "color" && field.options !== undefined)) {
     if (!Array.isArray(field.options) || !field.options.length) throw new TypeError(`${id}.options não pode ser vazio.`);
     result.options = [...new Set(field.options.map((option) => String(option)))];
   }

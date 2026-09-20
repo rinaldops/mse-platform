@@ -26,11 +26,61 @@ export const DEFAULT_STATS = Object.freeze([
 
 export const DEFAULT_CONTENT = Object.freeze({
   eyebrow: "Digital workspace",
-  title: "Connect people, knowledge and technology.",
+  title: "Tecnologia que conecta. Pessoas que transformam.",
+  highlights: Object.freeze({
+    primary: Object.freeze({ text: "conecta", colorRole: "accentPrimary", customColor: "#FDC82F" }),
+    secondary: Object.freeze({ text: "transformam", colorRole: "accentSecondary", customColor: "#ED8B00" })
+  }),
   description: "A shared space for useful content, discussions and learning.",
   primaryAction: Object.freeze({ label: "Open discussions", href: "#discussions" }),
   secondaryAction: Object.freeze({ label: "Browse videos", href: "#videos" })
 });
+
+const HIGHLIGHT_ROLES = Object.freeze({
+  accentPrimary: "mse-home__accent--primary",
+  accentSecondary: "mse-home__accent--secondary",
+  custom: "mse-home__accent--custom"
+});
+
+export function highlightedTitleParts(title, highlights = {}) {
+  const source = String(title ?? "");
+  const occupied = [];
+  const matches = [highlights.primary, highlights.secondary].flatMap((highlight) => {
+    const text = String(highlight?.text ?? "").trim();
+    if (!text) return [];
+    const start = source.toLocaleLowerCase("pt-BR").indexOf(text.toLocaleLowerCase("pt-BR"));
+    const end = start + text.length;
+    if (start < 0 || occupied.some((range) => start < range.end && end > range.start)) return [];
+    occupied.push({ start, end });
+    const colorRole = HIGHLIGHT_ROLES[highlight?.colorRole] ? highlight.colorRole : "accentPrimary";
+    const customColor = /^#[0-9a-f]{6}$/i.test(highlight?.customColor ?? "") ? highlight.customColor : "";
+    return [{ start, end, colorRole, customColor }];
+  }).sort((left, right) => left.start - right.start);
+
+  const parts = [];
+  let cursor = 0;
+  for (const match of matches) {
+    if (match.start > cursor) parts.push({ text: source.slice(cursor, match.start) });
+    parts.push({ ...match, text: source.slice(match.start, match.end) });
+    cursor = match.end;
+  }
+  if (cursor < source.length || !parts.length) parts.push({ text: source.slice(cursor) });
+  return parts;
+}
+
+function renderHighlightedTitle(document, title, highlights) {
+  const heading = element(document, "h1", "mse-home__title");
+  for (const part of highlightedTitleParts(title, highlights)) {
+    if (!part.colorRole) {
+      heading.append(document.createTextNode(part.text));
+      continue;
+    }
+    const accent = element(document, "span", `mse-home__accent ${HIGHLIGHT_ROLES[part.colorRole]}`, part.text);
+    if (part.colorRole === "custom" && part.customColor) accent.style.color = part.customColor;
+    heading.append(accent);
+  }
+  return heading;
+}
 
 export function normalizeStats(stats) {
   if (!Array.isArray(stats) || !stats.length) return DEFAULT_STATS;
@@ -249,6 +299,10 @@ export function createHomeView({ root, stats, content = {} } = {}) {
   const copy = {
     ...DEFAULT_CONTENT,
     ...content,
+    highlights: {
+      primary: { ...DEFAULT_CONTENT.highlights.primary, ...content.highlights?.primary },
+      secondary: { ...DEFAULT_CONTENT.highlights.secondary, ...content.highlights?.secondary }
+    },
     primaryAction: { ...DEFAULT_CONTENT.primaryAction, ...content.primaryAction },
     secondaryAction: { ...DEFAULT_CONTENT.secondaryAction, ...content.secondaryAction }
   };
@@ -267,7 +321,7 @@ export function createHomeView({ root, stats, content = {} } = {}) {
   const eyebrow = element(document, "span", "mse-home__eyebrow", copy.eyebrow);
   inner.append(eyebrow);
 
-  const heading = element(document, "h1", "mse-home__title", copy.title);
+  const heading = renderHighlightedTitle(document, copy.title, copy.highlights);
   inner.append(heading);
 
   inner.append(element(

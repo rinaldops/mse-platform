@@ -44,7 +44,7 @@ function inputFor(document, field, value) {
     return input;
   }
 
-  if (field.type === "select" || field.type === "multiselect" || field.type === "color") {
+  if (field.type === "select" || field.type === "multiselect" || (field.type === "color" && field.options)) {
     const select = document.createElement("select");
     select.multiple = field.type === "multiselect";
     const selected = new Set(Array.isArray(value) ? value.map(String) : [String(value ?? "")]);
@@ -59,7 +59,7 @@ function inputFor(document, field, value) {
   }
 
   const input = document.createElement("input");
-  input.type = field.type === "number" ? "number" : field.type === "url" ? "url" : "text";
+  input.type = field.type === "number" ? "number" : field.type === "url" ? "url" : field.type === "color" ? "color" : "text";
   if (field.min !== undefined) input.min = String(field.min);
   if (field.max !== undefined) input.max = String(field.max);
   input.value = value ?? "";

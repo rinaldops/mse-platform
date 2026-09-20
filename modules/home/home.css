@@ -136,11 +136,19 @@
 
 .mse-home__accent {
   font-style: normal;
+}
+
+.mse-home__accent--primary {
+  color: var(--home-amarelo);
+}
+
+.mse-home__accent--secondary {
   color: var(--home-laranja);
 }
 
-.mse-home__accent--warm {
-  color: var(--home-amarelo);
+[data-mse-module="home"][data-mse-theme="Lite"] {
+  --home-amarelo: #75787B;
+  --home-laranja: #000000;
 }
 
 .mse-home__sub {
