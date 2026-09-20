@@ -44,22 +44,27 @@
     var siteIntegrationUrl = base + "/host-adapters/modern-script-editor/site-integration.js";
 
     var boot = await import(bootstrapUrl);
-    var integMod = await import(siteIntegrationUrl);
-
-    var integration = await integMod.createSiteIntegration({
-      releaseBase: releaseBase,
-      enabledModules: enabledModules
-    });
-
     var root = instanceId && document.querySelector('[data-mse-module][data-mse-instance="' + instanceId + '"]');
     if (!root) throw new Error("runner.js: raiz da instância não encontrada: " + instanceId);
-    await boot.mountMseModule(root, {
-      coreVersion: coreVersion,
-      config: { admin: { releaseBase: releaseBase, coreVersion: coreVersion } },
-      configurationStore: integration.configurationStore,
-      services: integration.services,
-      manifestResolver: integration.manifestResolver
-    });
+    boot.prepareMseModule(root);
+    try {
+      var integMod = await import(siteIntegrationUrl);
+      var integration = await integMod.createSiteIntegration({
+        releaseBase: releaseBase,
+        enabledModules: enabledModules
+      });
+      await boot.mountMseModule(root, {
+        coreVersion: coreVersion,
+        config: { admin: { releaseBase: releaseBase, coreVersion: coreVersion } },
+        configurationStore: integration.configurationStore,
+        services: integration.services,
+        manifestResolver: integration.manifestResolver
+      });
+      boot.completeMseModule(root);
+    } catch (error) {
+      boot.completeMseModule(root, { failed: true });
+      throw error;
+    }
   }
 
   main().catch(function (error) {

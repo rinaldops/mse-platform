@@ -2,7 +2,82 @@ import { defineModuleManifest } from "../../core/module-contract.js";
 
 const mounted = new WeakMap();
 const loadedStyles = new Map();
+const revealCoordinators = new WeakMap();
 const coreStyleUrl = new URL("./layout.css", import.meta.url).href;
+
+function isVisible(root) {
+  if (!root?.isConnected) return false;
+  const rect = root.getBoundingClientRect?.();
+  if (!rect || rect.width <= 0) return false;
+  const style = root.ownerDocument?.defaultView?.getComputedStyle?.(root);
+  return style?.display !== "none" && style?.visibility !== "hidden";
+}
+
+function revealCoordinator(document) {
+  if (revealCoordinators.has(document)) return revealCoordinators.get(document);
+  const state = { roots: new Map(), open: false, timer: null };
+  const reveal = (root, status) => {
+    root.classList?.remove("mse-epub--pending");
+    root.classList?.add("mse-epub--revealed");
+    root.removeAttribute?.("aria-busy");
+    root.dataset.mseRevealState = status;
+  };
+  const flush = () => {
+    if (!state.open) return;
+    const visible = [...state.roots.entries()]
+      .filter(([root]) => isVisible(root))
+      .sort(([left], [right]) => {
+        const topDifference = left.getBoundingClientRect().top - right.getBoundingClientRect().top;
+        if (Math.abs(topDifference) > 1) return topDifference;
+        const position = left.compareDocumentPosition?.(right) ?? 0;
+        return position & 4 ? -1 : position & 2 ? 1 : 0;
+      });
+    for (const [root, status] of visible) {
+      if (status === "pending") break;
+      reveal(root, status);
+      state.roots.delete(root);
+    }
+  };
+  const open = () => {
+    state.open = true;
+    flush();
+  };
+  const scheduleOpen = () => {
+    globalThis.clearTimeout?.(state.timer);
+    state.timer = globalThis.setTimeout?.(open, 250);
+  };
+  const coordinator = {
+    prepare(root) {
+      state.roots.set(root, "pending");
+      root.classList?.remove("mse-epub--revealed");
+      root.classList?.add("mse-epub--pending");
+      root.setAttribute?.("aria-busy", "true");
+      root.dataset.mseRevealState = "pending";
+      if (document.readyState === "loading") {
+        document.addEventListener?.("DOMContentLoaded", scheduleOpen, { once: true });
+      } else {
+        scheduleOpen();
+      }
+    },
+    complete(root, status = "ready") {
+      if (!state.roots.has(root)) return;
+      state.roots.set(root, status);
+      flush();
+    }
+  };
+  revealCoordinators.set(document, coordinator);
+  return coordinator;
+}
+
+export function prepareMseModule(root) {
+  if (!root?.ownerDocument) return;
+  revealCoordinator(root.ownerDocument).prepare(root);
+}
+
+export function completeMseModule(root, { failed = false } = {}) {
+  if (!root?.ownerDocument) return;
+  revealCoordinator(root.ownerDocument).complete(root, failed ? "failed" : "ready");
+}
 
 function loadStyle(document, url) {
   if (!document?.head?.append || !document.createElement) return Promise.resolve();

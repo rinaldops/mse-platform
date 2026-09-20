@@ -7,6 +7,52 @@
   margin-bottom: var(--mse-epub-margin-bottom, 0);
 }
 
+.mse-epub--pending {
+  position: relative;
+  min-height: 10rem;
+  overflow: hidden;
+}
+
+.mse-epub--pending[data-mse-view="full"] {
+  min-height: 20rem;
+}
+
+.mse-epub--pending > * {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.mse-epub--pending::before {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #e1e1e1;
+  background: rgba(255, 255, 255, 0.72);
+  content: "";
+}
+
+.mse-epub--pending::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #5f6368;
+  content: "Carregando...";
+  font-size: 0.875rem;
+  transform: translate(-50%, -50%);
+}
+
+.mse-epub--revealed > * {
+  animation: mse-epub-reveal 180ms ease-out;
+}
+
+@keyframes mse-epub-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-epub--revealed > * { animation: none; }
+}
+
 .mse-app *,
 .mse-app *::before,
 .mse-app *::after {

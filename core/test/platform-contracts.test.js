@@ -3,7 +3,14 @@ import { createModuleCatalog } from "../../admin/catalog.js";
 import { epubSettingsGroups } from "../epub-settings.js";
 import { settingsDefaults } from "../module-contract.js";
 import { expandSettings, getSettingValue, setSettingValue } from "../../admin/settings-renderer.js";
-import { mountAllMseModules, mountMseModule, supportsCore, unmountMseModule } from "../../host-adapters/modern-script-editor/bootstrap.js";
+import {
+  completeMseModule,
+  mountAllMseModules,
+  mountMseModule,
+  prepareMseModule,
+  supportsCore,
+  unmountMseModule
+} from "../../host-adapters/modern-script-editor/bootstrap.js";
 import sampleManifest from "../../examples/sample-module/manifest.js";
 import sampleSettings from "../../examples/sample-module/settings-schema.js";
 import forumManifestDefault, { FORUM_MANIFEST } from "../../modules/forum/manifest.js";
@@ -167,6 +174,35 @@ const allResults = await mountAllMseModules({
 });
 assert.equal(allResults.length, 2);
 assert.equal(allResults.every((result) => result.status === "fulfilled"), true);
+
+const revealDocument = {
+  readyState: "complete",
+  defaultView: { getComputedStyle: () => ({ display: "block", visibility: "visible" }) }
+};
+function revealRoot(top) {
+  const attributes = new Map();
+  return {
+    ownerDocument: revealDocument,
+    dataset: {},
+    classList: classList(),
+    isConnected: true,
+    getBoundingClientRect: () => ({ top, width: 800 }),
+    setAttribute: (name, value) => attributes.set(name, value),
+    removeAttribute: (name) => attributes.delete(name)
+  };
+}
+const firstRevealRoot = revealRoot(100);
+const secondRevealRoot = revealRoot(300);
+prepareMseModule(firstRevealRoot);
+prepareMseModule(secondRevealRoot);
+completeMseModule(secondRevealRoot);
+await new Promise((resolve) => setTimeout(resolve, 300));
+assert.equal(secondRevealRoot.classList.contains("mse-epub--pending"), true);
+completeMseModule(firstRevealRoot);
+assert.equal(firstRevealRoot.dataset.mseRevealState, "ready");
+assert.equal(secondRevealRoot.dataset.mseRevealState, "ready");
+assert.equal(firstRevealRoot.classList.contains("mse-epub--revealed"), true);
+assert.equal(secondRevealRoot.classList.contains("mse-epub--revealed"), true);
 
 let summaryContext;
 const homeRoot = {
