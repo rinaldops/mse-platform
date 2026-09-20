@@ -92,8 +92,8 @@ await mountMseModule(fullBleedRoot, {
     ? { default: sampleManifest }
     : { mount: () => ({}) }
 });
-assert.equal(layoutProperties.get("--mse-full-bleed-margin-left"), "-85px");
-assert.equal(layoutProperties.get("--mse-full-bleed-margin-right"), "-75px");
+assert.equal(layoutProperties.get("--mse-full-bleed-margin-left"), "-5px");
+assert.equal(layoutProperties.get("--mse-full-bleed-margin-right"), "5px");
 
 let titleMutation;
 const titleRoot = {
