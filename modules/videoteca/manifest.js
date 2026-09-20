@@ -1,7 +1,7 @@
 export const VIDEOTECA_MANIFEST = Object.freeze({
   id: "videoteca",
   displayName: "Videoteca",
-  version: "0.9.0",
+  version: "0.9.1",
   coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 7,

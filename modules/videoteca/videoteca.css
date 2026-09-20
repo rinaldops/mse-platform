@@ -927,10 +927,9 @@
 
 .mse-videoteca__summary {
   --vs-spacing: clamp(1.5rem, 3vw, 3.5rem);
-  --vs-side-spacing: clamp(3rem, 6vw, 7rem);
   display: grid;
   gap: clamp(1rem, 2vw, 1.5rem);
-  padding: 1.5rem var(--vs-side-spacing);
+  padding: 1.5rem;
 }
 
 .mse-videoteca__summary-header {
