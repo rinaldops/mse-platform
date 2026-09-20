@@ -7,7 +7,7 @@ const items = [
   { Id: 3, Title: "WS0036 - RTI", FileRef: "/teams/td/VideotecaVideos/ws0036.mp4", CategoriaId: 10, Destaque: false, OrdemCarrossel: 0 }
 ];
 const taxonomy = [
-  { Id: 10, Title: "SAP", Tipo: "Categoria", Ordem: 10 },
+  { Id: 10, Title: "SAP", Tipo: "Categoria", Cor: "#008542", Ordem: 10 },
   { Id: 11, Title: "Power Platform", Tipo: "Categoria", Ordem: 20 },
   { Id: 20, Title: "Power Platform", Tipo: "Tag", Ordem: 10 }
 ];
@@ -41,6 +41,8 @@ assert.deepEqual(featured.map((v) => v.Id), [2, 1]);
 
 assert.equal(groups.length, 2);
 assert.equal(groups.find((g) => g.category === "SAP").videos.length, 2);
+assert.equal(groups.find((g) => g.category === "SAP").color, "#008542");
+assert.equal(groups.find((g) => g.category === "SAP").videos[0].CategoriaCor, "#008542");
 assert.equal(groups.find((g) => g.category === "Power Platform").videos.length, 1);
 assert.deepEqual(featured[0].Tags, ["Power Platform"]);
 assert.equal(featured[0].URL, "/teams/td/VideotecaVideos/ws0037.mp4");

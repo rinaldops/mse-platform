@@ -94,6 +94,12 @@ function normalizeSetting(field, groupId) {
   if (["select", "multiselect"].includes(type) || (type === "color" && field.options !== undefined)) {
     if (!Array.isArray(field.options) || !field.options.length) throw new TypeError(`${id}.options não pode ser vazio.`);
     result.options = [...new Set(field.options.map((option) => String(option)))];
+    if (field.optionLabels) {
+      result.optionLabels = Object.fromEntries(result.options.map((option) => [
+        option,
+        String(field.optionLabels[option] || option)
+      ]));
+    }
   }
   if (type === "number") {
     if (field.min !== undefined) result.min = Number(field.min);

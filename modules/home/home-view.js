@@ -26,6 +26,8 @@ export const DEFAULT_STATS = Object.freeze([
 
 export const DEFAULT_CONTENT = Object.freeze({
   eyebrow: "Digital workspace",
+  eyebrowColorRole: "accentPrimary",
+  eyebrowCustomColor: "#FDC82F",
   title: "Tecnologia que conecta. Pessoas que transformam.",
   highlights: Object.freeze({
     primary: Object.freeze({ text: "conecta", colorRole: "accentPrimary", customColor: "#FDC82F" }),
@@ -80,6 +82,13 @@ function renderHighlightedTitle(document, title, highlights) {
     heading.append(accent);
   }
   return heading;
+}
+
+function applyAccent(node, colorRole, customColor) {
+  const role = HIGHLIGHT_ROLES[colorRole] ? colorRole : "accentPrimary";
+  node.classList.add(HIGHLIGHT_ROLES[role]);
+  if (role === "custom" && /^#[0-9a-f]{6}$/i.test(customColor ?? "")) node.style.color = customColor;
+  return node;
 }
 
 export function normalizeStats(stats) {
@@ -318,7 +327,11 @@ export function createHomeView({ root, stats, content = {} } = {}) {
   if (!reducedMotion) shell.append(renderFloaters(document));
 
   const inner = element(document, "div", "mse-home__inner");
-  const eyebrow = element(document, "span", "mse-home__eyebrow", copy.eyebrow);
+  const eyebrow = applyAccent(
+    element(document, "span", "mse-home__eyebrow", copy.eyebrow),
+    copy.eyebrowColorRole,
+    copy.eyebrowCustomColor
+  );
   inner.append(eyebrow);
 
   const heading = renderHighlightedTitle(document, copy.title, copy.highlights);

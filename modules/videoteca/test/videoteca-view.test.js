@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { accentFor, catalogCategories, categoriesFor, createVideotecaSummaryView, presentersFor, summaryColumnCount, thumbnailFor, videoPlayerUrl } from "../videoteca-view.js";
 
 assert.equal(accentFor("SAP"), accentFor("SAP"));
+assert.equal(accentFor("SAP", "#ed8b00"), "#ED8B00");
+assert.equal(accentFor("SAP", "inválida"), accentFor("SAP"));
 assert.equal(accentFor("Qualquer Categoria Nova"), accentFor("Qualquer Categoria Nova"));
 assert.notEqual(accentFor("SAP"), accentFor("Outra Categoria Bem Diferente"));
 assert.match(accentFor("Categoria de outro site, sem relacao com TD"), /^#[0-9A-F]{6}$/);

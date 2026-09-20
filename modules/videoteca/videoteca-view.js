@@ -30,7 +30,9 @@ function element(document, tag, className, text) {
   return node;
 }
 
-export function accentFor(category) {
+export function accentFor(category, configuredColor) {
+  const normalized = String(configuredColor || "").trim().toUpperCase();
+  if (/^#[0-9A-F]{6}$/.test(normalized)) return normalized;
   if (!category) return ACCENT_PALETTE[ACCENT_PALETTE.length - 1];
   let hash = 0;
   for (let i = 0; i < category.length; i += 1) hash = (hash * 31 + category.charCodeAt(i)) | 0;
@@ -321,7 +323,7 @@ export function createVideotecaView({ root, service, reducedMotion, presenterSuf
   function thumb(video) {
     const node = configureVideoLink(element(document, "a", "mse-videoteca__thumb"), video);
     node.setAttribute("aria-label", `Assistir ${video.Title}`);
-    node.style.setProperty("--accent", accentFor(video.Categoria));
+    node.style.setProperty("--accent", accentFor(video.Categoria, video.CategoriaCor));
     const image = thumbnailFor(video);
     if (image) node.style.backgroundImage = `url('${image}')`;
     if (video.Duracao) node.append(element(document, "span", "mse-videoteca__duration", video.Duracao));
@@ -333,7 +335,7 @@ export function createVideotecaView({ root, service, reducedMotion, presenterSuf
     const media = thumb(video);
     card.append(media);
     const stripe = element(document, "span", "mse-videoteca__card-accent");
-    stripe.style.setProperty("--accent", accentFor(video.Categoria));
+    stripe.style.setProperty("--accent", accentFor(video.Categoria, video.CategoriaCor));
     card.append(stripe);
     const meta = element(document, "div", "mse-videoteca__meta");
     const title = configureVideoLink(element(document, "a", "mse-videoteca__title", video.Title), video);
@@ -380,7 +382,7 @@ export function createVideotecaView({ root, service, reducedMotion, presenterSuf
 
         const media = configureVideoLink(element(ownerDocument, "a", "mse-videoteca__slide-media"), video);
         media.setAttribute("aria-label", `Assistir ${video.Title}`);
-        media.style.setProperty("--accent", accentFor(video.Categoria));
+        media.style.setProperty("--accent", accentFor(video.Categoria, video.CategoriaCor));
         const image = thumbnailFor(video);
         if (image) media.style.backgroundImage = `url('${image}')`;
 
@@ -447,7 +449,7 @@ export function createVideotecaView({ root, service, reducedMotion, presenterSuf
       if (!items?.length) continue;
       const section = element(document, "section", "mse-videoteca__row");
       section.dataset.category = group.category;
-      section.style.setProperty("--accent", accentFor(group.category));
+      section.style.setProperty("--accent", accentFor(group.category, group.color));
       const header = element(document, "div", "mse-videoteca__row-header");
       const heading = element(document, "h2", "mse-videoteca__row-title");
       heading.append(element(document, "span", "mse-videoteca__row-mark"), document.createTextNode(group.category));
@@ -610,7 +612,10 @@ export function createVideotecaSummaryView({ root, service, pageHref, limit = 8,
       const on = activeCategory === value;
       chip.setAttribute("aria-pressed", on ? "true" : "false");
       if (on) chip.classList.add("mse-videoteca__summary-chip-btn--on");
-      if (value) chip.style.setProperty("--accent", accentFor(value));
+      if (value) {
+        const group = catalog.groups.find((item) => item.category === value);
+        chip.style.setProperty("--accent", accentFor(value, group?.color));
+      }
       chip.addEventListener("click", () => {
         if (disposed || activeCategory === value) return;
         activeCategory = value;
@@ -629,7 +634,7 @@ export function createVideotecaSummaryView({ root, service, pageHref, limit = 8,
   function videoCard(video) {
     const card = element(document, "a", "mse-videoteca__summary-item");
     card.href = `${pageHref}${pageHref.includes("?") ? "&" : "?"}video=${encodeURIComponent(video.Id)}`;
-    card.style.setProperty("--accent", accentFor(video.Categoria));
+    card.style.setProperty("--accent", accentFor(video.Categoria, video.CategoriaCor));
 
     const thumb = element(document, "span", "mse-videoteca__summary-thumb");
     const image = thumbnailFor(video);

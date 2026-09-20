@@ -113,7 +113,7 @@ export function mountAdminCenter({ root, catalog, configurationStore, diagnose, 
           currentRecord = configurationStore
             ? await configurationStore.save(currentRecord, configuration, { state: "Rascunho" })
             : await save?.(currentEntry.manifest, configuration);
-          status.textContent = "Configuração salva.";
+          status.textContent = "Configuração salva como rascunho. Clique em Publicar configuração para aplicá-la no EPUB.";
           publishButton.disabled = !configurationStore;
         } catch (error) {
           status.textContent = error?.code === "concurrency-conflict"

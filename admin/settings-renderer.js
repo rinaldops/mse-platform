@@ -51,7 +51,7 @@ function inputFor(document, field, value) {
     field.options.forEach((optionValue) => {
       const option = document.createElement("option");
       option.value = optionValue;
-      option.textContent = optionValue;
+      option.textContent = field.optionLabels?.[optionValue] || optionValue;
       option.selected = selected.has(optionValue);
       select.append(option);
     });

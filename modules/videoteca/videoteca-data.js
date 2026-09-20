@@ -17,7 +17,12 @@ function groupByCategory(items) {
     if (!groups.has(category)) groups.set(category, []);
     groups.get(category).push(item);
   }
-  return [...groups.entries()].map(([category, videos]) => ({ category, videos }));
+  return [...groups.entries()].map(([category, videos]) => ({ category, color: videos[0]?.CategoriaCor || "", videos }));
+}
+
+function taxonomyColor(value) {
+  const normalized = String(value || "").trim().toUpperCase();
+  return /^#[0-9A-F]{6}$/.test(normalized) ? normalized : "";
 }
 
 function normalizedGuid(value) {
@@ -86,14 +91,18 @@ export function createVideotecaReadService({ dataSources } = {}) {
       tags.push(tag.Title);
       tagsByVideo.set(relation.VideoId, tags);
     }
-    return items.map((item) => ({
-      ...item,
-      Categoria: taxonomyById.get(item.CategoriaId)?.Title || "Outros",
-      Tags: [...new Set(tagsByVideo.get(item.Id) || [])],
-      Title: item.Title || item.FileLeafRef || "Vídeo sem título",
-      URL: item.URL || item.FileRef || "#",
-      Miniatura: item.Miniatura || thumbnailUrl(source, drive, item.FileRef)
-    }));
+    return items.map((item) => {
+      const category = taxonomyById.get(item.CategoriaId);
+      return {
+        ...item,
+        Categoria: category?.Title || "Outros",
+        CategoriaCor: taxonomyColor(category?.Cor),
+        Tags: [...new Set(tagsByVideo.get(item.Id) || [])],
+        Title: item.Title || item.FileLeafRef || "Vídeo sem título",
+        URL: item.URL || item.FileRef || "#",
+        Miniatura: item.Miniatura || thumbnailUrl(source, drive, item.FileRef)
+      };
+    });
   }
 
   async function listCatalog() {

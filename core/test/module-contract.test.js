@@ -25,7 +25,7 @@ const settings = defineSettingsSchema({
     id: "content",
     label: "Content",
     fields: [
-      { id: "layout.mode", type: "select", label: "Layout", options: ["contained", "fullBleed"], default: "contained" },
+      { id: "layout.mode", type: "select", label: "Layout", options: ["contained", "fullBleed"], optionLabels: { contained: "Contido", fullBleed: "Largura total" }, default: "contained" },
       { id: "pageSize", type: "number", label: "Page size", min: 1, max: 100, default: 20 },
       { id: "accent", type: "color", label: "Accent", default: "#FDC82F" },
       { id: "enabled", type: "boolean", label: "Enabled", default: true }
@@ -33,6 +33,7 @@ const settings = defineSettingsSchema({
   }]
 });
 assert.ok(Object.isFrozen(settings.groups[0].fields));
+assert.equal(settings.groups[0].fields[0].optionLabels.fullBleed, "Largura total");
 assert.deepEqual(settingsDefaults(settings), { "layout.mode": "contained", pageSize: 20, accent: "#FDC82F", enabled: true });
 assert.throws(() => defineSettingsSchema({ version: 1, groups: [] }), /grupos/);
 

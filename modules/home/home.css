@@ -146,6 +146,10 @@
   color: var(--home-laranja);
 }
 
+.mse-home__accent--custom {
+  color: var(--home-amarelo);
+}
+
 [data-mse-module="home"][data-mse-theme="Lite"] {
   --home-amarelo: #75787B;
   --home-laranja: #000000;
