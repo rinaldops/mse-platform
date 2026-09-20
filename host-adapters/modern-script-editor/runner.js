@@ -16,10 +16,11 @@
 
   function currentScript() {
     var s = document.currentScript;
-    if (s) return s;
+    if (getAttr(s, "data-release-base", "")) return s;
     var all = document.getElementsByTagName("script");
     for (var i = all.length - 1; i >= 0; i -= 1) {
-      if (String(all[i].src || "").indexOf("/runner.js") >= 0) return all[i];
+      if (String(all[i].src || "").indexOf("/runner.js") >= 0
+          && getAttr(all[i], "data-release-base", "")) return all[i];
     }
     return null;
   }

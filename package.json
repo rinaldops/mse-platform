@@ -1,10 +1,10 @@
 {
   "name": "mse-platform",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm --prefix core test && node core/test/settings-migrations.test.js && node core/test/runtime-config.test.js && node core/test/module-diagnostics.test.js && node core/test/installer.test.js && node core/test/admin-module.test.js && node core/test/site-integration.test.js && node core/test/snippet-generator.test.js && node core/test/config-transfer.test.js",
+    "test": "npm --prefix core test && node core/test/settings-migrations.test.js && node core/test/runtime-config.test.js && node core/test/module-diagnostics.test.js && node core/test/installer.test.js && node core/test/admin-module.test.js && node core/test/site-integration.test.js && node core/test/snippet-generator.test.js && node core/test/mse-runner.test.js && node core/test/config-transfer.test.js",
     "release:build": "node tools/build-release.js",
     "release:verify": "node tools/verify-release.js"
   }

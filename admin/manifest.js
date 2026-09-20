@@ -3,8 +3,8 @@ import { defineModuleManifest } from "../core/module-contract.js";
 export default defineModuleManifest({
   id: "mse-admin",
   displayName: "MSE Platform Admin",
-  version: "0.1.0",
-  coreCompatibility: ">=0.8.0 <1.0.0",
+  version: "1.0.2",
+  coreCompatibility: ">=0.8.0 <2.0.0",
   stability: "preview",
   dataSchemaVersion: 2,
   settingsSchemaVersion: 1,

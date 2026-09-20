@@ -24,19 +24,13 @@ export function generateMseSnippet({ moduleId, instanceId, view = "full", releas
   if (!/^\d+\.\d+\.\d+$/.test(coreVersion)) throw new TypeError("coreVersion inválida.");
   const base = releasePath(releaseBase);
   const enabledModules = module === "home"
-    ? "[\"forum\", \"explore-mais\", \"videoteca\"]"
-    : `["${module}"]`;
+    ? "forum,explore-mais,videoteca"
+    : module;
 
   return `<div data-mse-module="${module}" data-mse-instance="${instance}" data-mse-view="${view}" data-mse-manifest="${base}/${MODULE_PATHS[module]}"></div>\n`
-    + `<script>\n`
-    + `  (async function () {\n`
-    + `    const { mountAllMseModules } = await import("${base}/host-adapters/modern-script-editor/bootstrap.js");\n`
-    + `    const { createSiteIntegration } = await import("${base}/host-adapters/modern-script-editor/site-integration.js");\n`
-    + `    const integration = await createSiteIntegration({ releaseBase: "${base}", enabledModules: ${enabledModules} });\n`
-    + `    const results = await mountAllMseModules({ coreVersion: "${coreVersion}", config: { admin: { releaseBase: "${base}", coreVersion: "${coreVersion}" } }, configurationStore: integration.configurationStore, services: integration.services, manifestResolver: integration.manifestResolver });\n`
-    + `    results.filter((result) => result.status === "rejected").forEach((result) => console.error(result.reason));\n`
-    + `  })().catch(function (error) {\n`
-    + `    console.error("mse-platform bootstrap failed", error);\n`
-    + `  });\n`
-    + `</script>`;
+    + `<script\n`
+    + `  src="${base}/host-adapters/modern-script-editor/runner.js"\n`
+    + `  data-release-base="${base}"\n`
+    + `  data-core-version="${coreVersion}"\n`
+    + `  data-enabled-modules="${enabledModules}"></script>`;
 }
