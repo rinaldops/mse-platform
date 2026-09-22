@@ -716,6 +716,7 @@
 .mse-recursos__summary-body {
   display: flex;
   flex-direction: column;
+  gap: var(--mse-paragraph-spacing, 6px);
   min-width: 0;
 }
 
@@ -728,20 +729,12 @@
   white-space: nowrap;
 }
 
-.mse-recursos__summary-host {
+.mse-recursos__summary-meta {
   font-size: 0.72rem;
   color: var(--rs-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.mse-recursos__summary-category {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--rs-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
 .mse-recursos__summary-empty {

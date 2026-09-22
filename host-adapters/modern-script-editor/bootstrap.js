@@ -150,6 +150,7 @@ function applyEpubPresentation(root, config, displayName) {
   const theme = config.theme?.name === "Lite" ? "Lite" : "Standard";
   root.dataset.mseTheme = theme;
   root.style?.setProperty("--mse-grid-gap", `${pixels(config.layout?.gridGap ?? 16, 120)}px`);
+  root.style?.setProperty("--mse-paragraph-spacing", `${pixels(config.typography?.paragraphSpacing ?? 6, 64)}px`);
   let heading = null;
   let observer = null;
   if (config.title?.visible && root.ownerDocument?.createElement) {
@@ -171,6 +172,7 @@ function applyEpubPresentation(root, config, displayName) {
     heading?.remove();
     delete root.dataset.mseTheme;
     root.style?.removeProperty("--mse-grid-gap");
+    root.style?.removeProperty("--mse-paragraph-spacing");
   };
 }
 

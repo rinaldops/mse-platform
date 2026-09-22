@@ -30,6 +30,7 @@ assert.equal(epubDefaults.title.visible, false);
 assert.equal(epubDefaults.title.text, "Exemplo");
 assert.equal(epubDefaults.theme.name, "Standard");
 assert.equal(epubDefaults.layout.gridGap, 16);
+assert.equal(epubDefaults.typography.paragraphSpacing, 6);
 
 const catalog = createModuleCatalog([{ manifest: sampleManifest, settingsSchema: sampleSettings }]);
 assert.equal(catalog.list().length, 1);

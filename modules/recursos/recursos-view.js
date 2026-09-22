@@ -380,8 +380,8 @@ export function createRecursosSummaryView({ root, service, pageHref, limit = 4 }
     const body = element(document, "span", "mse-recursos__summary-body");
     body.append(element(document, "span", "mse-recursos__summary-name", link.Title));
     const host = hostFromUrl(link.URL);
-    if (host) body.append(element(document, "span", "mse-recursos__summary-host", host));
-    body.append(element(document, "span", "mse-recursos__summary-category", link.Categoria || ""));
+    const metadata = [link.Categoria, host].filter(Boolean).join(" - ");
+    if (metadata) body.append(element(document, "span", "mse-recursos__summary-meta", metadata));
     card.append(element(document, "span", "mse-recursos__summary-sigla", sigla(link)), body);
     return card;
   }

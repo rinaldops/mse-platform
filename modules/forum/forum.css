@@ -196,7 +196,7 @@
 .mse-forum__editor-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: var(--mse-paragraph-spacing, 6px);
   padding: 0.5rem;
   border-bottom: 1px solid var(--forum-line);
   background: var(--forum-surface-2);

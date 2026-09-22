@@ -21,6 +21,13 @@ export function epubSettingsGroups(defaultTitle) {
       ]
     },
     {
+      id: "epub-typography",
+      label: "EPUB - Tipografia",
+      fields: [
+        { id: "typography.paragraphSpacing", type: "number", label: "Espaço entre parágrafos (px)", min: 0, max: 64, default: 6 }
+      ]
+    },
+    {
       id: "epub-theme",
       label: "EPUB - Tema",
       fields: [

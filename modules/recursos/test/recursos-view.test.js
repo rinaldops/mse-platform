@@ -114,7 +114,10 @@ assert.equal(root.children.length, 0);
   assert.equal(summaryItems.length, 3, "deve mostrar os links de todas as categorias");
   assert.equal(summaryItems[0].href, "/sites/demo/SitePages/Explore.aspx");
   assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-name")[0].textContent, "Guia do Power Apps");
-  assert.equal(findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-host")[0].textContent, "make.powerapps.com");
+  assert.equal(
+    findAll(summaryItems[0], (n) => n.className === "mse-recursos__summary-meta")[0].textContent,
+    "Power Platform - make.powerapps.com"
+  );
   assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].href, "/sites/demo/SitePages/Explore.aspx");
   assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-title").length, 0);
   assert.equal(findAll(summaryRoot, (n) => n.className === "mse-recursos__summary-cta")[0].textContent, "Explore Mais...");

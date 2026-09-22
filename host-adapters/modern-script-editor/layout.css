@@ -85,6 +85,10 @@
   gap: var(--mse-grid-gap, 1rem);
 }
 
+.mse-app p + p {
+  margin-top: var(--mse-paragraph-spacing, 6px);
+}
+
 .mse-app .mse-home__stats,
 .mse-app .mse-admin,
 .mse-app .mse-forum__topic-list,
