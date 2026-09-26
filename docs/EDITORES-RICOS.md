@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-A partir do `core/0.1.0`, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor. O `core/0.1.0` amplia o sanitizador e o cliente REST para processar imagens incorporadas de até 1 MiB e enviá-las a bibliotecas SharePoint.
+No código atual, o núcleo oferece um seletor comum de editor rico para módulos hospedados em Modern Script Editor. O Core atual amplia o sanitizador e o cliente REST para processar imagens incorporadas de até 1 MiB e enviá-las a bibliotecas SharePoint.
 
 Editores suportados:
 
@@ -15,7 +15,7 @@ Editores suportados:
 O seletor público fica em:
 
 ```text
-core/0.1.0/editor.js
+core/editor.js
 ```
 
 API principal:
@@ -36,17 +36,17 @@ selectRichTextEditor("default")
 - O tema visual usa tokens `--mse-*` para aproximar o editor do host SharePoint.
 - Pastas publicadas são imutáveis; correção exige nova versão.
 
-## Assets do core `0.1.0`
+## Assets relativos à raiz da release
 
 ```text
-core/0.1.0/editor.js
-core/0.1.0/editor-quill.js
-core/0.1.0/editor-quill.css
-core/0.1.0/editor-summernote.js
-core/0.1.0/editor-summernote.css
-core/0.1.0/vendor/quill/2.0.3/
-core/0.1.0/vendor/jquery/3.7.1/
-core/0.1.0/vendor/summernote/0.9.0/
+core/editor.js
+core/editor-quill.js
+core/editor-quill.css
+core/editor-summernote.js
+core/editor-summernote.css
+core/vendor/quill/2.0.3/
+core/vendor/jquery/3.7.1/
+core/vendor/summernote/0.9.0/
 ```
 
 ## Quill
@@ -59,7 +59,7 @@ Aprendizado importante em SharePoint:
 - nesse cenário, `window.Quill` não é criado;
 - o adaptador mascara `define` somente durante o carregamento do arquivo do Quill e restaura o valor original logo depois.
 
-Esse comportamento foi validado em página SharePoint autenticada.
+Esse comportamento possui registro histórico de validação; não comprova a release atual.
 
 ## Summernote Lite
 
@@ -99,11 +99,15 @@ Restrições:
 - a entrada HTML temporária aceita até 15 milhões de caracteres para comportar até dez imagens codificadas;
 - o limite do campo textual deve ser aplicado depois da externalização das imagens.
 
-O fórum `0.1.0` implementa o fluxo definitivo: localiza imagens Base64, valida formato e tamanho, envia os bytes para `ForumMidia` pelo `uploadFile` do Core e substitui o `src` pela URL server-relative retornada. O campo `Conteudo` recebe somente HTML sanitizado com URLs, nunca o blob Base64.
+O Fórum atual implementa o fluxo definitivo: localiza imagens Base64, valida formato e tamanho, envia os bytes para `ForumMidia` pelo `uploadFile` do Core e substitui o `src` pela URL server-relative retornada. O campo `Conteudo` recebe somente HTML sanitizado com URLs, nunca o blob Base64.
 
 ## Configuração no fórum
 
-O fórum `0.1.0` aceita:
+No Centro de Administração, selecione forum.editor e publique a configuração.
+O schema do Fórum usa default; a API selectRichTextEditor, quando chamada sem
+argumento, usa Quill. Atributos data-editor abaixo são do loader legado.
+
+O Fórum atual aceita:
 
 ```html
 data-editor="Quill"
@@ -123,7 +127,7 @@ Também aceita configuração de instância:
 
 `Editor` com inicial maiúscula também é aceito para compatibilidade com administradores que usem essa grafia em JSON.
 
-## Critérios de aceite validados
+## Critérios de aceite para revalidar por release
 
 - Quill carrega sem CDN.
 - Summernote carrega sem CDN.
@@ -154,3 +158,5 @@ Também aceita configuração de instância:
 - Summernote: https://summernote.org/
 - Summernote Getting Started: https://summernote.org/getting-started/
 - Summernote GitHub: https://github.com/summernote/summernote
+
+Os caminhos listados são relativos à release completa. Veja [instalação](INSTALACAO-MSE.md) e [roteiro de validação](VALIDACAO-EDITOR-SHAREPOINT.md).

@@ -1,137 +1,44 @@
-# MSE Forum
+# Fórum
 
-Forum module for SharePoint Modern Script Editor, built on top of `mse-platform/core`.
+Discussões e compartilhamento de conhecimento no SharePoint. Consulte a
+[matriz de versões](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md) e o [guia de uso](USAGE.md).
 
-Current version: `0.4.0`.
+## Funcionalidades
 
-## Features in this MVP
+- Categorias e tags; busca por título, filtros e ordenação.
+- Tópicos recentes, populares, sem resposta, resolvidos e fixados.
+- Paginação de tópicos (20, 50 ou 100) e respostas.
+- Criação, edição, rascunhos, fechamento e fixação de tópicos.
+- Respostas, edição, citação e marcação/desmarcação de solução aceita.
+- Reações Gostei, Útil e Excelente; atividade própria e tópicos relacionados.
+- Links diretos e estado de filtros persistido na URL.
+- Ranking amostral de participantes, não uma apuração histórica integral.
+- Editor nativo, Quill ou Summernote; até dez imagens de 1 MiB por mensagem.
+- Notificação ao autor quando outra pessoa responde, via SharePoint SendEmail.
 
-- Declarative SharePoint list schema.
-- Categories and tags.
-- Compact full-bleed page bar (breadcrumb, debounced search by title, "Novo tópico" and "Minha atividade" actions) replacing the Home hero on this module's own page.
-- Topic listing with tabs, sidebar, fixed topics first, seven sort options and cursor pagination with 20, 50 or 100 items.
-- Topic detail view, filters and search by title.
-- Topic creation, editing, closing and drafts.
-- Configurable safe rich-text editor: Quill, Summernote Lite or native fallback.
-- Answers with pagination and editing.
-- E-mail notification to the topic author when another user posts an answer, with author, excerpt and direct answer link.
-- Reactions.
-- Accepted answer / solved topic flow.
-- Related topics.
-- Sample community ranking.
+Falha de e-mail não desfaz a resposta publicada; a interface informa falha
+parcial e oferece o link da resposta para evitar envio duplicado.
 
-E-mail delivery uses SharePoint's `SP.Utilities.Utility.SendEmail`. A delivery
-failure never rolls back the answer; the UI reports the partial failure and
-links to the answer already published so the user does not submit it twice.
+## Dados e permissões
 
-## Layout particulars (page bar redesign)
+Estruturas: `ForumTaxonomia`, `ForumTopicos`, `ForumTopicoTags`,
+`ForumRespostas`, `ForumReacoes`, `ForumPreferencias` e biblioteca `ForumMidia`.
+Uma categoria ativa é necessária para publicar tópicos. Autoria e permissões
+são verificadas pelo serviço e pelo SharePoint; fixação é restrita a gestores.
 
-- Route state (`aba/categoria/tag/busca/ordem/tamanho/mine`) is persisted in the query string — the only one of the three redesigned modules that does this, since the pattern already existed here before the redesign.
-- Search is Title-only, matching the pre-existing `topicFilter()` search scope; the design handoff did not request full-text search.
-- The page bar reuses `home.css`'s exact blue gradient recipe (same `radial-gradient` stack) so navigating between Home and Forum feels continuous.
-- Compose/edit views are untouched by this redesign — only list (`renderList`) and, later, detail (`renderDetail`, see below) changed. `topicCard()` (used by the detail view's related topics) is kept separate from the new `topicListCard()`.
+Campos `Legacy*` preservam metadados de importações. A exibição prefere autoria
+e data legadas quando presentes; permissões continuam baseadas na autoria
+nativa. Esses campos não constituem um assistente de migração.
 
-## Layout particulars (topic detail view)
+## Resumo e configuração
 
-A later pass reworked `renderDetail()` after live review flagged that colored
-buttons and blue author names were winning the reader's attention over the
-actual question/answer text — see `ARQUITETURA-MSE.md` §18.9 for the full
-sequence of corrections (and the two dead ends kept as documented lessons).
-What shipped:
+A visualização `summary` exibe tópicos recentes com trechos, categorias e links
+para a página completa (`?forumTopic=<id>`). Configure `forumSummary.pageHref`.
 
-- **Reading order**: heading → body text → one compact row of icon-only
-  actions (reactions, permalink, mark-solution, edit, close) → author ·
-  date, right-aligned in that same row as the least important fact. No
-  standalone meta line above the body anymore.
-- **Icons, not text buttons**: small inline SVGs (`icon()`/`ICON_PATHS` in
-  `forum-view.js`) — heart/check/star for reactions (Gostei/Útil/Excelente),
-  link/check-square/pencil/lock for actions. Deliberately not emoji
-  characters (inconsistent, full-color rendering across platforms would
-  undo the "quiet" goal) and not `.mse-forum__button` (too large/saturated
-  for a repeated per-item row — that class stays for real page-level CTAs
-  like "Publicar tópico").
-- **Color rule for reactions**: the icon itself always carries a fixed hue
-  (gostei→`--forum-accent`, útil→`--forum-verde`, excelente→`--forum-danger`,
-  heart/star rendered as solid fills for an "emoji-like" look) regardless of
-  count. The surrounding button never goes past a light gray fill
-  (`--forum-surface-soft`) once it has a reaction or is the reader's own —
-  a full saturated background was tried first and reverted, see §18.9.
-  Functional icons (edit/close/link/mark-solution) stay neutral gray
-  always; only reactions get permanent color.
-- **The topic page shares `.mse-forum__pagebar`/`.mse-forum__page` with the
-  list page** instead of a bespoke lighter header, so a reader landing
-  straight on a topic link still sees the same blue "Hub TD / Fórum / …"
-  banner. The third breadcrumb segment (topic title, truncated) is the one
-  piece the list page's two-segment crumb doesn't need.
-- Section order below the answers: the reply form ("Responder") comes
-  before "Tópicos relacionados" — everything about the current topic first,
-  a pointer elsewhere last.
+Settings específicos: `forum.pageSize` (12 a 100 no formulário) e
+`forum.editor` (`default`, `Quill`, `Summernote`). A interface completa oferece
+as opções de paginação acima. Os ajustes comuns de título, tema e layout são
+aplicados pelo host. Na integração atual, configure pelo Centro de Administração;
+`data-editor` pertence aos loaders legados.
 
-## Home-page summary panel
-
-Besides the full module above (meant for the forum's own page), `mountForumSummary()`/`createForumSummaryView()` render a separate read-only panel for the site's main page: a two-column preview of recent topics with a ~2-line excerpt, category-chip filtering (client-side over one fetch), and a single button through to the full forum. It mounts on `data-mse-module="forum-summary"` (a different selector, so it never collides with the full `mountForum()`), and `forum-loader.js` mounts whichever of the two roots it finds on the page (or both). Every topic link points at the forum's own page, using `?forumTopic=<id>` to deep-link straight to that topic. The panel paints no background of its own — it blends into the SharePoint section colour and flips to a light palette on a dark section (`.mse-app--ambient-dark`, set by core). See `TD/webparts/forum/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
-
-## Data structures
-
-The module declares seven SharePoint structures:
-
-- `ForumTaxonomia`
-- `ForumTopicos`
-- `ForumTopicoTags`
-- `ForumRespostas`
-- `ForumReacoes`
-- `ForumPreferencias`
-- document library `ForumMidia`
-
-Lists use stable ASCII internal names and friendly display names. The core resolves list GUIDs during provisioning and uses them for REST operations.
-
-## Legacy imports
-
-`ForumTopicos` and `ForumRespostas` include optional `Legacy*` fields for
-one-time migrations from older SharePoint discussion boards. Imported rows keep
-the original source id, URL, author name/email and created/modified timestamps
-without attempting to rewrite SharePoint system fields such as `Author` or
-`Created`.
-
-Read views expose `DisplayAuthor` and `DisplayCreatedAt`, preferring legacy
-metadata when present and falling back to native SharePoint metadata for new
-posts. Permission checks still use the native SharePoint `Author.Id`, so
-migrated history is display-only unless a later workflow explicitly maps legacy
-authors to current users.
-
-## Local tests
-
-```powershell
-npm test
-powershell -NoProfile -ExecutionPolicy Bypass -File test/edge-smoke.ps1
-```
-
-The smoke test validates the local demo in narrow and desktop widths.
-
-## SharePoint test
-
-Use [`USAGE.md`](USAGE.md) to publish the assets, provision the lists and paste the Modern Script Editor snippet.
-
-## Editor configuration
-
-The forum delegates rich-text editing to the core editor selector.
-
-In Modern Script Editor markup:
-
-```html
-<div
-  data-mse-module="forum"
-  data-config-key="forum-home"
-  data-editor="Summernote">
-</div>
-```
-
-Accepted values:
-
-- `Quill`
-- `Summernote`
-- `default`
-
-The same setting can be supplied through instance configuration as `forum.editor` or `forum.Editor`.
-
-Images embedded by the editor are uploaded to `ForumMidia` before the publication is saved. The persisted rich text references the server-relative file URL instead of storing Base64 in list fields. Each message accepts up to 10 embedded images of 1 MB each.
+`npm --prefix modules/forum test` executa os testes locais a partir da raiz.

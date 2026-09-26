@@ -1,42 +1,26 @@
-# MSE Explore Mais
+# Explore Mais
 
-Curated links/tips hub module for SharePoint Modern Script Editor, built on top of `mse-platform/core`. Its public name is Explore Mais; the `recursos` namespace remains stable for compatibility.
+Catálogo de links e materiais úteis. O ID público é `explore-mais`; a pasta
+`recursos` e nomes históricos de funções/listas preservam compatibilidade.
+[Uso](USAGE.md) · [Versões](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-Current version: `0.4.0`.
+## Funcionalidades
 
-## Features in this MVP
+- Lista `RecursosLinks` administrada pelos responsáveis pelo conteúdo.
+- Busca, filtro por categoria, ordenação e visualizações de cartões/lista compacta.
+- Grupos de categorias sempre abertos; esta interface não usa mais acordeão.
+- Atalhos selecionados por ordem de curadoria.
+- Abertura de links, com opção de nova janela.
+- Resumo com seleção por categoria e acesso à página completa.
 
-- Declarative SharePoint list schema (single list, admin-curated).
-- Compact full-bleed page bar (breadcrumb, debounced search, "Meus favoritos" and "+ Sugerir link" actions — both inert placeholders, see below).
-- Filter bar: category chips, sort, cards/compact-list view toggle.
-- "Atalhos mais usados" shortcuts section.
-- Links grouped by category, rendered as always-open groups (no accordion — every category is visible at once, filterable by the search/chip bar).
-- Read-only: content is managed directly in the `Explore Mais — Links` list by site owners, no in-page editor.
+Configure `recursosSummary.pageHref` para o resumo. Seus itens levam à página
+Explore Mais; os links externos são acessados no módulo completo.
 
-## Layout particulars (page bar redesign)
+## Limites
 
-- Always-open groups replace the previous exclusive accordion by product decision (users want to compare links across categories, especially while a search filter is active). `modules/ui/accordion/accordion.js` is unaffected and still used/tested elsewhere — this module simply stopped consuming it.
-- "Atalhos mais usados" has no real usage/click data behind it (no click-count field exists). It shows the first link of each category by the existing `Ordem` field, i.e. curated order, not actual usage — a deliberate substitute rather than a fabricated metric.
-- "Meus favoritos" and "+ Sugerir link" render per the design handoff but do nothing on click — those flows were explicitly out of scope in the handoff (`TD/webparts/claude_design/recursos/README.md`, "Pendências"). Implement them (favorites storage, a suggestion form/list) as a follow-up if requested.
-- Filter/sort/view-mode state lives only in memory, unlike the Forum's URL-persisted state — no shareable filtered link yet; add query-string persistence later if needed.
+Meus favoritos e Sugerir link são botões sem fluxo implementado. O título
+Atalhos mais usados não representa cliques medidos: utiliza o primeiro link de
+cada categoria conforme `Ordem`. Filtros, ordenação e modo de visualização
+ficam em memória. Não há editor de conteúdo na página do módulo.
 
-## Home-page summary panel
-
-Besides the full module above (meant for Explore Mais' own page), `mountRecursosSummary()`/`createRecursosSummaryView()` render a separate read-only panel for the site's main page: the top link of each category ("Mais usados") with category-chip filtering and a single button through to the full page. It mounts on `data-mse-module="recursos-summary"` (a different selector, so it never collides with the full `mountRecursos()`), and `recursos-loader.js` mounts whichever of the two roots it finds on the page (or both). Unlike the full page's shortcuts, every item here links to Explore Mais' own page, never straight to the external resource — this panel is a teaser, not a shortcut bar. The panel paints no background of its own — it blends into the SharePoint section colour and flips to a light palette on a dark section (`.mse-app--ambient-dark`, set by core). See `TD/webparts/recursos/home-summary.*.html` vs `modern-script-editor.*.html` for the two snippets.
-
-## Data structures
-
-The module declares one SharePoint list: `RecursosLinks`.
-
-## Local tests
-
-```powershell
-npm test
-```
-
-## SharePoint test
-
-Use [`USAGE.md`](USAGE.md) to publish the assets, provision the list and paste the Modern Script Editor snippet.
-
-Versioning policy: never overwrite a published version folder in place — see
-[`../../../_docs/ARQUITETURA-MSE.md`](../../../_docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação).
+Execute `npm --prefix modules/recursos test` a partir da raiz.

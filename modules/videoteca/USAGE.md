@@ -1,57 +1,32 @@
-# Testing videoteca in SharePoint Modern Script Editor
+# Uso — Videoteca
 
-This guide uses placeholders. Replace:
+Este guia utiliza o contrato atual da plataforma. Siga primeiro a
+[instalação comum](../../docs/INSTALACAO-MSE.md), com uma release completa,
+Modern Script Editor habilitado e permissões adequadas no site de destino.
 
-- `__WEB_URL__` with your SharePoint site server-relative URL.
-- `__SITE_ASSETS__` with `__WEB_URL__/SiteAssets`.
+## Configurar
 
-## 1. Publish the files
+1. Abra o Centro de Administração e prepare MSEConfiguracoes.
+2. Selecione `videoteca` e instale suas estruturas quando houver essa opção.
+3. Cadastre categorias/tags em VideotecaTaxonomia, envie arquivos a VideotecaVideos, preencha metadados e relações em VideotecaVideoTags. Teste busca, categorias, miniaturas, paginação, abertura e registro de visualizações.
+4. Crie uma instância Full com identificador único, como `videoteca-principal`.
+5. Ajuste o formulário, salve e publique a configuração.
+6. Gere o snippet, copie-o para o MSE e publique a página.
+7. Teste com os perfis de leitura, contribuição e administração previstos.
 
-Upload preserving version folders (core and UI `0.7.7` must already be published):
+Para um painel resumido, crie outra instância Summary, configure o destino da
+página completa e gere outro snippet.
 
-```text
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca.css
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-data.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-view.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-schema.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/videoteca-loader.js
-__SITE_ASSETS__/mse-platform/modules/videoteca/0.7.7/provision-videoteca.js
-```
+## Manutenção e validação
 
-Do not overwrite an existing version folder — publish a new one when the code changes.
+Consulte as [funcionalidades e limitações](README.md). Não trate botões sem
+fluxo implementado como recursos disponíveis. Alterações de configuração só
+entram no runtime quando publicadas; conteúdo é mantido nas estruturas SharePoint.
 
-## 2. Provision the SharePoint library
+Use IDs de instância distintos na mesma página. Desativar uma instância
+preserva sua configuração. Para atualizar arquivos ou voltar a uma versão,
+siga a [política de releases](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-The runtime loader provisions `VideotecaVideos` automatically when the page loads.
-
-Optional: create a temporary Modern Script Editor webpart and paste [`snippets/provision-videoteca.html`](snippets/provision-videoteca.html), replacing `__WEB_URL__` and `__SITE_ASSETS__`, to validate the list before publishing the visible webpart.
-
-## 3. Add a few videos
-
-Upload files to the `VideotecaVideos` library and edit their properties:
-
-| Field | Value |
-|---|---|
-| Título | WS0038 — Usando o SAP Scripting para treinamento |
-| URL | leave empty when the recording is the current file |
-| Categoria | SAP |
-| Apresentadores | Fulano; Beltrana (campo Pessoa ou Grupo com seleção múltipla) |
-| Duração | 48:15 |
-| Destaque | Yes (para aparecer no carrossel) |
-| Ordem no carrossel | 10 |
-| Ativo | Yes |
-
-Without at least one active item the module renders "Nenhum vídeo publicado ainda."
-
-## 4. Insert the videoteca webpart
-
-Add a Modern Script Editor webpart and paste [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html), replacing `__SITE_ASSETS__`.
-
-## 5. Validate the MVP
-
-1. Confirm the module loads without an error message.
-2. Confirm featured videos (`Destaque` = Yes) appear in the carousel and auto-advance.
-3. Hover/focus the carousel — auto-advance pauses; prev/next buttons and dots work.
-4. Confirm videos are grouped correctly by category below the carousel.
-5. Click a video card — it opens the file from `FileRef` in a new tab.
+Os arquivos em `snippets/` e os loaders antigos são exemplos legados, com
+versões fixas históricas. Não copie suas árvores de publicação para uma nova
+instalação. O Centro de Administração gera o snippet do contrato atual.

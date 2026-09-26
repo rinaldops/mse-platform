@@ -1,71 +1,42 @@
 # MSE Core
 
-Shared JavaScript core for modules hosted in SharePoint Modern Script Editor.
+Pacote `0.8.0`, compartilhado pelos módulos da plataforma. A versão do Core
+não é a versão da release completa; consulte a [matriz](../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-Current version: `0.6.10`.
+## Recursos
 
-## What it provides
+- Cliente REST com digest, ETag, erros HTTP e leitura paginada.
+- Upload binário de arquivos e resolução de listas por identificadores.
+- Registro de fontes de dados com allowlist explícita de sites.
+- Contratos de módulos, migração de settings e resolução de configuração.
+- Persistência em `MSEConfiguracoes`, rascunho/publicação e histórico.
+- Diagnóstico e provisionamento declarativo administrativo.
+- Sanitização de HTML, renderização rica e seleção de editor.
+- Utilitários de acessibilidade e navegação.
 
-- Idempotent module mounting and cleanup.
-- Local/global configuration merge.
-- Contained and full-bleed layout helpers.
-- SharePoint REST client with digest, ETag and typed HTTP errors.
-- Paged reads using `@odata.nextLink`.
-- Binary file upload to SharePoint document libraries using resolved list GUIDs.
-- Declarative list/library provisioning.
-- Cross-site data source registry using explicit allowlists.
-- Safe rich-text sanitization and rendering.
-- Shared rich-text editor selector with Quill, Summernote Lite and native fallback support.
-- Accessibility helpers for reduced motion, announcements, disclosures and focus traps.
-- Hash navigation and accessible breadcrumb helpers.
+`selectRichTextEditor` aceita `Quill`, `Summernote` ou `default`; o último
+retorna ausência de adaptador externo para o consumidor usar seu editor nativo.
+Veja [editores ricos](../docs/EDITORES-RICOS.md).
 
-## Rich-text editor selector
+## Runtime atual e compatibilidade
 
-`editor.js` centralizes editor selection for consumers:
+O adaptador MSE atual aplica layout e tema por `bootstrap.js`, `layout.css` e
+`themes/base/theme.js`. `core.js`, `core.css` e `theme-adapter.js` pertencem ao
+fluxo legado e são excluídos pelo empacotador atual. Não misture instruções de
+publicação antigas com a árvore de releases.
 
-```js
-selectRichTextEditor("Quill")
-selectRichTextEditor("Summernote")
-selectRichTextEditor("default")
-```
+Instalação usa inspect/apply/verify com confirmação. A leitura normal resolve
+estruturas existentes, sem criá-las. Uploads persistem a URL retornada pelo
+SharePoint; HTML de mensagens não deve armazenar imagens Base64.
 
-The `default` option returns no external adapter so the consuming module can use its native editor. Quill and Summernote assets are published locally with their licenses and are loaded on demand.
+## Validação
 
-See [`../docs/EDITORES-RICOS.md`](../docs/EDITORES-RICOS.md).
+Na raiz: `npm test`. Para os testes deste pacote: `npm --prefix core test`.
+Os scripts Edge existentes são legados: em ambiente corporativo, qualquer
+validação de navegador deve seguir a ferramenta autorizada pelo workspace.
 
-## UI primitives
+## Publicação
 
-Domain-free components live in [`../modules/ui/`](../modules/ui/README.md):
-accordion and carousel. They receive already-resolved data, do not access
-SharePoint and return an explicit `destroy()` controller. This keeps the same
-visual and accessibility patterns reusable by `CAMAP-AGP`, `TD` and future
-modules without coupling their content models.
-
-## Local tests
-
-```powershell
-npm test
-npm run test:edge
-```
-
-The Edge smoke test serves the repository locally and validates the demo pages without using an authenticated SharePoint session.
-
-## Published layout
-
-When uploaded to SharePoint, keep assets versioned:
-
-```text
-SiteAssets/mse-platform/core/0.6.10/
-```
-
-Modules should import a fixed core version instead of a mutable `latest` path.
-
-**Never overwrite a published version folder.** SharePoint's own Service Worker cache (`SPClient-*`) serves `SiteAssets` files from Cache Storage per browser profile, independent of normal HTTP cache-clearing, and does not expire on its own. Overwriting a file in place can leave some users permanently stuck on the old version while others get the fix — see [`../../docs/ARQUITETURA-MSE.md`](../../docs/ARQUITETURA-MSE.md#10-versionamento-e-publicação). Every fix, no matter how small, publishes a new version folder.
-
-## Binary uploads
-
-Core `0.6.10` exposes `uploadFile` through the SharePoint REST client. It accepts an `ArrayBuffer`, typed array or `Blob`, requires a safe file name, sends the current request digest and returns the server-relative URL supplied by SharePoint. Consumers should persist that URL instead of embedding Base64 data in list fields.
-
-## Full-bleed layout note
-
-`layout.mode = "fullBleed"` expands the module root to the available SharePoint page width without changing SharePoint ancestors. When the SharePoint chrome reserves a lateral navigation area, the root aligns with the chrome content bounds instead of rendering underneath it; outside SharePoint, the viewport is used as fallback. Since multiple core CSS versions may coexist on the same page, version-specific selectors are used for the full-bleed rule to avoid older `core.css` files overriding newer layout fixes.
+Use a [árvore de release](../docs/INSTALACAO-MSE.md), preservando imports e
+licenças. Publique correções em nova pasta e retenha a anterior para rollback.
+Componentes de carrossel e acordeão estão em [UI](../modules/ui/README.md).

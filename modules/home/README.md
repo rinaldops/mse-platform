@@ -1,27 +1,32 @@
-# mse-home
+# Home
 
-Hero da página "Tecnologias Digitais" — headline, ações de entrada (Fórum,
-Videoteca) e uma faixa de indicadores. Sem dependência de lista do SharePoint
-(V1 estática, conforme `TD/PLANO-IMPLEMENTACAO.md` §2.1); uma V2 futura pode
-ler contagens reais via REST depois que Fórum/Videoteca estiverem em produção.
+Apresentação inicial do portal com chamada, título, descrição, dois botões,
+animação de constelação e indicadores. [Uso](USAGE.md) ·
+[Versões](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-## Arquivos
+## Configuração
 
-- `home.js` — `mountHome()`, integra com o `core` (`mountModule`).
-- `home-view.js` — renderização do hero + animação de constelação em canvas
-  (respeita `prefers-reduced-motion`); exporta `normalizeStats` (testável) e
-  `DEFAULT_STATS`.
-- `home.css` — estilos com tokens próprios (`--home-*`), ambiente azul claro
-  neutro conforme `PLANO-IMPLEMENTACAO.md` §3.
-- `home-loader.js` — script autoexecutável para o Modern Script Editor.
+`settings-schema.js` permite editar textos, destinos dos botões, dois trechos
+de destaque do título e suas cores (tema ou personalizada), além dos ajustes
+comuns de layout, título, tipografia e tema.
 
-## Uso
+`config.home.stats` pode fornecer indicadores pela integração. Sem esses dados,
+`resolveHomeStats` tenta consultar `services.metrics.itemCount` para vídeos e
+tópicos. Sem serviço ou em caso de erro, utiliza os valores padrão.
 
-Veja [`USAGE.md`](USAGE.md) para o passo a passo de publicação e o snippet em
-  [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html).
+Os padrões 17 encontros e 1×/mês são fixos. As métricas dinâmicas usam ItemCount
+das listas, não medem pessoas, conclusão de vídeos ou todas as respostas do
+Fórum. Confirme a adequação dos rótulos antes de apresentar os números.
 
-## Testes
+## Dependências e limites
 
-```
-npm test
-```
+A Home não possui schema próprio de conteúdo nem visualização summary. O
+snippet gerado habilita Fórum, Explore Mais e Videoteca para a integração;
+por isso suas estruturas devem existir mesmo que o hero não as mostre.
+
+O `mount` atual monta apenas o hero. Os helpers de seções/slots existentes não
+transformam a Home em compositor automático: insira resumos como instâncias
+separadas na página.
+
+A animação respeita movimento reduzido. Execute
+`npm --prefix modules/home test` a partir da raiz.

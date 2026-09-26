@@ -1,21 +1,15 @@
 # UI compartilhada
 
-Versão atual: `0.6.10`.
+Pacote `0.7.7`: componentes sem regras de negócio ou chamadas SharePoint.
 
-Componentes visuais pequenos e sem domínio para módulos MSE.
+- `accordion`: botões com aria-expanded/aria-controls e painéis ocultáveis;
+  mantém apenas um item aberto por padrão.
+- `carousel`: um item por vez, controles acessíveis, pausa em hover/foco e
+  avanço automático desativado com movimento reduzido.
 
-## Contrato
+Cada componente recebe um root e dados já resolvidos e retorna um controlador
+com `destroy()`. Classes `mse-ui-*` delimitam os estilos. O Explore Mais atual
+não consome o acordeão, mas o componente permanece disponível.
 
-Cada componente recebe um `root` já montado e retorna um controlador com
-operações explícitas e `destroy()`. O componente não acessa SharePoint, não
-carrega dependências externas e mantém seus estilos sob classes `mse-ui-*`.
-
-## Componentes atuais
-
-- `accordion`: usa botões, `aria-expanded`, `aria-controls` e painéis ocultáveis;
-  por padrão mantém apenas um item aberto.
-- `carousel`: mostra um item por vez, oferece controles acessíveis, pausa em
-  foco/hover e desabilita avanço automático com `prefers-reduced-motion`.
-
-Os módulos de negócio podem usar dados estáticos ou serviços REST, desde que
-transformem os dados em `items` antes de montar o componente.
+Os testes estão incluídos em `npm --prefix core test`. Para publicar, preserve
+a árvore da [release completa](../../docs/INSTALACAO-MSE.md).

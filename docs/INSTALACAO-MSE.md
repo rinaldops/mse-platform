@@ -2,93 +2,98 @@
 
 ## Pré-requisitos
 
-- página SharePoint com Modern Script Editor habilitado;
-- permissão para administrar listas e a biblioteca `SiteAssets`;
-- release validada do `mse-platform`;
-- nenhuma credencial, cookie ou token incorporado aos arquivos.
+Confirme o site e o ambiente DEV/homologação antes de publicar. São necessários
+MSE com execução de scripts habilitada, permissão administrativa nas listas e
+SiteAssets e uma release validada. Não incorpore credenciais aos arquivos.
 
-## Publicar os arquivos
+## Gerar e publicar
 
-1. Execute `npm test`.
-2. Gere a release com `node tools/build-release.js 0.8.1 <destino-local>`.
-3. Verifique-a com `node tools/verify-release.js <destino-local>`.
-4. Envie a árvore completa para:
+Na raiz do repositório, com Node.js e npm disponíveis:
 
-```text
-SiteAssets/mse-platform/releases/0.8.1/
+```powershell
+npm test
+npm --prefix modules/home test
+npm --prefix modules/forum test
+npm --prefix modules/recursos test
+npm --prefix modules/videoteca test
+$releaseVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
+$releaseOutput = Join-Path $env:TEMP ("mse-release-" + [guid]::NewGuid().ToString())
+node tools/build-release.js $releaseVersion $releaseOutput
+node tools/verify-release.js $releaseOutput
 ```
 
-Não sobrescreva uma pasta existente. Para rollback, mantenha a release anterior.
+Pare se qualquer comando falhar. O destino deve ser inédito. Envie a árvore
+completa para `__SITE_ASSETS__/mse-platform/releases/<versão>/`, substituindo
+`__SITE_ASSETS__` pelo caminho server-relative da biblioteca do site.
+Leia as [divergências de metadados](COMPATIBILIDADE-E-VERSIONAMENTO.md) antes
+de aprovar uma combinação para publicação.
 
-## Abrir o Centro de Administração
+## Primeira abertura administrativa
 
-Insira em uma página administrativa um snippet gerado para:
+Para gerar o snippet inicial, execute localmente e copie a saída. Substitua o
+placeholder `/__SITE_ASSETS__` pelo caminho server-relative completo de
+SiteAssets (sem duplicar a barra inicial) somente no ambiente de destino:
 
-```text
-Módulo: mse-admin
-Instância: mse-admin
-Visualização: full
-Manifesto: admin/manifest.js
+```powershell
+node --input-type=module -e 'import { generateMseSnippet } from "./admin/snippet-generator.js"; import { readFileSync } from "node:fs"; const v = JSON.parse(readFileSync("package.json", "utf8")).version; console.log(generateMseSnippet({ moduleId: "mse-admin", instanceId: "mse-admin", releaseBase: "/__SITE_ASSETS__/mse-platform/releases/" + v }));'
 ```
 
-Na primeira abertura:
+Insira o HTML gerado numa página administrativa com MSE. O snippet usa
+`runner.js` externo para ambientes onde scripts inline não executam de forma
+confiável. A raiz e o script precisam manter o mesmo ID de instância.
 
-1. selecione **Preparar configuração**;
-2. revise a quantidade de estruturas apresentadas;
-3. confirme a criação ou atualização de `MSEConfiguracoes`;
-4. selecione um módulo;
-5. selecione **Instalar/atualizar estruturas** quando a ação estiver disponível;
-6. revise o plano apresentado e confirme a operação.
+1. Selecione Preparar configuração e confirme o plano de MSEConfiguracoes.
+2. Escolha o módulo e Instalar/atualizar estruturas, quando disponível.
+3. Revise o plano, confirme a operação e aguarde a verificação.
+4. Corrija falta de permissão ou incompatibilidade de campos antes de continuar.
 
-O carregamento comum nunca cria listas ou campos.
+Instalação segue inspect (leitura), apply (confirmação) e verify (releitura).
+O runtime atual não cria listas ou campos.
 
-## Configurar uma instância
+## Configurar e usar
 
-1. Selecione o módulo.
-2. Crie uma instância usando um identificador simples, como
-   `videoteca-principal`.
-3. Escolha entre módulo completo e resumo, quando o módulo oferecer summary.
-4. Ajuste os campos do formulário.
-5. Salve para manter um rascunho.
-6. Valide a pré-visualização.
-7. Publique a configuração.
-8. Gere o snippet MSE no campo somente leitura.
+1. Crie uma instância com identificador simples, como `videoteca-principal`.
+2. Escolha Full ou Summary quando suportado.
+3. Ajuste o formulário e salve como rascunho.
+4. Publique a configuração e gere o snippet.
+5. Insira o snippet na página e valide a apresentação publicada.
 
-Uma instância pode ser desativada sem excluir sua configuração ou seu snippet.
-O runtime ignora instâncias desativadas; a reativação preserva o estado e os
-settings anteriormente salvos.
+O runtime lê configurações publicadas. Desativação preserva dados e settings.
+A prévia do formulário depende de um callback `services.preview`; a integração
+padrão não o fornece. Valide em página piloto, sem pressupor prévia visual no Admin.
 
-As ações de exportação e importação usam um JSON sem autoria ou dados da lista.
-A importação aceita até 64 KB, descarta chaves não declaradas pelo módulo e
-permanece como edição não salva até confirmação do gestor.
+Importação aceita JSON até 64 KB, filtra campos não declarados e permanece
+como edição não salva. Exportação não inclui autoria nem conteúdo das listas.
+O histórico mostra até vinte versões nativas, sujeito às permissões do usuário.
+A gravação usa ETag para recusar sobrescrita de edição concorrente.
 
-O histórico consulta as versões nativas de `MSEConfiguracoes` e apresenta as
-20 alterações mais recentes com data e autoria, respeitando as permissões da
-sessão atual.
+## Conteúdo, dependências e validação
 
-O runtime consulta apenas configurações com estado `Publicado`.
+Siga os guias de [Fórum](../modules/forum/USAGE.md),
+[Videoteca](../modules/videoteca/USAGE.md), [Explore Mais](../modules/recursos/USAGE.md)
+e [Home](../modules/home/USAGE.md). A Home gerada habilita os três módulos de
+conteúdo para métricas: prepare suas estruturas antes de abri-la.
 
-## Instalar estruturas de conteúdo
+Valide MIME, CSP, imports, permissões, teclado, zoom e múltiplas instâncias.
+Em ambiente corporativo, a automação de navegador deve seguir a ferramenta
+obrigatória do workspace. Registre evidências do ambiente em local privado.
 
-O fluxo administrativo é sempre:
+## Diagnóstico e rollback
 
-1. `inspect`: produz o plano sem gravar;
-2. `apply`: exige confirmação explícita;
-3. `verify`: relê e recusa qualquer pendência.
+- Falha ao carregar: confira caminho da release, scripts habilitados e console.
+- Lista ausente: execute o instalador com permissão administrativa.
+- Configuração sem efeito: confirme módulo, ID, visualização e publicação.
+- Conflito de edição: recarregue o registro antes de salvar novamente.
+- Falha de editor: confira os assets vendor e use explicitamente default para
+  testar o editor nativo; não remova arquivos de uma release publicada.
 
-O botão **Instalar/atualizar estruturas** executa esse fluxo completo. Ele fica
-desabilitado para módulos que não possuem estruturas próprias, como a Home. O
-plano informa as listas e a quantidade de campos antes de qualquer gravação.
+Para rollback, restaure o snippet anterior e, se necessário, a versão anterior
+de MSEConfiguracoes. Não exclua conteúdo nem substitua assets em cache.
 
-Erros de permissão, conflitos de campo ou tipos incompatíveis devem ser
-corrigidos antes da publicação da instância.
+## Limite da desativação atual
 
-## Rollback
-
-1. Restaure no MSE o snippet da release anterior.
-2. Não exclua listas nem campos.
-3. Restaure uma versão anterior do item em `MSEConfiguracoes`, se necessário.
-4. Execute o diagnóstico com a combinação anterior.
-
-Assets publicados são imutáveis; rollback nunca depende de substituir arquivos
-em cache.
+O store exclui configurações inativas da leitura, mas o bootstrap pode montar
+uma instância sem configuração usando defaults. Desativar no Admin não deve
+ser tratado como garantia de ocultar a webpart: remova o snippet da página
+quando precisar retirar o componente. Se o item estiver em rascunho, o store
+busca a última configuração publicada entre até cinquenta versões anteriores.

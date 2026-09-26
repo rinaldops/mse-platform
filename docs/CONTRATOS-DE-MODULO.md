@@ -43,7 +43,7 @@ etapas aplicadas antes de qualquer persistência.
 ## Hosts
 
 O adaptador MSE está em
-`host-adapters/modern-script-editor/bootstrap.js`. O host local em
+`host-adapters/modern-script-editor/bootstrap.js`; o snippet gerado executa `runner.js`. O host local em
 `examples/local-host/` usa a mesma assinatura pública para demonstrar que o
 módulo não depende do MSE. O host local é somente uma ferramenta de
 desenvolvimento; MSE permanece o único host produtivo deste ciclo.
@@ -66,3 +66,23 @@ plano sem gravar, `apply` exige confirmação explícita e `verify` relê todas 
 estruturas. A configuração do site usa o schema v2 de `MSEConfiguracoes`, que
 distingue Full/Summary, rascunho/publicado e registra as versões de módulo e de
 settings usadas na validação. O runtime carrega somente registros publicados.
+
+## Configurações comuns e limites atuais
+
+`core/epub-settings.js` declara largura contained/fullBleed, margens (0–240 px),
+espaçamento de grade (0–120 px), título, espaçamento entre parágrafos (0–64 px)
+e tema Standard/Lite. O bootstrap aplica a apresentação à raiz da instância.
+
+A prévia é uma integração opcional via services.preview; a integração MSE
+padrão não fornece esse callback. Home dispõe de helpers de seções, mas seu
+mount atual não invoca mountSummary. Resumos devem ser inseridos separadamente.
+
+O catálogo padrão e a integração de site registram os módulos disponíveis;
+adicionar um módulo exige também registrar seus serviços, schemas e resolução
+de manifesto. Uma instância não implica listas exclusivas.
+
+Consulte a [matriz atual](COMPATIBILIDADE-E-VERSIONAMENTO.md) para versões de
+pacotes e manifestos, que ainda divergem em alguns módulos.
+
+Configurações inativas são filtradas pelo store; isso não impede o bootstrap
+de montar defaults. Veja a [limitação de desativação](INSTALACAO-MSE.md).

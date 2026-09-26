@@ -1,51 +1,32 @@
-# Testing recursos in SharePoint Modern Script Editor
+# Uso — Explore Mais
 
-This guide uses placeholders. Replace:
+Este guia utiliza o contrato atual da plataforma. Siga primeiro a
+[instalação comum](../../docs/INSTALACAO-MSE.md), com uma release completa,
+Modern Script Editor habilitado e permissões adequadas no site de destino.
 
-- `__WEB_URL__` with your SharePoint site server-relative URL.
-- `__SITE_ASSETS__` with `__WEB_URL__/SiteAssets`.
+## Configurar
 
-## 1. Publish the files
+1. Abra o Centro de Administração e prepare MSEConfiguracoes.
+2. Selecione `explore-mais` e instale suas estruturas quando houver essa opção.
+3. Cadastre itens ativos em RecursosLinks com título, URL, categoria e ordem. Confira grupos abertos, busca, filtros, alternância de visualização e abertura de destinos.
+4. Crie uma instância Full com identificador único, como `recursos-principal`.
+5. Ajuste o formulário, salve e publique a configuração.
+6. Gere o snippet, copie-o para o MSE e publique a página.
+7. Teste com os perfis de leitura, contribuição e administração previstos.
 
-Upload preserving version folders (core and UI `0.4.0` must already be published):
+Para um painel resumido, crie outra instância Summary, configure o destino da
+página completa e gere outro snippet.
 
-```text
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos.css
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos-data.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos-view.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos-schema.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/recursos-loader.js
-__SITE_ASSETS__/mse-platform/modules/recursos/0.4.0/provision-recursos.js
-```
+## Manutenção e validação
 
-Do not overwrite an existing version folder — publish a new one when the code changes.
+Consulte as [funcionalidades e limitações](README.md). Não trate botões sem
+fluxo implementado como recursos disponíveis. Alterações de configuração só
+entram no runtime quando publicadas; conteúdo é mantido nas estruturas SharePoint.
 
-## 2. Provision the SharePoint list
+Use IDs de instância distintos na mesma página. Desativar uma instância
+preserva sua configuração. Para atualizar arquivos ou voltar a uma versão,
+siga a [política de releases](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-Create a temporary Modern Script Editor webpart and paste [`snippets/provision-recursos.html`](snippets/provision-recursos.html), replacing `__WEB_URL__` and `__SITE_ASSETS__`.
-
-## 3. Add a few links
-
-Open the list `Recursos — Links` and create some items:
-
-| Field | Value |
-|---|---|
-| Título | Power Automate — início rápido |
-| URL | https://... |
-| Categoria | Power Platform |
-| Ordem | 10 |
-| Ativo | Yes |
-
-Without at least one active item the module renders "Nenhum link publicado ainda."
-
-## 4. Insert the recursos webpart
-
-Add a Modern Script Editor webpart and paste [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html), replacing `__SITE_ASSETS__`.
-
-## 5. Validate the MVP
-
-1. Confirm the module loads without an error message.
-2. Confirm links are grouped by category.
-3. Click a category — it opens and any previously open category closes.
-4. Click a link — it opens the URL (in a new tab if "Abrir em nova janela" is Yes).
+Os arquivos em `snippets/` e os loaders antigos são exemplos legados, com
+versões fixas históricas. Não copie suas árvores de publicação para uma nova
+instalação. O Centro de Administração gera o snippet do contrato atual.

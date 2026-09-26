@@ -1,39 +1,29 @@
-# Testing home in SharePoint Modern Script Editor
+# Uso — Home
 
-This guide uses placeholders. Replace:
+Este guia utiliza o contrato atual da plataforma. Siga primeiro a
+[instalação comum](../../docs/INSTALACAO-MSE.md), com uma release completa,
+Modern Script Editor habilitado e permissões adequadas no site de destino.
 
-- `__WEB_URL__` with your SharePoint site server-relative URL.
-- `__SITE_ASSETS__` with `__WEB_URL__/SiteAssets`.
+## Configurar
 
-## 1. Publish the files
+1. Abra o Centro de Administração e prepare MSEConfiguracoes.
+2. Selecione `home` e instale suas estruturas quando houver essa opção.
+3. Configure chamada, título, destaques, descrição e os dois destinos. Confirme os indicadores, os links e o comportamento com movimento reduzido. Instale as estruturas dos três módulos de conteúdo exigidas pelo snippet gerado.
+4. Crie uma instância Full com identificador único, como `home-principal`.
+5. Ajuste o formulário, salve e publique a configuração.
+6. Gere o snippet, copie-o para o MSE e publique a página.
+7. Teste com os perfis de leitura, contribuição e administração previstos.
 
-Upload preserving version folders (core `0.4.0` must already be published):
+## Manutenção e validação
 
-```text
-__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home.js
-__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home-view.js
-__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home.css
-__SITE_ASSETS__/mse-platform/modules/home/0.4.0/home-loader.js
-```
+Consulte as [funcionalidades e limitações](README.md). Não trate botões sem
+fluxo implementado como recursos disponíveis. Alterações de configuração só
+entram no runtime quando publicadas; conteúdo é mantido nas estruturas SharePoint.
 
-Do not overwrite an existing version folder — publish a new one when the code
-changes.
+Use IDs de instância distintos na mesma página. Desativar uma instância
+preserva sua configuração. Para atualizar arquivos ou voltar a uma versão,
+siga a [política de releases](../../docs/COMPATIBILIDADE-E-VERSIONAMENTO.md).
 
-## 2. Insert the home webpart
-
-No list to provision — this module has no SharePoint dependency. Add a
-Modern Script Editor webpart (as the first section of the page, above Fórum)
-and paste [`snippets/modern-script-editor.html`](snippets/modern-script-editor.html),
-replacing `__SITE_ASSETS__`.
-
-## 3. Validate the MVP
-
-1. Confirm the hero renders: eyebrow, headline with gradient highlights,
-   subtext, two buttons ("Entrar no fórum", "Ver workshops gravados"), and
-   the four-stat band.
-2. Confirm the constellation canvas animates in the background (nodes
-   drifting, occasional colored pulses between them).
-3. With OS-level "reduce motion" enabled, confirm the canvas renders a
-   static graph (no animation) and the floating background terms are hidden.
-4. Click "Entrar no fórum" / "Ver workshops gravados" — they scroll to
-   `#forum` / `#videoteca` if those anchors exist elsewhere on the page.
+Os arquivos em `snippets/` e os loaders antigos são exemplos legados, com
+versões fixas históricas. Não copie suas árvores de publicação para uma nova
+instalação. O Centro de Administração gera o snippet do contrato atual.

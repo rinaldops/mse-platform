@@ -1,5 +1,21 @@
 # Plano de evolução do mse-platform para produto reutilizável
 
+> Documento histórico de planejamento. Revisto em 2026-09-26: requisitos,
+> versões, exemplos e critérios abaixo descrevem a proposta original, não
+> garantem recursos entregues nem constituem instruções atuais de instalação.
+> Consulte [instalação](INSTALACAO-MSE.md), [contratos](CONTRATOS-DE-MODULO.md)
+> e [versões](COMPATIBILIDADE-E-VERSIONAMENTO.md).
+
+## Situação atual frente ao plano
+
+Editores locais, contratos, administração de instâncias e instalador existem.
+Prévia visual padrão, Home como compositor automático e gestão amigável de
+taxonomia não devem ser considerados concluídos apenas por constarem no plano.
+Favoritos e sugestões dos catálogos continuam sem fluxo implementado.
+Imagens incorporadas já são externalizadas pelo Fórum, embora o plano inicial
+do editor as colocasse fora de escopo. A homologação deve ser refeita por release.
+
+
 ## 1. Objetivo
 
 Transformar o `mse-platform` em um produto público, modular, configurável e
