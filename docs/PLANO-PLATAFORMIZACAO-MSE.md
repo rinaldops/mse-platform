@@ -1,5 +1,7 @@
 # Plano de evolução do mse-platform para produto reutilizável
 
+> **Direção atual (14/10/2026):** o plano de evolução para um único MSE por site (Site Kernel, modelo mini-Joomla!) está em [PLANO-SITE-KERNEL-MSE.md](PLANO-SITE-KERNEL-MSE.md). Este documento permanece histórico e o caminho atual de um MSE por módulo segue suportado.
+
 > Documento histórico de planejamento. Revisto em 2026-09-26: requisitos,
 > versões, exemplos e critérios abaixo descrevem a proposta original, não
 > garantem recursos entregues nem constituem instruções atuais de instalação.

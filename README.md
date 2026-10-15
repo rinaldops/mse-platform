@@ -5,6 +5,8 @@ hospedada pelo Modern Script Editor (MSE). Os arquivos ficam em SiteAssets;
 listas e bibliotecas SharePoint armazenam conteúdo e configurações, usando as
 permissões da sessão do usuário.
 
+> **Em planejamento:** [Site Kernel](docs/PLANO-SITE-KERNEL-MSE.md) — um único MSE renderiza o site inteiro (Componentes, Módulos, menu e posições, no modelo do Joomla!). O funcionamento atual descrito aqui permanece suportado.
+
 ## Funcionalidades
 
 | Módulo | Finalidade | Visualizações |
