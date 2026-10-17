@@ -1,0 +1,118 @@
+{
+  "categorias": {
+    "keyField": "Slug",
+    "items": [
+      {
+        "Title": "Serviços e processos",
+        "Slug": "servicos-e-processos",
+        "Descricao": "Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.",
+        "Ordem": 1,
+        "Ativo": true
+      },
+      {
+        "Title": "Docs e padrões",
+        "Slug": "docs-e-padroes",
+        "Descricao": "Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.",
+        "Ordem": 2,
+        "Ativo": true
+      }
+    ]
+  },
+  "publicacoes": {
+    "keyField": "Slug",
+    "items": [
+      {
+        "Title": "Quem somos",
+        "Slug": "quem-somos",
+        "Resumo": "A CAMAP-AGP reúne competências essenciais para transformar decisões de portfólio em soluções seguras e eficientes nas bacias de Campos e do Espírito Santo, ao longo de todo o ciclo de vida do poço.",
+        "CorpoHtmlSeguroV1": "<p>A CAMAP-AGP reúne competências essenciais para transformar decisões de portfólio em soluções seguras e eficientes nas bacias de Campos e do Espírito Santo, ao longo de todo o ciclo de vida do poço.</p><ul><li><strong>Nossa atuação</strong> — Atuamos de forma integrada no planejamento, construção, avaliação, manutenção e abandono de poços submarinos, conectando estratégia e operação.</li><li><strong>Missão e posicionamento</strong> — Contribuir com a segurança energética entregando potencial de produção aos ativos da BC e ES, com baixo custo, inovação e valorização das pessoas.</li><li><strong>Organograma e gestores</strong> — Gerências, coordenações e pontos focais responsáveis por cada frente de atuação da CAMAP-AGP.</li></ul><p><em>Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.</em></p>",
+        "EstadoEditorial": "Rascunho",
+        "Destaque": false,
+        "CategoriaTexto": ""
+      },
+      {
+        "Title": "Nossa estrutura",
+        "Slug": "nossa-estrutura",
+        "Resumo": "O modelo organiza a atuação da CAMAP-AGP em quatro frentes complementares, da estratégia à operação, cada uma com responsabilidades claras ao longo do ciclo de vida do poço.",
+        "CorpoHtmlSeguroV1": "<p>O modelo organiza a atuação da CAMAP-AGP em quatro frentes complementares, da estratégia à operação, cada uma com responsabilidades claras ao longo do ciclo de vida do poço.</p><ul><li><strong>Planejamento e Controle Integrado</strong> — Integra o portfólio de poços, acompanha compromissos e riscos, e apoia decisões com visão de prazo, custo e capacidade ao longo de todo o ciclo de vida.</li><li><strong>Implantação de Projetos de Poços</strong> — Coordena a implantação nos complexos de Marlim, Roncador e Jubarte, e Barracuda e Tartaruga Verde, conectando projeto, construção e entrega.</li><li><strong>Projetos e Integridade de Poços</strong> — Reúne engenharia de projetos, desenvolvimento da produção e gestão de integridade, orientadas à confiabilidade dos ativos na Bacia de Campos e do Espírito Santo.</li><li><strong>Operações em Poços</strong> — Executa intervenções, manutenção e demais atividades operacionais com segurança e eficiência nas bacias atendidas pela gerência.</li></ul><p><em>Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.</em></p>",
+        "EstadoEditorial": "Rascunho",
+        "Destaque": false,
+        "CategoriaTexto": ""
+      },
+      {
+        "Title": "Contatos",
+        "Slug": "contatos",
+        "Resumo": "Gestores, pontos focais e canais de colaboração organizados por assunto e macrofrente.",
+        "CorpoHtmlSeguroV1": "<p>Gestores, pontos focais e canais de colaboração organizados por assunto e macrofrente.</p><ul><li><strong>Dúvidas sobre o portal</strong> — Canal do dono do conteúdo para correções, sugestões e dúvidas sobre navegação.</li><li><strong>Demandas técnicas</strong> — Pontos focais por disciplina para orientar o encaminhamento de solicitações.</li><li><strong>Comunicação e eventos</strong> — Contato editorial para notícias, calendário e boletim CAMAP-AGP em Foco.</li></ul><p><em>Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.</em></p>",
+        "EstadoEditorial": "Rascunho",
+        "Destaque": false,
+        "CategoriaTexto": ""
+      },
+      {
+        "Title": "Serviços e processos",
+        "Slug": "servicos-e-processos-intro",
+        "Resumo": "Fluxos, entradas necessárias, prazos de referência e pontos focais, organizados por tipo de solicitação.",
+        "CorpoHtmlSeguroV1": "<p>Fluxos, entradas necessárias, prazos de referência e pontos focais, organizados por tipo de solicitação.</p><ul><li><strong>Solicitar apoio técnico</strong> — Orientação para enquadrar uma demanda, identificar a disciplina responsável e preparar as informações mínimas para análise.</li><li><strong>Consultar processos</strong> — Fluxos visuais e descrições acessíveis para as principais rotinas de planejamento, projeto, integridade, manutenção e operação.</li><li><strong>Acompanhar compromissos</strong> — Acesso a fóruns, calendários e instrumentos aprovados de acompanhamento, respeitando as permissões de cada ambiente.</li></ul><p><em>Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.</em></p>",
+        "EstadoEditorial": "Rascunho",
+        "Destaque": false,
+        "CategoriaTexto": "Serviços e processos"
+      },
+      {
+        "Title": "Docs e padrões",
+        "Slug": "docs-e-padroes-intro",
+        "Resumo": "Padrões, manuais e diretrizes apresentados por tema e área proprietária, sem duplicar os arquivos das bibliotecas oficiais.",
+        "CorpoHtmlSeguroV1": "<p>Padrões, manuais e diretrizes apresentados por tema e área proprietária, sem duplicar os arquivos das bibliotecas oficiais.</p><ul><li><strong>Padrões e diretrizes</strong> — Referências normativas e orientações técnicas filtradas por disciplina, ativo, bacia e situação de uso.</li><li><strong>Manuais e guias</strong> — Materiais de apoio à execução das rotinas, com responsável e data da próxima revisão claramente identificados.</li><li><strong>Modelos e ferramentas</strong> — Templates, checklists e instrumentos de trabalho publicados em seus repositórios oficiais.</li></ul><p><em>Rascunho técnico gerado automaticamente a partir de CAMAPModulosConfiguracoes (C1) — pendente de revisão editorial antes de publicar.</em></p>",
+        "EstadoEditorial": "Rascunho",
+        "Destaque": false,
+        "CategoriaTexto": "Docs e padrões"
+      }
+    ]
+  },
+  "menuBlueprint": [
+    {
+      "Alias": "quem-somos",
+      "Title": "Quem somos",
+      "Ordem": 10,
+      "routing": {
+        "kind": "article",
+        "pubSlug": "quem-somos"
+      }
+    },
+    {
+      "Alias": "nossa-estrutura",
+      "Title": "Nossa estrutura",
+      "Ordem": 20,
+      "routing": {
+        "kind": "article",
+        "pubSlug": "nossa-estrutura"
+      }
+    },
+    {
+      "Alias": "servicos-e-processos",
+      "Title": "Serviços e processos",
+      "Ordem": 30,
+      "routing": {
+        "kind": "list",
+        "categoria": "Serviços e processos"
+      }
+    },
+    {
+      "Alias": "docs-e-padroes",
+      "Title": "Docs e padrões",
+      "Ordem": 40,
+      "routing": {
+        "kind": "list",
+        "categoria": "Docs e padrões"
+      }
+    },
+    {
+      "Alias": "contatos",
+      "Title": "Contatos",
+      "Ordem": 50,
+      "routing": {
+        "kind": "article",
+        "pubSlug": "contatos"
+      }
+    }
+  ]
+}

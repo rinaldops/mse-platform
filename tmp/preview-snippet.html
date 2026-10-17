@@ -1,0 +1,59 @@
+<!-- C4/D5: tema primeiro (identidade), módulo depois (estrutura) — ordem de
+     cascata intencional, para módulo poder sobrescrever pontualmente se
+     precisar (ver CAMAP-AGP/docs/PLANO-ARQUITETURA-MINI-JOOMLA.md, C4, D5). -->
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/theme/tokens.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/theme/positions.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/core/core.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/sd/sd.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/dt1/dt1.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/mc/mc.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/db/db.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/blog/blog.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/footer/footer.css">
+<link rel="stylesheet" href="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/breadcrumbs/breadcrumbs.css">
+<!-- Todo adaptador `summary/module.js` do CAMAP-AGP (sd/dt1/mc/db/footer/
+     blog/breadcrumbs) depende de dois globais clássicos (IIFEs que gravam em
+     `window`, não módulos ES): `window.CAMAP.core` (core/core.js) e
+     `window.CAMAP.render.<Tipo>` (ex. `window.CAMAP.render.SD`), este último
+     só populado quando o PRÓPRIO script clássico do módulo (sd.js/dt1.js/
+     mc.js/db.js/footer.js/blog.js) executa — mesmo padrão já usado em todo
+     snippet MSE legado por módulo (ver modules/*/modern-script-editor.*.HML.
+     html, cada um com <script src=".../core/core.js"> + <script
+     src=".../modules/<tipo>/<tipo>.js">). O Site Kernel (mse-platform) é
+     agnóstico a isso: só os módulos reais do CAMAP-AGP exigem esses globais.
+     Sem estes <script>, uma carga de documento NOVA (URL digitada, F5,
+     Ctrl+F5) deixa `window.CAMAP` indefinido/incompleto e todo módulo falha
+     ("window.CAMAP.core (core.js) é obrigatório" ou
+     "window.CAMAP.render.<Tipo> não está disponível") — só não falhava em
+     navegação em memória pelo shell do SharePoint (clicar em outro item do
+     menu) porque `window.CAMAP`, setado por Default.aspx, ainda estava vivo
+     da página anterior.
+     Carregados SEM `?camapRoot=`/`data-camap-root-id`: cada `<tipo>.js`
+     termina em `mount()` chamando `core.scriptRootId(script)`
+     (core/core.js:114-122), que devolve "" quando nenhum dos dois atributos
+     está presente — `rootFromScript` então retorna null e `mount()` sai
+     imediatamente SEM entrar no loop de retry de 120 tentativas (ver, ex.,
+     modules/sd/sd.js, função `mount`, linhas finais) — carregar aqui só para
+     registrar `window.CAMAP.render.<Tipo>` é seguro, não deixa timers soltos
+     nem tenta montar em nenhum elemento desta página. Carregados antes de
+     site-runner.js para já estarem disponíveis no primeiro render. -->
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/core/core.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/sd/sd.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/dt1/dt1.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/mc/mc.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/db/db.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/footer/footer.js"></script>
+<script src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/camap-agp-modules/0.1.0/modules/blog/blog.js"></script>
+<div
+  data-mse-site
+  data-mse-site-instance="preview">
+</div>
+<script
+  src="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/mse-platform/current/host-adapters/modern-script-editor/site-runner.js?mseSiteInstance=preview"
+  data-mse-site-instance="preview"
+  data-release-base="https://petrobrasbr.sharepoint.com/teams/camap-agp/SiteAssets/mse-platform/current"
+  data-web-url="/teams/camap-agp"
+  data-positions="hero,home-a,home-b,home-c,home-d,home-e,rodape,breadcrumbs,lateral,conteudo-abaixo"
+  data-component-position="conteudo-principal"
+  data-default-view="full"
+  data-manifest-path-overrides="{&quot;sd&quot;:&quot;../../camap-agp-modules/0.1.0/modules/sd/manifest.js&quot;,&quot;dt1&quot;:&quot;../../camap-agp-modules/0.1.0/modules/dt1/manifest.js&quot;,&quot;mc&quot;:&quot;../../camap-agp-modules/0.1.0/modules/mc/manifest.js&quot;,&quot;db&quot;:&quot;../../camap-agp-modules/0.1.0/modules/db/manifest.js&quot;,&quot;blog&quot;:&quot;../../camap-agp-modules/0.1.0/modules/blog/manifest.js&quot;,&quot;footer&quot;:&quot;../../camap-agp-modules/0.1.0/modules/footer/manifest.js&quot;,&quot;breadcrumbs&quot;:&quot;../../camap-agp-modules/0.1.0/modules/breadcrumbs/manifest.js&quot;}"></script>
