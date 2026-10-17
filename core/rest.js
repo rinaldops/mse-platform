@@ -135,7 +135,59 @@ function throwForResponse(response, retryAfterMs) {
   );
 }
 
-function unwrapPage(data) {
+/**
+ * Monta `{ path, maxPages }` para `GET {lista}/items` com `$select`/`$expand`/
+ * `$filter`/`$orderby`/`$top`, no mesmo formato usado internamente por
+ * `createSharePointRestClient` (`listItemsRequestPath`, que delega aqui) —
+ * extraído para módulo para ser reaproveitado por quem precisa só do `path`
+ * relativo sem disparar a chamada (ex. `batchGet`/host adapters montando um
+ * `$batch`), sem duplicar a lógica de query string.
+ *
+ * @param {string|{listId: string}} list
+ * @param {{select: string[], expand?: string, filter?: string, orderBy?: string, top?: number, maxPages?: number}} [options]
+ * @returns {{ path: string, maxPages?: number }}
+ */
+export function buildListItemsRequest(list, {
+  select,
+  expand,
+  filter,
+  orderBy,
+  top = 100,
+  maxPages
+} = {}) {
+  const path = listApiPath(list);
+  if (!Array.isArray(select) || !select.length || select.some((field) =>
+    typeof field !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field)
+  )) {
+    throw new TypeError("select deve conter nomes internos de campos válidos.");
+  }
+  if (!Number.isInteger(top) || top < 1 || top > 5000) {
+    throw new TypeError("top deve ser um inteiro entre 1 e 5000.");
+  }
+  for (const [name, value] of Object.entries({ expand, filter, orderBy })) {
+    if (value !== undefined && (typeof value !== "string" || !value.trim())) {
+      throw new TypeError(`${name} deve ser um texto não vazio.`);
+    }
+  }
+
+  const query = [`$select=${select.map(encodeURIComponent).join(",")}`, `$top=${top}`];
+  if (expand) query.push(`$expand=${encodeURIComponent(expand)}`);
+  if (filter) query.push(`$filter=${encodeURIComponent(filter)}`);
+  if (orderBy) query.push(`$orderby=${encodeURIComponent(orderBy)}`);
+  return { path: `${path}/items?${query.join("&")}`, maxPages };
+}
+
+/**
+ * Desembrulha o envelope OData de uma página de itens (`{ value, @odata.nextLink }`
+ * ou o formato verbose `{ d: { results, __next } }`) para `{ items, next }` —
+ * exportado para ser reaproveitado por quem precisa interpretar o JSON de uma
+ * sub-resposta de `$batch` (ver `batchGet`) no mesmo formato que `getListItems`
+ * já devolve, sem duplicar esta lógica.
+ *
+ * @param {object} data
+ * @returns {{ items: object[], next: string|null }}
+ */
+export function unwrapPage(data) {
   const value = data?.value ?? data?.d?.results;
   if (!Array.isArray(value)) {
     throw restError("invalid-response", "O SharePoint retornou uma página de itens inválida.");
@@ -194,6 +246,245 @@ function fileName(value) {
     throw new TypeError("fileName deve conter somente letras, números, ponto, hífen ou sublinhado.");
   }
   return value;
+}
+
+function defaultBoundary() {
+  return `batch_${Date.now().toString(16)}_${Math.random().toString(16).slice(2)}`;
+}
+
+/**
+ * Monta o corpo multipart/mixed de um `$batch` REST "flat" (sem changeset,
+ * só GETs — não há escritas aqui) no formato OData v3 do SharePoint: um
+ * boundary externo delimitando cada sub-requisição, cada uma serializada
+ * como uma mensagem HTTP de texto (`GET {url} HTTP/1.1` + headers + linha
+ * vazia). `requests[].path` é relativo (ex. `/_api/web/lists/getbytitle(...)
+ * /items?...`), resolvido para absoluto via `normalizeApiUrl` (mesma
+ * normalização usada pelas chamadas não-batch).
+ *
+ * @param {string} boundary
+ * @param {Array<{ key: string, path: string }>} requests
+ * @param {string} webUrl
+ * @returns {string}
+ */
+function buildBatchBody(boundary, requests, webUrl) {
+  const lines = [];
+  for (const { path } of requests) {
+    const url = normalizeApiUrl(webUrl, path);
+    lines.push(`--${boundary}`);
+    lines.push("Content-Type: application/http");
+    lines.push("Content-Transfer-Encoding: binary");
+    lines.push("");
+    lines.push(`GET ${url} HTTP/1.1`);
+    lines.push(`Accept: ${DEFAULT_ACCEPT}`);
+    lines.push("");
+  }
+  lines.push(`--${boundary}--`);
+  lines.push("");
+  return lines.join("\r\n");
+}
+
+/**
+ * Extrai o boundary de um header `Content-Type: multipart/mixed; boundary=...`
+ * (com ou sem aspas).
+ *
+ * @param {string|null|undefined} contentType
+ * @returns {string|null}
+ */
+function extractBoundary(contentType) {
+  const match = /boundary=("?)([^;"]+)\1/i.exec(contentType ?? "");
+  return match ? match[2] : null;
+}
+
+/**
+ * Fallback para quando o header `Content-Type` da resposta do `$batch` não
+ * traz o `boundary` (alguns ambientes de teste/fake simplificam a resposta):
+ * lê o delimitador diretamente da primeira linha não vazia do corpo, que o
+ * protocolo `$batch` sempre inicia com `--{boundary}`.
+ *
+ * @param {string} text
+ * @returns {string|null}
+ */
+function boundaryFromBody(text) {
+  const match = /^\s*--(\S+)/.exec(text ?? "");
+  return match ? match[1] : null;
+}
+
+/**
+ * Divide o corpo multipart de uma resposta de `$batch` em uma sub-resposta
+ * por parte, descartando preâmbulo/epílogo e o delimitador de fechamento
+ * (`--boundary--`).
+ *
+ * @param {string} text
+ * @param {string} boundary
+ * @returns {string[]}
+ */
+function splitMultipart(text, boundary) {
+  const delimiter = `--${boundary}`;
+  const segments = text.split(delimiter);
+  const parts = [];
+  for (let index = 1; index < segments.length; index += 1) {
+    const segment = segments[index];
+    const trimmed = segment.trim();
+    if (trimmed === "" || trimmed === "--") continue;
+    parts.push(segment);
+  }
+  return parts;
+}
+
+/**
+ * Interpreta uma parte do multipart (os headers MIME da parte, uma linha
+ * vazia, e dentro dela a mensagem HTTP de texto completa da sub-resposta:
+ * `HTTP/1.1 {status} ...` + headers + linha vazia + corpo JSON opcional) e
+ * devolve `{ status, data }`. Tolerante a CRLF e LF.
+ *
+ * @param {string} part
+ * @returns {{ status: number|null, data: unknown }}
+ */
+function parsePart(part) {
+  const normalized = part.replace(/\r\n/g, "\n").replace(/^\n+/, "");
+  const outerBlankIndex = normalized.indexOf("\n\n");
+  const httpMessage = (outerBlankIndex === -1 ? normalized : normalized.slice(outerBlankIndex + 2))
+    .replace(/^\n+/, "");
+
+  const statusMatch = /^HTTP\/1\.\d\s+(\d{3})/.exec(httpMessage);
+  const status = statusMatch ? Number(statusMatch[1]) : null;
+
+  const innerBlankIndex = httpMessage.indexOf("\n\n");
+  const bodyText = innerBlankIndex === -1 ? "" : httpMessage.slice(innerBlankIndex + 2).trim();
+
+  let data = null;
+  if (bodyText) {
+    try {
+      data = JSON.parse(bodyText);
+    } catch {
+      data = null;
+    }
+  }
+  return { status, data };
+}
+
+/**
+ * Executa várias requisições GET como uma única chamada `$batch` REST
+ * (OData v3, SharePoint): `POST {webUrl}/_api/$batch` com um corpo
+ * multipart/mixed "flat" (sem changeset) contendo uma sub-requisição por
+ * item de `requests`, e devolve o resultado de cada uma mapeado pela `key`
+ * original.
+ *
+ * Decisão de parse: as sub-respostas são mapeadas de volta pela ORDEM em que
+ * as sub-requisições foram enviadas (não por Content-ID) — o protocolo
+ * `$batch` do SharePoint preserva a ordem das sub-respostas dentro de um
+ * batch flat de GETs sem changeset, e isso evita a complexidade adicional de
+ * gerar/parsear `Content-ID`/`Content-ID` de referência para um cenário sem
+ * escritas.
+ *
+ * Só lança (`SharePointRestError`, `code: "batch-failed"`) se a chamada HTTP
+ * externa falhar por completo (erro de rede, resposta HTTP de nível
+ * superior fora de 200/207, ou corpo multipart não reconhecível). Falha de
+ * uma sub-requisição dentro do batch (ex. HTTP 404) não lança — vira
+ * `{ status: 404, data: ... }` na entrada correspondente, para quem chama
+ * decidir.
+ *
+ * `digest`: alguns tenants SharePoint exigem `X-RequestDigest` mesmo em um
+ * `$batch` "flat" só de GETs (confirmado contra tenant real: sem o header,
+ * `POST {webUrl}/_api/$batch` responde HTTP 403 "The security validation
+ * for this page is invalid..."; com o header, 200). Por isso este parâmetro
+ * é opcional, mas quem chama em produção deve sempre fornecer um digest
+ * válido (ver `createSharePointRestClient().getDigest()`) — sem ele, o
+ * comportamento depende da política do tenant.
+ *
+ * @param {Array<{ key: string, path: string }>} requests
+ * @param {{ webUrl?: string, fetchImpl?: typeof fetch, nowImpl?: () => number, boundaryImpl?: () => string, digest?: string }} [options]
+ * @returns {Promise<Record<string, { data: unknown, status: number|null }>>}
+ */
+export async function batchGet(requests, { webUrl, fetchImpl = globalThis.fetch, nowImpl = Date.now, boundaryImpl, digest } = {}) {
+  if (!Array.isArray(requests) || requests.length === 0) {
+    throw new TypeError("requests deve ser um array não vazio de { key, path }.");
+  }
+  const seenKeys = new Set();
+  for (const entry of requests) {
+    if (!entry || typeof entry.key !== "string" || !entry.key.trim()) {
+      throw new TypeError("Cada requisição do batch deve ter uma key não vazia.");
+    }
+    if (typeof entry.path !== "string" || !entry.path.trim()) {
+      throw new TypeError("Cada requisição do batch deve ter um path não vazio.");
+    }
+    if (seenKeys.has(entry.key)) {
+      throw new TypeError(`key duplicada no batch: "${entry.key}".`);
+    }
+    seenKeys.add(entry.key);
+  }
+  if (typeof fetchImpl !== "function") {
+    throw restError("fetch-unavailable", "A API fetch não está disponível.");
+  }
+  if (boundaryImpl !== undefined && typeof boundaryImpl !== "function") {
+    throw new TypeError("boundaryImpl deve ser uma função.");
+  }
+  if (typeof nowImpl !== "function") {
+    throw new TypeError("nowImpl deve ser uma função.");
+  }
+  if (digest !== undefined && (typeof digest !== "string" || !digest.trim())) {
+    throw new TypeError("digest, quando informado, deve ser uma string não vazia.");
+  }
+
+  const normalizedWebUrl = normalizeWebUrl(webUrl);
+  const boundary = (boundaryImpl ?? defaultBoundary)();
+  const body = buildBatchBody(boundary, requests, normalizedWebUrl);
+  const url = `${normalizedWebUrl}/_api/$batch`;
+
+  let response;
+  try {
+    response = await fetchImpl(url, {
+      method: "POST",
+      headers: {
+        Accept: DEFAULT_ACCEPT,
+        "Content-Type": `multipart/mixed; boundary=${boundary}`,
+        ...(digest ? { "X-RequestDigest": digest } : {})
+      },
+      body
+    });
+  } catch (cause) {
+    throw restError("batch-failed", "Falha de rede ao executar o $batch do SharePoint.", { cause, path: url });
+  }
+
+  if (!response.ok || (response.status !== 200 && response.status !== 207)) {
+    throw restError(
+      "batch-failed",
+      `A chamada $batch falhou (HTTP ${response.status}).`,
+      { status: response.status, path: url }
+    );
+  }
+
+  let text;
+  try {
+    text = await response.text();
+  } catch (cause) {
+    throw restError("batch-failed", "Não foi possível ler a resposta do $batch.", { cause, path: url });
+  }
+  if (typeof text !== "string") {
+    throw restError("batch-failed", "A resposta do $batch não é multipart.", { path: url });
+  }
+
+  const contentType = response.headers?.get?.("Content-Type") ?? response.headers?.get?.("content-type") ?? "";
+  const responseBoundary = extractBoundary(contentType) ?? boundaryFromBody(text);
+  if (!responseBoundary) {
+    throw restError("batch-failed", "A resposta do $batch não contém um boundary multipart válido.", { path: url });
+  }
+
+  const parts = splitMultipart(text, responseBoundary);
+  if (parts.length !== requests.length) {
+    throw restError(
+      "batch-failed",
+      "A resposta do $batch não contém uma sub-resposta para cada requisição.",
+      { path: url }
+    );
+  }
+
+  const result = {};
+  parts.forEach((part, index) => {
+    const { status, data } = parsePart(part);
+    result[requests[index].key] = Object.freeze({ data, status });
+  });
+  return result;
 }
 
 export function createSharePointRestClient({
@@ -363,34 +654,8 @@ export function createSharePointRestClient({
     return items;
   }
 
-  function listItemsRequestPath(list, {
-    select,
-    expand,
-    filter,
-    orderBy,
-    top = 100,
-    maxPages
-  } = {}) {
-    const path = listApiPath(list);
-    if (!Array.isArray(select) || !select.length || select.some((field) =>
-      typeof field !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field)
-    )) {
-      throw new TypeError("select deve conter nomes internos de campos válidos.");
-    }
-    if (!Number.isInteger(top) || top < 1 || top > 5000) {
-      throw new TypeError("top deve ser um inteiro entre 1 e 5000.");
-    }
-    for (const [name, value] of Object.entries({ expand, filter, orderBy })) {
-      if (value !== undefined && (typeof value !== "string" || !value.trim())) {
-        throw new TypeError(`${name} deve ser um texto não vazio.`);
-      }
-    }
-
-    const query = [`$select=${select.map(encodeURIComponent).join(",")}`, `$top=${top}`];
-    if (expand) query.push(`$expand=${encodeURIComponent(expand)}`);
-    if (filter) query.push(`$filter=${encodeURIComponent(filter)}`);
-    if (orderBy) query.push(`$orderby=${encodeURIComponent(orderBy)}`);
-    return { path: `${path}/items?${query.join("&")}`, maxPages };
+  function listItemsRequestPath(list, options = {}) {
+    return buildListItemsRequest(list, options);
   }
 
   function getListItems(list, options = {}) {
@@ -474,6 +739,7 @@ export function createSharePointRestClient({
   return Object.freeze({
     webUrl: normalizedWebUrl,
     request: runRequest,
+    getDigest,
     getAll,
     getListItems,
     getListItemPage,

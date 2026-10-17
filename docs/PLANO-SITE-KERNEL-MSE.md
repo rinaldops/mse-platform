@@ -80,6 +80,22 @@ mse-platform/
   memória por sessão, fallback para último estado válido se uma lista falhar.
 - **Isolamento:** falha de um Módulo mostra estado de erro local sem derrubar a página
   (já é princípio do plano de plataformização; passa a ser testado).
+- **Vocabulário `type`/`Tipo`:** o manifesto v2 (`type: "component"|"module"|"plugin"`,
+  inglês/minúsculo) e a lista `MSEExtensoes` (`Tipo: "Componente"|"Modulo"|"Plugin"`,
+  português/capitalizado, sem acento em "Modulo") são camadas intencionalmente distintas —
+  manifesto JS é contrato de autor, lista SharePoint é dado editável pelo gestor. Qualquer
+  tradução entre as duas passa pelo mapeamento único em `kernel/extension-registry.js`
+  (`extensionTypeFromManifestType`/`manifestTypeFromExtensionType`); nenhum outro consumidor
+  (`dispatcher.js`/`positions.js` da Fase 2 incluídos) deve reimplementar esse `if/else`.
+- **Altura de abstração dos dados:** `kernel/menu.js` e `kernel/extension-registry.js`
+  operam diretamente sobre o item de lista SharePoint cru (PascalCase: `Alias`, `Estado`,
+  `Habilitado`, `Elemento`...). `kernel/content-services.js` já pressupõe uma camada de
+  normalização anterior e opera sobre um shape de domínio em português
+  minúsculo/camelCase (`estado`, `categoriaId`, `destaque`...). Isso é proposital — os dois
+  grupos de função atendem necessidades diferentes —, mas a camada de normalização
+  REST→domínio para artigos ainda não existe (fica para o adaptador da Fase 2/3, junto do
+  Publicador); quem a escrever deve manter essa convenção (cru para menu/extensões,
+  normalizado para conteúdo) em vez de uniformizar os dois lados.
 
 ## 5. Joomla! → kernel (escopo)
 
@@ -137,6 +153,83 @@ via biblioteca; versões nativas com restauração; ETag para evitar sobrescrita
 Cada fase fecha com `npm test` (suíte atual **inalterada e verde**) mais testes novos
 do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
 (carregamento do script, hashchange, desmontagem) sem recarregar a página.
+
+**Fase 1 — status (15/10/2026):** a linha "Contratos" está **concluída** em código
+(sem publicação nem tenant real): manifesto v2 aditivo (`type: component|module|plugin`
+em `core/module-contract.js`), roteamento hash SEF (`kernel/router.js`, wrapper sobre
+`core/navigation.js`), schema v3 de `MSEConfiguracoes` (escopos `Global`/`Instancia`/
+`Extensao`, `core/provisioning.js` + `core/configuration-store.js`) e as listas novas
+`MSEMenuTipos`/`MSEMenu` (`kernel/menu.js`) e `MSEExtensoes`
+(`kernel/extension-registry.js`), além de `kernel/content-services.js`,
+`kernel/events.js` e `kernel/site-config.js` como infraestrutura de apoio — todos
+funções puras, testadas com fixtures em memória, sem I/O de rede. `npm test` da raiz
+está 100% verde, incluindo a suíte nova `kernel/test/*.js` plugada no `package.json`.
+A linha **"spike: 1 MSE com hash-routing no tenant" permanece pendente**: exige
+publicação em ambiente real (FIORI-AUTO/navegador), fora do alcance desta rodada —
+só avança com o usuário presente para confirmar destino e autorização de produção.
+
+**Fase 2 — status (15/10/2026): concluída em código** (sem publicação nem tenant
+real). As 3 peças de resolução que faltavam do kernel mínimo foram entregues por
+agentes em paralelo, cada um em arquivos exclusivos: `kernel/layout.js`
+(esqueleto DOM de posições + Componente, sem template), `kernel/positions.js` +
+`kernel/schemas/mse-modulos.js` (resolução de módulos por posição/vigência/
+atribuição de menu, schemas `MSEModulos`/`MSEModulosMenu`) e `kernel/dispatcher.js`
+(resolve Componente+view+params a partir da rota, sem nunca importar manifesto/
+entrypoint — fronteira documentada no próprio arquivo). A integração de ponta a
+ponta — deliberadamente não delegada a agentes, por exigir decisão unificada
+entre peças construídas de forma independente — foi fechada depois:
+`kernel/application.js` (boot, `import()` lazy de Componente/Módulo, ciclo
+router→dispatcher→render, isolamento de falha por instância, `dispose()`) e,
+no host, `host-adapters/modern-script-editor/site-boot.js` (tradução das 4
+listas MSE* + config global para REST via `core/rest.js`/`core/configuration-store.js`,
+e `createManifestResolver` para a convenção de pasta `modules/<elemento>/manifest.js`),
+`site-runner.js` (único `<script>` do snippet de site, mesmo padrão de
+`runner.js` para o host atual) e `site-snippet.html` (`<div data-mse-site>` +
+o `<script>`, com `data-positions`/`data-component-position`/`data-default-view`/
+`data-manifest-path-overrides` como os únicos pontos de configuração estática
+por site). Todas as 10 peças do kernel (router, menu, extension-registry,
+content-services, events, site-config, layout, positions, dispatcher,
+application) e a camada de host (`site-boot.js`) têm testes próprios 100%
+verdes e integrados em `npm test` da raiz (`kernel/test/*.js` + `core/test/site-boot.test.js`).
+O exemplo com 2 Componentes e 3 Módulos em posições (critério de aceite da
+Fase 2) está cumprido pelos próprios testes de `kernel/test/application.test.js`
+(Componentes "blog"/"quebrado" + módulo "sd" em posição). Pendência real da
+Fase 2, fora do alcance local: validar `site-runner.js`/`site-snippet.html`
+num MSE real (mesma pendência do spike da Fase 1, exige tenant/FIORI-AUTO e
+autorização de produção).
+
+**Fase 3 — status (16/10/2026): concluída em código** (sem provisionamento
+nem tenant real). Três frentes independentes, entregues por agentes em
+paralelo em arquivos exclusivos e integradas depois: (1) os 3 schemas do
+kernel (`kernel/schemas/mse-menu.js`, `mse-extensoes.js`, `mse-modulos.js`)
+migraram do formato manual (`schemaXml` por campo) para `defineListSchema`
+de `core/list-provisioning.js` — mesmo padrão já usado por `forum`/
+`recursos`/`videoteca`, sem nenhuma mudança de comportamento visível a
+quem consome os dados; (2) `core/rest.js` ganhou `batchGet` (requisição
+`$batch` OData real, multipart/mixed, parse de sub-respostas por ordem de
+envio, falha parcial isolada por chave) e `host-adapters/modern-script-editor/
+site-boot.js` passou a carregar as 4 listas MSE* numa única chamada `$batch`
+memoizada, preservando integralmente o contrato de `kernel/application.js`
+(`loadMenu`/`loadExtensions`/`loadModulos`/`loadModulosMenu` continuam 4
+funções independentes `() => Promise<Array>`, e o fallback por lista já
+testado continua isolado por chave); (3) `kernel/installer.js`
+(`createKernelInstaller`) expõe `inspect/apply/verify` sobre o conjunto fixo
+das 5 listas MSE* via `inspectLists/provisionLists/verifyLists` já testados
+— deliberadamente separado de `admin/installer.js` (que é indexado por
+`moduleId`, catálogo variável de módulos) — e `kernel/seed.js`
+(`buildKernelSeed`/`seedKernelLists`) grava um seed mínimo e genérico
+("principal"/"inicio"/"exemplo", nenhum dado do CAMAP-AGP) só depois de
+`verify()` confirmar as listas prontas e só atrás de `confirm` explícito,
+nunca disparado automaticamente dentro de `apply()`. O objetivo central da
+fase — **o runtime nunca escreve, nunca inspeciona, nunca decide schema; só
+lê um snapshot já validado** — está cumprido: `kernel/application.js` não
+foi tocado por nenhuma das 3 frentes. `npm test` da raiz está 100% verde,
+incluindo `kernel/test/installer.test.js`, `kernel/test/seed.test.js` e os
+ajustes em `core/test/rest.test.js`/`core/test/site-boot.test.js`. Pendências
+reais, fora do alcance local: nenhum provisionamento foi executado contra
+tenant real (exige FIORI-AUTO/autorização de produção); a migração de
+`CAMAPModulosConfiguracoes` → MSE* (9 instâncias reais do CAMAP-AGP) fica
+para a Fase 4, por depender de dados reais do tenant.
 
 ## 9. Riscos
 

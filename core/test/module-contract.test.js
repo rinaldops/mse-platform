@@ -19,6 +19,88 @@ assert.throws(
   /entrypoints.summary/
 );
 
+// manifesto v1 sem `type`: tratado como "component" com views.full implícito
+assert.equal(manifest.type, "component");
+assert.deepEqual(manifest.views, { full: true });
+assert.equal(manifest.routeParams, undefined);
+assert.equal(manifest.positions, undefined);
+assert.equal(manifest.events, undefined);
+
+// type: "component" com views e routeParams explícitos
+const componentManifest = defineModuleManifest({
+  ...manifest,
+  type: "component",
+  views: { list: true, article: true, featured: false },
+  routeParams: ["id", "slug"]
+});
+assert.equal(componentManifest.type, "component");
+assert.deepEqual(componentManifest.views, { list: true, article: true });
+assert.deepEqual(componentManifest.routeParams, ["id", "slug"]);
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "component", views: {} }),
+  /views deve possuir ao menos uma visão habilitada/
+);
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "component", views: { featured: false } }),
+  /views deve possuir ao menos uma visão habilitada/
+);
+
+// type: "module" com positions e params
+const moduleManifest = defineModuleManifest({
+  ...manifest,
+  type: "module",
+  positions: ["hero", "home-a"],
+  params: {
+    version: 1,
+    groups: [{ id: "content", label: "Content", fields: [{ id: "title", type: "text", label: "Título" }] }]
+  }
+});
+assert.equal(moduleManifest.type, "module");
+assert.deepEqual(moduleManifest.positions, ["hero", "home-a"]);
+assert.equal(moduleManifest.params.version, 1);
+assert.ok(Object.isFrozen(moduleManifest.params));
+assert.equal(moduleManifest.views, undefined);
+
+// type: "module" sem params (opcional)
+const moduleManifestNoParams = defineModuleManifest({ ...manifest, type: "module", positions: ["hero"] });
+assert.equal(moduleManifestNoParams.params, undefined);
+
+// type: "module" sem positions deve lançar erro
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "module" }),
+  /positions deve ser um array não vazio/
+);
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "module", positions: [] }),
+  /positions deve ser um array não vazio/
+);
+
+// type: "plugin" com events
+const pluginManifest = defineModuleManifest({
+  ...manifest,
+  type: "plugin",
+  events: ["afterRoute", "beforeRender", "afterRender"]
+});
+assert.equal(pluginManifest.type, "plugin");
+assert.deepEqual(pluginManifest.events, ["afterRoute", "beforeRender", "afterRender"]);
+assert.equal(pluginManifest.views, undefined);
+
+// type: "plugin" sem events deve lançar erro
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "plugin" }),
+  /events deve ser um array não vazio/
+);
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "plugin", events: [] }),
+  /events deve ser um array não vazio/
+);
+
+// type inválido deve lançar erro claro
+assert.throws(
+  () => defineModuleManifest({ ...manifest, type: "widget" }),
+  /type deve ser "component", "module" ou "plugin"/
+);
+
 const settings = defineSettingsSchema({
   version: 1,
   groups: [{

@@ -1,0 +1,80 @@
+{
+  "publicationFolder": "current",
+  "files": [
+    {
+      "path": "host-adapters/modern-script-editor/site-runner.js",
+      "bytes": 4444,
+      "sha256": "c6fb047d6b6bf9766e0e8e45e00e5c08b01816a2c7b4a9d3b94c235e386276c4"
+    },
+    {
+      "path": "host-adapters/modern-script-editor/site-boot.js",
+      "bytes": 12880,
+      "sha256": "8dbca3d42cae38c6edf46c157f5eb7ffff738427f2d6e96410cd1597fe022626"
+    },
+    {
+      "path": "kernel/application.js",
+      "bytes": 20405,
+      "sha256": "c71a5a1877f387bf00826ec60ee83fb2619c86d1b1252999745379319c12cf5b"
+    },
+    {
+      "path": "kernel/router.js",
+      "bytes": 7351,
+      "sha256": "720bddd8af44f2b5996cb8ad0dd315e6f3df7333706f94e5f278c694c0a1675f"
+    },
+    {
+      "path": "kernel/menu.js",
+      "bytes": 5002,
+      "sha256": "79b2469651712c133ce590a81391dfaef32d012acbf7c19d51105b45dd0bbacb"
+    },
+    {
+      "path": "kernel/dispatcher.js",
+      "bytes": 8544,
+      "sha256": "53ec22bdccb3bca6d29515431228e63dfa73f724b2d933147047fcbd80e9a368"
+    },
+    {
+      "path": "kernel/extension-registry.js",
+      "bytes": 5842,
+      "sha256": "646ea064da72249c4b3e7386172e33db3456c3bc38c9b3ba7d12f5e4b10b0392"
+    },
+    {
+      "path": "kernel/positions.js",
+      "bytes": 11484,
+      "sha256": "f35e487db05c8dc438ac03e9251e8ab1ce499314f64a3ae3a050e70872381505"
+    },
+    {
+      "path": "kernel/layout.js",
+      "bytes": 11037,
+      "sha256": "872137bafd5fe1a232c57ede8643234e1e3d78a39a91509ae05df969320d498f"
+    },
+    {
+      "path": "kernel/events.js",
+      "bytes": 2800,
+      "sha256": "a82a2c64883359be47e498dd4c1b94162863e4eecd83b63a01d98559045fef79"
+    },
+    {
+      "path": "kernel/site-config.js",
+      "bytes": 4617,
+      "sha256": "fc8343ecebc9530260456dd231f360d19a8a02b76bebabaf15dd8aef4c501f4c"
+    },
+    {
+      "path": "core/rest.js",
+      "bytes": 27138,
+      "sha256": "ba49f32ce44c50bc627bc15b4fd1f723030b768c7177f7ca03ce34ac96482011"
+    },
+    {
+      "path": "core/configuration-store.js",
+      "bytes": 7482,
+      "sha256": "06c095349f2d04f33d33e5529a3ce930b4ec8047bc863f98529cea76f369de0f"
+    },
+    {
+      "path": "core/provisioning.js",
+      "bytes": 33947,
+      "sha256": "e6bdddaba3f19f7dba801f4f40245600b74e4d766f0be7283bffbcb47b77b022"
+    },
+    {
+      "path": "core/navigation.js",
+      "bytes": 3100,
+      "sha256": "9e9a0f3a959d9af843d4f4715f3a97b9373c78a40126f5c8c4831a4678422d7c"
+    }
+  ]
+}
