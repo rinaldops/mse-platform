@@ -30,11 +30,12 @@ Os identificadores técnicos existentes (`forum`, `explore-mais`, `view: "summar
 
 - **Escopo imposto:** sem Templates e sem ACL. Posições são declaradas pelo site;
   o visual é CSS do site. Permissões continuam nativas do SharePoint.
-- **TD intocado.** O projeto TD consome releases já publicadas do
-  mse-platform em `SiteAssets/mse-platform/releases/<versão>/`; essas pastas
-  nunca são alteradas ou sobrescritas por este trabalho. Toda mudança é **aditiva**: o caminho atual (1 MSE por
-  módulo, `runner.js`, `mountMseModule`, `MSEConfiguracoes` v2) permanece
-  funcionando e testado. Nenhuma pasta de release já publicada é alterada.
+- **Rompimento com o TD nesta versão.** O Mini Joomla! não tem como requisito
+  manter compatibilidade com a arquitetura, snippets, releases ou pastas do
+  projeto TD. O TD não é alterado nem migrado nesta etapa, mas também não é
+  critério de aceite do novo produto. Depois que o CAMAP-AGP estiver funcional,
+  o TD será um consumidor futuro do Mini Joomla!, com template próprio e uma
+  adaptação planejada em separado.
 - **Neutralidade:** o kernel não conhece CAMAP-AGP. Nomes, posições e itens de
   menu vêm de dados/configuração do site.
 - **Produção:** não há DEV/homologação declarados. Qualquer publicação exige
@@ -58,7 +59,7 @@ mse-platform/
   host-adapters/modern-script-editor/
     site-runner.js                NOVO: único script do snippet de site
     site-snippet.html             NOVO: <div data-mse-site> + site-runner.js
-    runner.js, bootstrap.js       mantidos (legado e TD)
+    runner.js, bootstrap.js       legado isolado; não são contrato do Mini Joomla!
   admin/                          EVOLUÍDO — vira o Administrator (carregado lazy)
 ```
 
@@ -238,7 +239,7 @@ para a Fase 4, por depender de dados reais do tenant.
 | Todo o site depende de **um** MSE/script: falha = site fora | Cache do último estado válido; `Default.aspx` mantém conteúdo mínimo estático (`noscript`/aviso); rollback trocando só a URL do snippet |
 | Peso do boot (muitas chamadas REST) | `$batch`, cache, import lazy do Componente e do Administrator |
 | Renderização só no cliente (SEO/busca do SharePoint) | Aceito: intranet; registrar como limitação |
-| Quebrar o TD | Mudanças aditivas; o caminho de publicação novo é distinto de `releases/<versão>/` e nunca o sobrescreve; testes de regressão do caminho legado |
+| Acoplamento acidental ao TD | Separar o contrato, o caminho de publicação e os critérios de aceite do Mini Joomla!; validar que nenhum import, lista ou template do TD é necessário |
 | Sem pastas versionadas, não há rollback por pasta | Rollback por Git (tag + manifesto de SHA-256) e reenvio; ver seção 11 |
 | Hash-routing e MSE/SharePoint modernos (navegação, `_spPageContextInfo`) | Spike da Fase 1 antes de qualquer outra coisa |
 
@@ -247,7 +248,7 @@ para a Fase 4, por depender de dados reais do tenant.
 | # | Decisão | Recomendação |
 | --- | --- | --- |
 | D1 | Roteamento por hash (`#/`) em vez de query string | Hash: não recarrega o aspx e preserva o MSE |
-| D2 | Pasta `kernel/` nova, sem mover `core/` | Sim; evita risco ao TD |
+| D2 | Pasta `kernel/` nova, sem mover `core/` | Sim; separa a implementação Mini Joomla! do legado enquanto os contratos são consolidados |
 | D3 | Listas novas `MSE*` em vez de reaproveitar `CAMAPModulosConfiguracoes` | Novas, com migração das 9 instâncias e `verify`; lista antiga mantida até o aceite |
 | D4 | Páginas institucionais (Quem somos, Estrutura, Serviços, Docs, Contatos): artigos do BLOG, ou Componente próprio | Artigos/categorias do BLOG (como no Joomla!); Contatos como visão do BLOG até haver necessidade de `com_contact` |
 | D5 | Detecção de permissão para exibir o Administrator | `EffectiveBasePermissions` das listas; sem tabela de permissões |
@@ -260,8 +261,9 @@ para a Fase 4, por depender de dados reais do tenant.
 
 - **Uma pasta fixa** para o produto, nova e distinta do legado: `SiteAssets/mse-platform/current/`
   (nome a confirmar na Fase 1). Arquivos são substituídos no lugar. O padrão
-  `releases/<versão>/` deixa de ser usado para trabalho novo, mas as pastas já publicadas
-  (TD) permanecem intactas.
+  `releases/<versão>` deixa de ser usado para trabalho novo. Pastas antigas podem
+  ser preservadas como histórico técnico, mas não integram nem condicionam o
+  Mini Joomla!; o futuro template do TD será tratado como consumidor separado.
 - **Versão continua existindo dentro dos arquivos**: SemVer nos manifestos
   (`version`, `coreCompatibility`) e `package.json`. O kernel continua recusando combinações
   incompatíveis; apenas deixa de haver uma pasta por versão.
@@ -274,7 +276,9 @@ para a Fase 4, por depender de dados reais do tenant.
   teste usa uma página paralela (`Preview.aspx`) antes do cutover.
 - **Implicação para docs e ferramentas:** `INSTALACAO-MSE.md`, `COMPATIBILIDADE-E-VERSIONAMENTO.md`,
   `core/README.md` e `tools/build-release.js` / `verify-release.js` serão adaptados na Fase 1
-  (modo “pasta fixa”), sem remover o modo antigo enquanto o TD depender dele.
+  (modo “pasta fixa”). O modo antigo pode permanecer arquivado durante a
+  transição operacional, mas não será mantido como requisito de compatibilidade
+  do Mini Joomla! com o TD.
 
 ## 12. Divisão de responsabilidades: produto × site (decisão 15/10/2026)
 

@@ -7,6 +7,8 @@ permissões da sessão do usuário.
 
 > **Em planejamento:** [Site Kernel](docs/PLANO-SITE-KERNEL-MSE.md) — um único MSE renderiza o site inteiro (Componentes, Módulos, menu e posições, no modelo do Joomla!). O funcionamento atual descrito aqui permanece suportado.
 
+> **Convenções Joomla!:** a auditoria estrutural e o plano de migração estão em [JOOMLA-CONVENCOES-E-MIGRACAO.md](docs/JOOMLA-CONVENCOES-E-MIGRACAO.md).
+
 ## Funcionalidades
 
 | Módulo | Finalidade | Visualizações |

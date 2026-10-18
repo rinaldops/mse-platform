@@ -6,7 +6,9 @@
 > versões, exemplos e critérios abaixo descrevem a proposta original, não
 > garantem recursos entregues nem constituem instruções atuais de instalação.
 > Consulte [instalação](INSTALACAO-MSE.md), [contratos](CONTRATOS-DE-MODULO.md)
-> e [versões](COMPATIBILIDADE-E-VERSIONAMENTO.md).
+> e [versões](COMPATIBILIDADE-E-VERSIONAMENTO.md). Este documento é histórico;
+> não define compatibilidade do Mini Joomla! com o TD. O TD será adaptado
+> futuramente como consumidor separado, por meio de template próprio.
 
 ## Situação atual frente ao plano
 
