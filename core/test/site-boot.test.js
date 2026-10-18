@@ -284,7 +284,16 @@ function batchFetchResponse(urls, responseForUrl) {
     onLoadError: (error, chave) => loadErrors.push(chave)
   });
 
-  assert.deepEqual(loadErrors, ["menuItems"]);
+  // "resolveLayout" também aparece aqui: bootSiteKernel agora liga
+  // incondicionalmente o resolveLayout de Templates (ver site-boot.js#
+  // createTemplateLayoutResolver); como esta configuração de teste não
+  // publica nenhum Tema (MSEConfiguracoes vazio), resolveLayout rejeita por
+  // design (ver seu próprio JSDoc: "não decide o fallback, só rejeita
+  // quando theme.name está ausente"), e kernel/application.js repassa essa
+  // rejeição isolada via onLoadError (mesmo princípio de loadSnapshot) antes
+  // de cair para o layout neutro padrão — não é uma falha de rede, é o
+  // caminho esperado quando nenhum Template está configurado.
+  assert.deepEqual(loadErrors, ["menuItems", "resolveLayout"]);
   const [componentElement] = root.children;
   assert.equal(componentElement.dataset.mseDispatchReason, "not-found");
 

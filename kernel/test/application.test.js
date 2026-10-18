@@ -525,4 +525,200 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: id fixo via MSEMenu.ParamsJson não é sobrescrito por routeParams ausente ok.");
 }
 
+// --- resolveLayout (hook de Templates, kernel/application.js): quando NÃO
+// informado, o comportamento é idêntico ao kernel sem noção de Template —
+// layout neutro (kernel/layout.js) montado diretamente em root, sem
+// nenhuma chamada extra. Este caso serve de regressão explícita (os casos
+// acima, que já não passam resolveLayout, cobrem o mesmo caminho) ----------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  // Mesmo shape/ordem documentados em kernel/layout.js: componentElement
+  // primeiro, depois uma posição por nome em `positions`.
+  assert.equal(root.children.length, 2, "componentElement + 1 posição, igual ao layout neutro padrão");
+  const [componentElement, positionElement] = root.children;
+  assert.equal(componentElement.getAttribute("data-mse-component"), "");
+  assert.equal(positionElement.getAttribute("data-mse-position"), "topo");
+  assert.equal(positionElement.children[0]?.getAttribute("data-mounted"), "sd");
+
+  await app.dispose();
+  assert.equal(root.children.length, 0, "dispose limpa o layout neutro inteiro");
+
+  console.log("application.test.js: sem resolveLayout, comportamento idêntico ao layout neutro padrão (regressão) ok.");
+}
+
+// --- resolveLayout informado (síncrono): chamado depois do primeiro
+// refreshSnapshot(), com theme === undefined quando não há
+// configurationStore; os elementos devolvidos por ele são efetivamente os
+// populados por renderComponent/renderModules --------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const resolveLayoutCalls = [];
+
+  const templateRoot = createRoot();
+  const templateComponentElement = templateRoot.ownerDocument.createElement("div");
+  const templatePositionElement = templateRoot.ownerDocument.createElement("div");
+  templateComponentElement.setAttribute("data-mse-component", "");
+  templatePositionElement.setAttribute("data-mse-position", "topo");
+  templateRoot.append(templateComponentElement, templatePositionElement);
+  let templateDisposed = false;
+
+  function resolveLayout(args) {
+    resolveLayoutCalls.push(args);
+    return {
+      root: templateRoot,
+      positionElements: new Map([["topo", templatePositionElement]]),
+      componentElement: templateComponentElement,
+      dispose: () => { templateDisposed = true; }
+    };
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    componentPosition: "conteudo-principal",
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout
+  });
+
+  assert.equal(resolveLayoutCalls.length, 1);
+  assert.equal(resolveLayoutCalls[0].root, root);
+  assert.deepEqual(resolveLayoutCalls[0].positions, ["topo"]);
+  assert.equal(resolveLayoutCalls[0].componentPosition, "conteudo-principal");
+  assert.equal(resolveLayoutCalls[0].theme, undefined, "sem configurationStore, theme é undefined");
+
+  // root original (layout neutro) nunca é tocado: o layout veio inteiro do
+  // template fake, montado sobre templateRoot.
+  assert.equal(root.children.length, 0);
+  assert.equal(templatePositionElement.children[0]?.getAttribute("data-mounted"), "sd");
+  assert.equal(templateComponentElement.getAttribute("data-mse-dispatch-reason"), null);
+  assert.equal(templateComponentElement.dataset.mseDispatchReason, "modules-only");
+
+  await app.dispose();
+  assert.equal(templateDisposed, true, "dispose() do kernel chama dispose() do layout devolvido por resolveLayout");
+
+  console.log("application.test.js: resolveLayout síncrono monta o layout do template e recebe theme=undefined sem configurationStore ok.");
+}
+
+// --- resolveLayout informado (assíncrono) + configurationStore fake: theme
+// chega como globalConfig.theme carregado via store.loadGlobal() ----------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const resolveLayoutCalls = [];
+
+  const configurationStore = {
+    loadGlobal: async () => ({ theme: { name: "camap-tema-01" } }),
+    loadExtension: async () => ({}),
+    load: async () => ({})
+  };
+
+  async function resolveLayout(args) {
+    resolveLayoutCalls.push(args);
+    await Promise.resolve();
+    return {
+      root,
+      positionElements: new Map(),
+      componentElement: root.ownerDocument.createElement("div"),
+      dispose() {}
+    };
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: [],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => [],
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    configurationStore,
+    resolveLayout
+  });
+
+  assert.equal(resolveLayoutCalls.length, 1);
+  assert.deepEqual(resolveLayoutCalls[0].theme, { name: "camap-tema-01" });
+
+  await app.dispose();
+
+  console.log("application.test.js: resolveLayout assíncrono recebe theme vindo de configurationStore.loadGlobal() ok.");
+}
+
+// --- resolveLayout que lança: kernel isola o erro e cai para o layout
+// neutro padrão (createSiteLayout), sem abortar o boot — rota resolve,
+// módulos montam normalmente -----------------------------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const loadErrors = [];
+
+  function resolveLayout() {
+    throw new Error("template configurado não encontrado (proposital).");
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout,
+    onLoadError: (error, chave) => loadErrors.push(chave)
+  });
+
+  assert.deepEqual(loadErrors, ["resolveLayout"]);
+  // Layout neutro padrão montado normalmente em root (mesmo shape de
+  // createSiteLayout): componentElement + 1 posição.
+  assert.equal(root.children.length, 2);
+  const [componentElement, positionElement] = root.children;
+  assert.equal(componentElement.getAttribute("data-mse-component"), "");
+  assert.equal(positionElement.children[0]?.getAttribute("data-mounted"), "sd");
+
+  // Boot continua funcional: navegação para outra rota resolve normalmente.
+  app.navigate({ alias: "blog" });
+  window.listeners.get("hashchange")?.();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(componentElement.getAttribute("data-mounted"), "blog");
+
+  await app.dispose();
+  assert.equal(root.children.length, 0);
+
+  console.log("application.test.js: resolveLayout que lança cai para o layout neutro padrão, boot continua ok.");
+}
+
 console.log("application.test.js: verificações concluídas com sucesso.");

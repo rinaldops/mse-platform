@@ -28,8 +28,12 @@ Os identificadores técnicos existentes (`forum`, `explore-mais`, `view: "summar
 
 ## 3. Restrições e compatibilidade
 
-- **Escopo imposto:** sem Templates e sem ACL. Posições são declaradas pelo site;
-  o visual é CSS do site. Permissões continuam nativas do SharePoint.
+- **Escopo imposto:** Templates em escopo mínimo (1 template ativo por site,
+  trocável via `MSEConfiguracoes.Tema` — sem atribuição por item de menu, sem
+  overrides de view/layout) e sem ACL. Posições continuam declaradas pelo
+  site; o visual é CSS do template ativo (ou do layout neutro de
+  `kernel/layout.js` quando nenhum template está configurado). Permissões
+  continuam nativas do SharePoint.
 - **Rompimento com o TD nesta versão.** O Mini Joomla! não tem como requisito
   manter compatibilidade com a arquitetura, snippets, releases ou pastas do
   projeto TD. O TD não é alterado nem migrado nesta etapa, mas também não é
@@ -114,7 +118,7 @@ mse-platform/
 | com_installer | `admin/installer.js` (inspect/apply/verify) | melhorar |
 | Plugins/eventos | `events.js` mínimo agora; plugins depois | criar (mínimo) |
 | Histórico de versões | versionamento nativo da lista + restaurar | melhorar |
-| **Templates** | — | **fora de escopo** |
+| **Templates** | `kernel/application.js#resolveLayout` + `MSEConfiguracoes.Tema` | mínimo: 1 template ativo por site, trocável (sem atribuição por menu, sem overrides) |
 | **ACL** | — | **fora de escopo** |
 | Campos personalizados, workflow, multilíngue, busca, banners, redirecionamentos | — | adiado (não descartado) |
 
