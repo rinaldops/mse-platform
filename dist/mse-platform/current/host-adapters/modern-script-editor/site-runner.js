@@ -69,6 +69,15 @@
     var defaultView = getAttr(s, "data-default-view", undefined);
     var webUrl = getAttr(s, "data-web-url", undefined);
     var manifestPathByElemento = parseJsonAttr(s, "data-manifest-path-overrides");
+    // Templates (18/10/2026, ampliação de escopo): mesmo mecanismo de
+    // override de `data-manifest-path-overrides` acima, só que para o pacote
+    // de Template resolvido por nome (`MSEConfiguracoes.Tema`) em vez de por
+    // elemento de Componente/Módulo — ver
+    // `site-boot.js#createTemplateResolver`/`templatePathByName`. Faltava
+    // este `parseJsonAttr`: sem ele, `templatePathByName` nunca chegava a
+    // `bootSiteKernel`, e um Template publicado fora da convenção padrão
+    // `${releaseBase}/templates/<nome>/index.js` nunca seria encontrado.
+    var templatePathByName = parseJsonAttr(s, "data-template-path-overrides");
 
     if (!releaseBase) {
       throw new Error("site-runner.js: data-release-base é obrigatório.");
@@ -89,6 +98,7 @@
       componentPosition: componentPosition,
       defaultView: defaultView,
       manifestPathByElemento: manifestPathByElemento,
+      templatePathByName: templatePathByName,
       onLoadError: function (error, chave) {
         console.error("mse-platform site kernel: falha ao carregar \"" + chave + "\", mantendo último estado válido.", error);
       },

@@ -44,6 +44,23 @@
  * (`result.view`) é passado ao Componente via `context`/`params` para que
  * ELE decida internamente qual sub-renderização mostrar — este módulo nunca
  * tenta resolver um entrypoint por nome de visão.
+ *
+ * Templates (modelo mínimo trazido ao escopo depois do kernel original: 1
+ * template ativo por site, trocável pelo gestor via `MSEConfiguracoes.Tema`
+ * — escopo Global —, SEM atribuição por item de menu e SEM overrides de
+ * view/layout por template, deliberadamente fora de escopo): este módulo
+ * continua neutro quanto a QUEM monta o esqueleto visual. Por padrão, o
+ * esqueleto é sempre `kernel/layout.js#createSiteLayout` (DOM neutro, sem
+ * noção de template). O hook opcional `resolveLayout` (ver JSDoc de
+ * `createSiteApplication` abaixo) permite a um host (ex.:
+ * `host-adapters/modern-script-editor/site-boot.js`) substituir esse
+ * esqueleto por um pacote de Template real (ex.:
+ * `CAMAP-AGP/templates/<nome>/index.js#createTemplate`), desde que o
+ * resultado seja adaptado para o mesmo shape `{ root, positionElements,
+ * componentElement, dispose() }` — este módulo nunca importa um pacote de
+ * template diretamente nem conhece a forma real de `createTemplate()`;
+ * isso é responsabilidade de quem fornece `resolveLayout` (mesmo princípio
+ * de neutralidade já usado para `resolveManifestUrl`/`importModule`).
  */
 
 import { parseRoute, createSiteRouter } from "./router.js";
@@ -218,8 +235,28 @@ async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestU
  *   services?: Record<string, unknown>,
  *   events?: ReturnType<typeof createEventBus>,
  *   onLoadError?: (error: Error, chave: string) => void,
- *   onModuleError?: (error: Error, info: { elemento: string, kind: "component"|"module", position?: string }) => void
- * }} options
+ *   onModuleError?: (error: Error, info: { elemento: string, kind: "component"|"module", position?: string }) => void,
+ *   resolveLayout?: (args: { root: Element, positions: string[], componentPosition?: string, theme: object|undefined }) => (Promise<LayoutLike>|LayoutLike)
+ * }} options `resolveLayout` é o hook opcional de Templates (ver decisão no
+ *   cabeçalho do arquivo). Quando AUSENTE, o comportamento é idêntico ao
+ *   kernel sem noção de Template: `createSiteLayout({root, positions,
+ *   componentPosition})` é montado uma única vez, no boot, antes do primeiro
+ *   `refreshSnapshot()` — exatamente como antes deste hook existir (nenhuma
+ *   mudança observável nesse caminho). Quando PRESENTE, é chamado DEPOIS do
+ *   primeiro `refreshSnapshot()` (porque precisa de `globalConfig.theme` já
+ *   carregado), recebendo `theme` como `globalConfig.theme` (pode ser
+ *   `undefined`/`{}` quando nenhum Template está configurado em
+ *   `MSEConfiguracoes` — escopo Global, campo `Tema`). O valor devolvido
+ *   (ou aguardado, se for uma Promise) deve ter o mesmo shape `LayoutLike`
+ *   de `createSiteLayout`: `{ root, positionElements: Map<string,Element>,
+ *   componentElement: Element, dispose() }` — o resto deste módulo
+ *   (`renderComponent`/`renderModules`/`dispose`) usa só esse shape e nunca
+ *   sabe se o layout veio do fallback neutro ou de um Template real. Se
+ *   `resolveLayout` lançar ou rejeitar (ex.: Template configurado não
+ *   encontrado, pacote malformado), o erro é isolado (mesmo princípio de
+ *   `loadSnapshot`: uma falha não deve abortar o boot inteiro) e o kernel
+ *   cai para `createSiteLayout({root, positions, componentPosition})` — o
+ *   mesmo esqueleto neutro usado quando `resolveLayout` não é informado.
  * @returns {Promise<{
  *   navigate: (route: object, options?: object) => string,
  *   dispose: () => Promise<void>,
@@ -242,11 +279,23 @@ export async function createSiteApplication({
   services = {},
   events = createEventBus(),
   onLoadError,
-  onModuleError = (error) => console.error("mse-platform site kernel:", error)
+  onModuleError = (error) => console.error("mse-platform site kernel:", error),
+  resolveLayout
 } = {}) {
   if (!root) throw new TypeError("root é obrigatório.");
 
-  const layout = createSiteLayout({ root, positions, componentPosition });
+  // Decisão de timing (ver JSDoc de `resolveLayout` acima e decisão no
+  // cabeçalho do arquivo): quando `resolveLayout` NÃO é informado, o layout
+  // neutro é montado aqui mesmo, antes de qualquer `refreshSnapshot()` —
+  // byte a byte o mesmo timing/chamada de antes deste hook existir, para
+  // garantir zero mudança observável nesse caminho (caminho testado por
+  // regressão). Quando `resolveLayout` É informado, a montagem é adiada:
+  // `layout` começa `null` e só é populado dentro de `refreshSnapshot()`,
+  // na PRIMEIRA chamada, depois que `globalConfig.theme` já foi carregado —
+  // mas ainda assim antes de `router`/`renderRoute` serem criados mais
+  // abaixo, preservando a ordem de boot já existente (layout sempre pronto
+  // antes do primeiro render de rota).
+  let layout = resolveLayout ? null : createSiteLayout({ root, positions, componentPosition });
 
   /** Snapshot em memória, atualizado a cada boot/refresh (ver loadSnapshot). */
   let snapshot = {};
@@ -264,6 +313,22 @@ export async function createSiteApplication({
         globalConfig = (await loadStoredGlobalConfig(configurationStore)) ?? {};
       } catch (error) {
         onLoadError?.(error, "globalConfig");
+      }
+    }
+    // Monta o layout só agora, na primeira vez que `refreshSnapshot()`
+    // resolve, quando `resolveLayout` foi informado (ver decisão acima):
+    // é só a partir daqui que `globalConfig.theme` reflete o que está
+    // publicado em `MSEConfiguracoes` (escopo Global). Chamadas
+    // subsequentes de `refreshSnapshot()` (não existem hoje, mas o guard
+    // `!layout` deixa isso seguro para o futuro) não remontam o layout.
+    if (resolveLayout && !layout) {
+      try {
+        layout = (await resolveLayout({ root, positions, componentPosition, theme: globalConfig.theme })) ?? null;
+      } catch (error) {
+        onLoadError?.(error, "resolveLayout");
+      }
+      if (!layout) {
+        layout = createSiteLayout({ root, positions, componentPosition });
       }
     }
   }

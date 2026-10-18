@@ -236,6 +236,48 @@ tenant real (exige FIORI-AUTO/autorização de produção); a migração de
 `CAMAPModulosConfiguracoes` → MSE* (9 instâncias reais do CAMAP-AGP) fica
 para a Fase 4, por depender de dados reais do tenant.
 
+**Templates (mecanismo mínimo) e Administrator — status (18/10/2026):
+ativados em produção real** (`/teams/camap-agp`, `Default.aspx`, canônico
+desde que `Preview.aspx` foi descontinuado por decisão do usuário). Cadeia
+completa aplicada e validada ponta a ponta:
+- `MSEConfiguracoes` (lista nova, não existia no tenant) provisionada via
+  `core/provisioning.js#provisionConfigurationList` (replicado em
+  `app-devs/FIORI-AUTO/dev-probe/_provision_mse_configuracoes_real.py`);
+  item Global com `Tema="camap-tema-01"` ativado via novo script de
+  migração (`tools/migrate-camap-activate-tema-01.js`, replicado em
+  `_migrate_camap_activate_tema01_real.py`).
+- Rota `#/administrator` criada em `MSEMenu`/`MSEExtensoes` via novo script
+  de migração (`tools/migrate-mse-administrator-route.js`, replicado em
+  `_migrate_mse_administrator_route_real.py`); módulo `administrator/*`
+  publicado em `SiteAssets/mse-platform/current/administrator/`
+  (`tools/prepare-site-kernel.js` ampliado) e ligado via override cirúrgico
+  de `data-manifest-path-overrides` direto no `<script>` embutido de
+  `Default.aspx` (`_patch_default_aspx_administrator_override_real.py`,
+  idempotente). Validado em produção: `#/administrator` renderiza o painel
+  real (Configuração global/Extensões/Menus/Módulos/Instalador), sem erros.
+- **Bug corrigido nesta rodada**: `host-adapters/modern-script-editor/
+  site-runner.js` nunca lia `data-template-path-overrides` nem repassava
+  `templatePathByName` a `boot.bootSiteKernel(...)` — o override existia em
+  `site-boot.js#createTemplateResolver`/`createTemplateLayoutResolver` mas
+  era estruturalmente inalcançável a partir da página real. Corrigido (novo
+  teste `host-adapters/modern-script-editor/test/site-runner.test.js`,
+  `npm test` 100% verde) e republicado. Como o pacote real do Tema 1 vive
+  em `SiteAssets/camap-agp-modules/0.1.0/templates/camap-tema-01/` — fora
+  de `releaseBase` (`SiteAssets/mse-platform/current/`) — o override em
+  `Default.aspx` usa uma URL absoluta (suportada nativamente por
+  `createTemplateResolver`), aplicado via novo script cirúrgico
+  (`_patch_default_aspx_template_override_real.py`, idempotente).
+  Validado em produção após recarga: `[data-template="camap-tema-01"]` e
+  11 `[data-template-region]` presentes no DOM, screenshot confirma o
+  shell visual do Tema 1 (hero + seções), 8/10 posições com módulos reais
+  renderizando (as 2 vazias — `lateral`/`conteudo-abaixo` — não têm módulo
+  configurado nessa posição, não é regressão).
+- Nota operacional (achado durante a validação, não é bug do kernel): o
+  navegador de teste tinha um Service Worker do próprio SharePoint (ODSP)
+  cacheando agressivamente os arquivos do Site Kernel via Cache Storage,
+  mascarando a republicação já efetiva no servidor até ser desregistrado
+  manualmente nessa sessão de teste — não requer ação no código do kernel.
+
 ## 9. Riscos
 
 | Risco | Mitigação |

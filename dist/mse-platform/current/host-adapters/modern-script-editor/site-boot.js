@@ -206,11 +206,135 @@ export function createManifestResolver(releaseBase, manifestPathByElemento = {})
 }
 
 /**
+ * Resolve a URL do pacote de Template a partir da pasta fixa
+ * `templates/<nome>/index.js` sob `releaseBase` â€” mesmo padrÃ£o exato de
+ * `createManifestResolver` acima (mesma validaÃ§Ã£o de `releaseBase`, mesmo
+ * tratamento de override absoluto `https?://`, mesmo fallback de
+ * convenÃ§Ã£o), aplicado ao outro eixo de extensibilidade do kernel trazido
+ * ao escopo depois do kernel original: Templates (ver
+ * `docs/PLANO-SITE-KERNEL-MSE.md`, modelo mÃ­nimo â€” 1 template ativo por
+ * site, trocÃ¡vel pelo gestor via `MSEConfiguracoes.Tema`, escopo Global,
+ * SEM atribuiÃ§Ã£o por item de menu e SEM overrides de view/layout por
+ * template). `templatePathByName` existe pela mesma razÃ£o de
+ * `manifestPathByElemento`: poucos casos em que o nome do Template
+ * publicado em `Tema` nÃ£o Ã© tambÃ©m o nome exato da pasta do pacote.
+ *
+ * @param {string} releaseBase
+ * @param {Record<string, string>} [templatePathByName] Mapa opcional
+ *   `nome -> caminho relativo a releaseBase` (ex.:
+ *   `{ "tema-1": "templates/camap-tema-01/index.js" }`), ou URL absoluta
+ *   (`https?://`) para pacotes publicados fora do `releaseBase`.
+ * @returns {(nome: string) => string}
+ */
+export function createTemplateResolver(releaseBase, templatePathByName = {}) {
+  if (typeof releaseBase !== "string" || releaseBase.trim() === "") {
+    throw new TypeError("releaseBase Ã© obrigatÃ³rio.");
+  }
+  const base = releaseBase.replace(/\/+$/, "");
+  return function resolveTemplateUrl(nome) {
+    const override = templatePathByName[nome];
+    if (typeof override === "string" && override.trim() !== "") {
+      const value = override.trim();
+      if (/^https?:\/\//i.test(value)) return value;
+      return `${base}/${value.replace(/^\/+/, "")}`;
+    }
+    return `${base}/templates/${nome}/index.js`;
+  };
+}
+
+/**
+ * Adapta o shape devolvido por um pacote de Template real
+ * (`CAMAP-AGP/templates/camap-tema-01/index.js#createTemplate`:
+ * `{ root, shell, regions: Map<string,Element>, component: Element,
+ * position(nome), dispose() }`, confirmado lendo aquele arquivo â€” nÃ£o
+ * assumido) para o shape `LayoutLike` que `kernel/application.js#resolveLayout`
+ * espera (o mesmo shape de `kernel/layout.js#createSiteLayout`):
+ * `{ root, positionElements: Map<string,Element>, componentElement: Element,
+ * dispose() }`.
+ *
+ * `regions` do template inclui TAMBÃ‰M a entrada de `componentPosition` (o
+ * prÃ³prio `createTemplate` cria essa regiÃ£o com `createRegion(document,
+ * componentPosition, "main")` e a registra em `regions` via
+ * `shell.querySelectorAll([data-template-region])`). Essa entrada NÃƒO pode
+ * aparecer em `positionElements` (que, no contrato do kernel, Ã© sÃ³ posiÃ§Ãµes
+ * de mÃ³dulo â€” ver JSDoc de `kernel/layout.js`) â€” por isso ela Ã© removida do
+ * Map adaptado abaixo; `componentElement` vem de `template.component`
+ * diretamente (equivalente a `template.regions.get(componentPosition)`,
+ * mas sem depender de `componentPosition` estar definido no momento da
+ * adaptaÃ§Ã£o).
+ *
+ * @param {{ root: Element, shell?: Element, regions: Map<string, Element>, component: Element, position?: (nome: string) => (Element|null), dispose: () => (void|Promise<void>) }} template
+ * @param {string} [componentPosition]
+ * @returns {{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }}
+ */
+function adaptTemplateToLayout(template, componentPosition) {
+  const positionElements = new Map(template.regions);
+  positionElements.delete(componentPosition);
+  return {
+    root: template.root,
+    positionElements,
+    componentElement: template.component,
+    dispose: () => template.dispose()
+  };
+}
+
+/**
+ * Monta o `resolveLayout` esperado por `kernel/application.js` (ver JSDoc
+ * daquela funÃ§Ã£o: `({root, positions, componentPosition, theme}) =>
+ * LayoutLike|Promise<LayoutLike>`), ligando o Template configurado
+ * (`theme.name`, vindo de `MSEConfiguracoes.Tema` â€” escopo Global) ao pacote
+ * real via `createTemplateResolver` + `importModule` (reaproveitado, nÃ£o
+ * `import()` direto, para manter testÃ¡vel â€” mesmo princÃ­pio de injeÃ§Ã£o de
+ * `resolveManifestUrl`/`importModule` jÃ¡ usado pelo resto deste arquivo).
+ *
+ * Decisão de contrato (ver tarefa que introduziu Templates): esta função
+ * NÃO decide o fallback para o layout neutro â€” isso é responsabilidade de
+ * `kernel/application.js#createSiteApplication`, que já cai para
+ * `createSiteLayout` quando `resolveLayout` lança/rejeita (mesmo princípio
+ * de isolamento de falha de `loadSnapshot`). Por isso, quando `theme?.name`
+ * estÃ¡ vazio/ausente (nenhum Template configurado), esta funÃ§Ã£o apenas
+ * REJEITA â€” ela nunca monta `createSiteLayout` ela mesma, para nÃ£o duplicar
+ * essa decisÃ£o em dois lugares.
+ *
+ * Exportada (embora `bootSiteKernel` seja o único chamador em produção)
+ * para permitir um teste isolado da adaptação de shape (`adaptTemplateToLayout`,
+ * interna) sem precisar simular toda a cadeia REST de `bootSiteKernel` —
+ * basta um `importModule` fake devolvendo `{ createTemplate: fn }`.
+ *
+ * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any> }} args
+ * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string } }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }>}
+ */
+export function createTemplateLayoutResolver({ releaseBase, templatePathByName = {}, importModule }) {
+  const resolveTemplateUrl = createTemplateResolver(releaseBase, templatePathByName);
+  return async function resolveLayout({ root, positions, componentPosition, theme }) {
+    const nome = theme?.name;
+    if (typeof nome !== "string" || nome.trim() === "") {
+      throw new Error("Nenhum Template configurado (MSEConfiguracoes.Tema vazio) â€” caindo para o layout neutro.");
+    }
+    const templateUrl = resolveTemplateUrl(nome);
+    const templateModule = await importModule(templateUrl);
+    if (typeof templateModule.createTemplate !== "function") {
+      throw new TypeError(`Pacote de Template "${nome}" (${templateUrl}) nÃ£o exporta createTemplate().`);
+    }
+    const template = await templateModule.createTemplate({ root, positions, componentPosition });
+    return adaptTemplateToLayout(template, componentPosition);
+  };
+}
+
+/**
  * Inicializa o Site Kernel sobre `root`, com todas as listas MSE* carregadas
  * via REST (`core/rest.js`) e a configuraÃ§Ã£o publicada via
  * `core/configuration-store.js` â€” a composiÃ§Ã£o completa que
  * `kernel/application.js` espera receber por injeÃ§Ã£o (ele nunca faz `fetch`
  * por conta prÃ³pria, ver seu cabeÃ§alho).
+ *
+ * `templatePathByName`: habilita o Template configurado em
+ * `MSEConfiguracoes.Tema` (escopo Global) a ser carregado via
+ * `resolveLayout` (ver `createTemplateLayoutResolver` acima), com fallback
+ * automÃ¡tico (dentro de `kernel/application.js`) para o layout neutro
+ * (`kernel/layout.js`) quando nenhum Template estÃ¡ configurado ou quando o
+ * pacote configurado falha ao carregar/montar â€” nenhuma mudanÃ§a de
+ * comportamento para sites que nunca configuraram um Template.
  *
  * @param {{
  *   root: Element,
@@ -221,6 +345,7 @@ export function createManifestResolver(releaseBase, manifestPathByElemento = {})
  *   componentPosition?: string,
  *   defaultView?: string,
  *   manifestPathByElemento?: Record<string, string>,
+ *   templatePathByName?: Record<string, string>,
  *   fetchImpl?: typeof fetch,
  *   services?: Record<string, unknown>,
  *   onLoadError?: (error: Error, chave: string) => void,
@@ -238,6 +363,7 @@ export async function bootSiteKernel({
   componentPosition,
   defaultView,
   manifestPathByElemento = {},
+  templatePathByName = {},
   fetchImpl = globalThis.fetch,
   services = {},
   onLoadError,
@@ -245,6 +371,7 @@ export async function bootSiteKernel({
 } = {}) {
   const client = createSharePointRestClient({ webUrl, fetchImpl });
   const configurationStore = createSharePointConfigurationStore({ webUrl: client.webUrl, fetchImpl });
+  const importModule = (url) => import(url);
 
   return createSiteApplication({
     root,
@@ -255,9 +382,10 @@ export async function bootSiteKernel({
     ...createKernelListLoaders(client, fetchImpl),
     configurationStore,
     resolveManifestUrl: createManifestResolver(releaseBase, manifestPathByElemento),
-    importModule: (url) => import(url),
+    importModule,
     services,
     onLoadError,
-    onModuleError
+    onModuleError,
+    resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule })
   });
 }

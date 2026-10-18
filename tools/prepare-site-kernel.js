@@ -22,11 +22,6 @@
 //     modelo de 1 MSE por módulo) importa `admin/manifest.js`/
 //     `admin/installer.js`; o novo `site-boot.js` não importa nada de
 //     `admin/`.
-//   - NÃO inclui `core/module-contract.js`: usado só por testes/validação
-//     de manifesto em tempo de autoria (`defineModuleManifest`), nunca
-//     importado em runtime por `kernel/application.js` (que lê
-//     `manifest.views`/`manifest.entrypoints` direto, sem chamar nenhuma
-//     função do contrato).
 //   - NÃO inclui `host-adapters/modern-script-editor/layout.css`,
 //     `bootstrap.js`, `runner.js`, `site-integration.js`, `snippet.html`:
 //     são do modelo ANTIGO (1 MSE por módulo). O Site Kernel não injeta CSS
@@ -34,12 +29,31 @@
 //     responsabilidade do CSS do site") — decisão já confirmada pelo
 //     usuário para o C3 (reaproveitar o CSS legado do CAMAP-AGP via `<link>`
 //     direto no snippet, sem mecanismo novo de injeção).
-//   - NÃO inclui `kernel/installer.js`, `kernel/seed.js`, `kernel/schemas/*`:
-//     rodam em Node (FIORI-AUTO/REST, provisionamento/migração de dados),
-//     nunca carregados pelo navegador.
+//   - NÃO inclui `kernel/installer.js`, `kernel/seed.js`: rodam em Node
+//     (FIORI-AUTO/REST, provisionamento/migração de dados), nunca
+//     carregados pelo navegador.
 //   - NÃO inclui `kernel/content-services.js`: serviço opcional, não
 //     importado por `kernel/application.js` nesta configuração (nenhum
 //     módulo do CAMAP-AGP usa com_content ainda).
+//
+// Administrator (18/10/2026, ampliação de escopo — Templates/Administrator
+// trazidos para o escopo formal): o Administrator É carregado pelo
+// navegador em runtime (resolveManifestUrl/importModule, mesmo mecanismo de
+// qualquer Componente real) — ao contrário dos manifestos simples do
+// CAMAP-AGP (objeto plano, sem import), `administrator/manifest.js` importa
+// `core/module-contract.js#defineModuleManifest` de verdade, então esse
+// arquivo PRECISA ser publicado também (a nota acima sobre module-contract
+// só valia enquanto nenhum manifesto real o importava em runtime).
+// `administrator/screens/collections.js` importa por sua vez
+// `kernel/admin-data.js`, `kernel/admin-form.js` e os 3 schemas usados nas
+// telas já conectadas a dados reais (`kernel/schemas/mse-extensoes.js`,
+// `mse-menu.js`, `mse-modulos.js`), que importam `core/list-provisioning.js`
+// (só para `defineListSchema` — não aciona nenhum provisionamento de rede
+// nesse caminho). Fica tudo sob `administrator/` e `kernel/`/`core/`
+// (mesmos caminhos relativos do fonte, preservando os `import`s existentes
+// sem reescrevê-los) — SEM pasta `modules/administrator/`: o path real é
+// resolvido via `data-manifest-path-overrides` no snippet do site, não pela
+// convenção padrão `modules/<elemento>/manifest.js`.
 //
 // Sobrescrita autorizada: workspace opera só em produção, destino único;
 // mesma convenção já aprovada para `camap-agp-modules` (pasta fixa
@@ -72,7 +86,21 @@ const FILES = [
   "core/rest.js",
   "core/configuration-store.js",
   "core/provisioning.js",
-  "core/navigation.js"
+  "core/navigation.js",
+  // Administrator (18/10/2026) — ver justificativa completa no cabeçalho.
+  "core/module-contract.js",
+  "kernel/admin-data.js",
+  "kernel/admin-form.js",
+  "kernel/schemas/mse-extensoes.js",
+  "kernel/schemas/mse-menu.js",
+  "kernel/schemas/mse-modulos.js",
+  "core/list-provisioning.js",
+  "administrator/manifest.js",
+  "administrator/component.js",
+  "administrator/router.js",
+  "administrator/administrator.css",
+  "administrator/screens/control-panel.js",
+  "administrator/screens/collections.js"
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

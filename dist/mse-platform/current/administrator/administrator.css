@@ -1,0 +1,16 @@
+/* Cores via var(--camap-..., <fallback>): o kernel não conhece CAMAP-AGP (ver
+   docs/PLANO-SITE-KERNEL-MSE.md seção 3) — os nomes de variável casam com
+   CAMAP-AGP/theme/tokens.css, e o fallback (2º argumento de var()) repete o
+   hex antigo para preservar o visual quando o tema CAMAP não está carregado
+   (ex.: testes, outro site sem esse tema). font-family: nome de fonte
+   específico de tenant trocado por uma pilha de fontes de sistema genérica —
+   diferente das cores, não há `--camap-font-family` em
+   CAMAP-AGP/theme/tokens.css para herdar, então aqui não há regressão visual
+   a preservar (o nome antigo nunca foi aplicado por nenhum outro CSS do
+   kernel). */
+.mse-administrator { color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
+.mse-administrator__panel { width: min(100% - 48px, 1200px); margin-inline: auto; padding: 32px 0; }
+.mse-administrator__panel h1 { color: var(--camap-ocean, #006298); }
+.mse-administrator__panel nav { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.mse-administrator__panel nav a { display: block; padding: 16px; border: 1px solid var(--camap-line, #75787B); color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); text-decoration: none; }
+.mse-administrator__panel nav a:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
