@@ -56,7 +56,7 @@ Executar exclusivamente via `app-devs/FIORI-AUTO`/RPC 47175 (instância isolada)
 6. [concluído] criar/editar item de teste;
 7. [concluído] verificar ETag, sanitização e 403/412;
 8. [pendente] confirmar renderização no BLOG;
-9. [pendente] remover/arquivar o item de teste conforme política do site.
+9. [concluído] retornar o item de teste à `Lixeira` conforme política do site.
 
 **Gate:** **parcialmente aprovado** para o Administrator: a rota canônica foi
 renderizada no tenant, com leitura, criação, sanitização, ETag e conflito 412
@@ -68,7 +68,7 @@ não montou Componente/Módulo e o item temporário precisa ser retornado a
 
 - Reconciliar o alias efetivo de `MSEMenu` com a rota BLOG esperada.
 - Confirmar a renderização do artigo com título, resumo e corpo na rota correta.
-- Retornar o item temporário de teste à `Lixeira`.
+- [concluído] Retornar o item temporário de teste à `Lixeira`.
 - Corrigir apenas falhas reproduzidas.
 - Reexecutar suítes locais.
 - Regenerar pacote.
@@ -94,6 +94,6 @@ Painel completo de configuração/instalação, filtros avançados, categorias/t
 ## Critérios de encerramento
 
 O MVP só será declarado concluído quando as Etapas 0–5 tiverem evidência registrada.
-No estado atual, o código e o Administrator estão entregues, mas a validação
-funcional do BLOG/detalhe e a limpeza do item temporário ainda não possuem
+No estado atual, o código e o Administrator estão entregues, o item temporário
+foi limpo e apenas a validação funcional do BLOG/detalhe ainda não possui
 comprovação final. A ausência de autenticação ou de autorização para uma ação no tenant é bloqueio externo, não será mascarada como sucesso local.
