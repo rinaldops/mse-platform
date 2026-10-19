@@ -104,12 +104,12 @@ O ciclo foi dividido em frentes sem escrita concorrente:
 ### Sequência obrigatória
 
 1. [concluído] Concluir a auditoria local de roteamento: o alias esperado do catálogo geral é `destaques`, não `blog`.
-2. [pendente] Ler o `CanvasContent1` de `Default.aspx` e confirmar `site-runner.js`, `data-mse-site`, `current` e overrides do BLOG.
+2. [concluído] Recarregar `Default.aspx#/destaques` no FIORI-AUTO e confirmar que a Home monta o DB com conteúdo real; a leitura direta do canvas REST continua limitada pelo retorno sem valor do CDP.
 3. [pendente] Fazer GET de `MSEMenu` por GUID resolvido via `RootFolder/Name` e confirmar `destaques` publicado, `Componente=blog`, `Visao=list`.
 4. [pendente] Fazer GET de `MSEExtensoes` por GUID e confirmar `Elemento=blog`, `Tipo=Componente`, `Habilitado=true`.
 5. [condicional] Se houver divergência, preparar uma única alteração mínima e controlada, sem tocar em outras páginas.
-6. [pendente] Publicar/recarregar `Default.aspx#/destaques` pelo FIORI-AUTO.
-7. [pendente] Aceitar somente se houver Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno.
+6. [concluído] Publicar os ativos atualizados do CAMAP em `SiteAssets/camap-agp-modules/0.1.0` e recarregar `Default.aspx#/destaques`; verificação remota `checked=64`, `failures=0`.
+7. [pendente] Aceitar somente após confirmar Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno. A Home/DB já foi confirmada; a prova final do detalhe permanece aberta.
 8. [condicional] Se qualquer gate falhar após uma escrita autorizada, reverter pelo histórico nativo do SharePoint e registrar a evidência.
 
 A equipe de agentes não tem autorização para editar o tenant ou arquivos fora de
