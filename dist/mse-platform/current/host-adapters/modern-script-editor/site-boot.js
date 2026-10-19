@@ -36,6 +36,7 @@
 import { createSiteApplication } from "../../kernel/application.js";
 import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet } from "../../core/rest.js";
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
+import { createKernelInstaller } from "../../kernel/installer.js";
 
 const MENU_FIELDS = Object.freeze([
   "Id", "Title", "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem",
@@ -58,7 +59,7 @@ const MODULOS_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuloId", "MenuId"])
 // (installer/seed/schemas â€” ver cabeÃ§alho daquele script), entÃ£o o host nÃ£o
 // pode depender desses mÃ³dulos em tempo de execuÃ§Ã£o.
 const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]);
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags"]);
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes"]);
 
 /**
  * Resolve o `listId` (GUID) real de cada lista MSE* a partir do catÃ¡logo de
@@ -284,6 +285,41 @@ function adaptTemplateToLayout(template, componentPosition) {
 }
 
 /**
+ * Monta os serviços consumidos pelo Administrator sem apagar extensões do host.
+ * O contrato administrativo usa `{ listId }` para permitir que o client REST
+ * resolva a lista por GUID, enquanto `services` continua podendo injetar
+ * adapters específicos (inclusive em hosts e testes).
+ *
+ * @param {{ resolvedListIds: Record<string,string>, services?: Record<string,unknown>, client: object }} options
+ * @returns {Readonly<Record<string,unknown>>}
+ */
+export function buildAdministratorServices({ resolvedListIds = {}, services = {}, client } = {}) {
+  const administratorListIds = Object.fromEntries(
+    Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
+  );
+  const adminClient = services.adminClient || client;
+  const kernelInstaller = services.kernelInstaller || createKernelInstaller({ client });
+  const listIds = Object.freeze({ ...administratorListIds, ...(services.listIds || {}) });
+  const loadAdministratorStructure = services.loadAdministratorStructure || (async () => {
+    const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModulos: MODULOS_FIELDS, MSEExtensoes: EXTENSOES_FIELDS };
+    const read = async (name) => {
+      const list = listIds[name];
+      if (!list || typeof adminClient?.getListItems !== "function") return [];
+      const options = { select: fieldsByList[name], top: 5000 };
+      if (name === "MSEMenu") options.orderBy = "Ordem";
+      if (name === "MSEModulos") options.orderBy = "Ordem";
+      return adminClient.getListItems(list, options);
+    };
+    const [menus, modules, extensions] = await Promise.all([
+      read("MSEMenu"), read("MSEModulos"), read("MSEExtensoes")
+    ]);
+    return { menus, modules, extensions, routes: menus };
+  });
+  return Object.freeze({ ...services, adminClient, listIds, kernelInstaller, loadAdministratorStructure });
+}
+
+
+/**
  * Monta o `resolveLayout` esperado por `kernel/application.js` (ver JSDoc
  * daquela funÃ§Ã£o: `({root, positions, componentPosition, theme}) =>
  * LayoutLike|Promise<LayoutLike>`), ligando o Template configurado
@@ -309,26 +345,6 @@ function adaptTemplateToLayout(template, componentPosition) {
  * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any> }} args
  * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string } }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }>}
  */
-/**
- * Monta os serviços consumidos pelo Administrator sem apagar extensões do host.
- * O contrato administrativo usa `{ listId }` para permitir que o client REST
- * resolva a lista por GUID, enquanto `services` continua podendo injetar
- * adapters específicos (inclusive em hosts e testes).
- *
- * @param {{ resolvedListIds: Record<string,string>, services?: Record<string,unknown>, client: object }} options
- * @returns {Readonly<Record<string,unknown>>}
- */
-export function buildAdministratorServices({ resolvedListIds = {}, services = {}, client } = {}) {
-  const administratorListIds = Object.fromEntries(
-    Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
-  );
-  return Object.freeze({
-    ...services,
-    adminClient: services.adminClient || client,
-    listIds: Object.freeze({ ...administratorListIds, ...(services.listIds || {}) })
-  });
-}
-
 export function createTemplateLayoutResolver({ releaseBase, templatePathByName = {}, importModule }) {
   const resolveTemplateUrl = createTemplateResolver(releaseBase, templatePathByName);
   return async function resolveLayout({ root, positions, componentPosition, theme }) {

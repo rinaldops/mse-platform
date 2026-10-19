@@ -28,9 +28,10 @@
  * `FieldDescriptor.name` para ler o valor bruto do item) — nenhum formulário
  * de edição é desenhado aqui, é renderização somente-leitura.
  *
- * `com_config`/`com_installer` permanecem com o comportamento placeholder
- * original nesta rodada (explicitamente adiados — ver passo 6 da tarefa
- * desta rodada); não consomem `services.adminClient`/`listIds`.
+ * `com_config` usa `configuration-editor.js` para editar MSEConfiguracoes.
+ * `com_installer` é renderizado por `administrator/screens/installer.js` no
+ * roteador principal; este arquivo mantém apenas o fallback de coleção para
+ * hosts que não usam `administrator/component.js`.
  */
 
 import { listAdminItems } from "../../kernel/admin-data.js";
@@ -38,6 +39,10 @@ import { buildFormFields } from "../../kernel/admin-form.js";
 import { MSE_EXTENSOES_SCHEMA } from "../../kernel/schemas/mse-extensoes.js";
 import { MSE_MENU_SCHEMA } from "../../kernel/schemas/mse-menu.js";
 import { MSE_MODULOS_SCHEMA } from "../../kernel/schemas/mse-modulos.js";
+import { renderMenusEditor } from "./menus-editor.js";
+import { renderModulesEditor } from "./modules-editor.js";
+import { renderExtensionsEditor } from "./extensions-editor.js";
+import { renderConfigurationEditor } from "./configuration-editor.js";
 
 const labels = {
   com_config: "Configuração global",
@@ -168,13 +173,21 @@ export function renderCollectionScreen({ root, route, services = {} } = {}) {
   h.textContent = labels[route.option] || "Administrator";
   panel.append(h);
 
-  if (LIST_BINDINGS[route.option]) {
+  if (route.option === "com_config") {
+    renderConfigurationEditor({ root: panel, services });
+  } else if (route.option === "com_extensions") {
+    renderExtensionsEditor({ root: panel, services });
+  } else if (route.option === "com_menus") {
+    renderMenusEditor({ root: panel, services });
+  } else if (route.option === "com_modules") {
+    renderModulesEditor({ root: panel, services });
+  } else if (LIST_BINDINGS[route.option]) {
     // com_extensions/com_menus/com_modules: dados reais, injetados via
     // services.adminClient/services.listIds (ver contrato no topo do arquivo).
     renderListPanel(document, panel, route.option, services);
   } else {
-    // com_config/com_installer: PLACEHOLDER mantido deliberadamente nesta
-    // rodada — conectar a dados reais fica para outra rodada.
+    // O roteador principal trata com_installer antes de chegar aqui. O
+    // fallback preserva uma mensagem segura para hosts antigos.
     const p = document.createElement("p");
     p.textContent = services.status || "A tela está preparada para receber a fonte SharePoint correspondente.";
     panel.append(p);

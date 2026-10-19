@@ -673,6 +673,17 @@ export function createSharePointRestClient({
     return Object.freeze({ items: Object.freeze(page.items), next: page.next });
   }
 
+  async function getEffectiveBasePermissions(list) {
+    const result = await runRequest(`${listApiPath(list)}/EffectiveBasePermissions`);
+    return Object.freeze({ permissions: result.data?.d ?? result.data, status: result.status });
+  }
+  async function getEffectiveBasePermissions(list) {
+    const result = await runRequest(`${listApiPath(list)}/EffectiveBasePermissions`);
+    const data = result.data?.d ?? result.data;
+    const permissions = data?.EffectiveBasePermissions ?? data?.effectiveBasePermissions ?? data;
+    return Object.freeze({ permissions, status: result.status });
+  }
+
   async function getListItem(list, id, { select, expand } = {}) {
     if (!Array.isArray(select) || !select.length || select.some((field) =>
       typeof field !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field)
@@ -744,6 +755,7 @@ export function createSharePointRestClient({
     getListItems,
     getListItemPage,
     getListItem,
+    getEffectiveBasePermissions,
     createListItem,
     updateListItem,
     deleteListItem,

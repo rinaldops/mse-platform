@@ -19,6 +19,6 @@ export default defineModuleManifest({
   ],
   capabilities: { full: true, summary: false, settings: true, provisioning: true, publishing: true },
   entrypoints: { full: "./component.js" },
-  views: { controlpanel: true, installer: true, config: true, content: true, publisher: true, menus: true, modules: true, extensions: true },
+  views: { controlpanel: true, installer: true, config: true, diagnostics: true, content: true, publisher: true, menus: true, modules: true, extensions: true },
   routeParams: ["option", "view", "task", "id"]
 });

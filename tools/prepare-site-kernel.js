@@ -102,7 +102,16 @@ const FILES = [
   "administrator/administrator.css",
   "administrator/screens/control-panel.js",
   "administrator/screens/collections.js",
+  "administrator/screens/configuration-editor.js",
+  "administrator/screens/diagnostics.js",
+  "administrator/screens/extensions-editor.js",
+  "administrator/screens/installer.js",
+  "administrator/screens/menus-editor.js",
+  "administrator/screens/modules-editor.js",
+  "administrator/screens/publisher-filters.js",
   "administrator/screens/publisher.js",
+  "kernel/administrator-diagnostics.js",
+  "kernel/administrator-permissions.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

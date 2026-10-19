@@ -8,8 +8,8 @@
     },
     {
       "path": "host-adapters/modern-script-editor/site-boot.js",
-      "bytes": 21801,
-      "sha256": "00ba3bf35bb55930edad6d50949d0194488c28961b72c1e06ccd9420e6afd900"
+      "bytes": 22839,
+      "sha256": "a512a69d13c4ce1c626e1ec85b06bacc9b5317604e6365164311c6344cdfc2f8"
     },
     {
       "path": "kernel/application.js",
@@ -58,8 +58,8 @@
     },
     {
       "path": "core/rest.js",
-      "bytes": 27138,
-      "sha256": "ba49f32ce44c50bc627bc15b4fd1f723030b768c7177f7ca03ce34ac96482011"
+      "bytes": 27767,
+      "sha256": "84f66521e8132d86f582fe25364ed5a3f488c3e3baec31d7be319db5eea905d3"
     },
     {
       "path": "core/configuration-store.js",
@@ -118,38 +118,83 @@
     },
     {
       "path": "administrator/manifest.js",
-      "bytes": 1267,
-      "sha256": "1a15de6279ee0cd336d81347310b2c10a40f0415421d5066528096f2720c0248"
+      "bytes": 1286,
+      "sha256": "f243a82da968e16acc05ae667ed5db95717284f7a5fcb77b26c28b8646e7db68"
     },
     {
       "path": "administrator/component.js",
-      "bytes": 926,
-      "sha256": "0fc080bba3f4c8195e4cea81527421a4278d065883aeafede15966d9f0e67fbf"
+      "bytes": 1214,
+      "sha256": "376a4d0ff32ef2df8c9af49967a2978f95578e88a5a25b48165c4002b6b1af3f"
     },
     {
       "path": "administrator/router.js",
-      "bytes": 966,
-      "sha256": "7c56d6d1031a9abb361b191d029de273fa764f642be152717e5a9571a48d2052"
+      "bytes": 998,
+      "sha256": "163177de75e4078724aa4ed957f2af82c76653b010d281062b2a3cb0dcab1c3b"
     },
     {
       "path": "administrator/administrator.css",
-      "bytes": 3640,
-      "sha256": "f891a8b4f78561d870ffb4a957414022768c62eed2c59ba3bcb66836f64804f5"
+      "bytes": 4284,
+      "sha256": "c035d5a173ee91a88b41f601dc61c30cc66e6fc55a72acf16c8ca9ef0d18d459"
     },
     {
       "path": "administrator/screens/control-panel.js",
-      "bytes": 920,
-      "sha256": "cd137090e039d8ad9c87ede590957f1640110286e6210bb33d43bc1033165561"
+      "bytes": 957,
+      "sha256": "ac45636ae746c3dd210bf695c0b560b735383d2ff6b5332be0551e0c37465f2d"
     },
     {
       "path": "administrator/screens/collections.js",
-      "bytes": 7572,
-      "sha256": "efc67aab23f679c11caf1c4892e6f731f86b459d0b3f78ea9a53f6b93360147d"
+      "bytes": 8293,
+      "sha256": "b1f8cbb151e640355a261c76c8068376acb617c14ec92a2bb0fbd42b057a2351"
+    },
+    {
+      "path": "administrator/screens/configuration-editor.js",
+      "bytes": 7419,
+      "sha256": "238b69f0bbf6a7b4afd63a5437ae5622cfae51fa50ba0a7434471abb26c10243"
+    },
+    {
+      "path": "administrator/screens/diagnostics.js",
+      "bytes": 3086,
+      "sha256": "49c076cfcb6ecf514d3fad80c160b1758e8dbb9e2a1b2bc053a9414f3c19bfb9"
+    },
+    {
+      "path": "administrator/screens/extensions-editor.js",
+      "bytes": 7836,
+      "sha256": "9134a268dd4da7b98933359f15bbfaad987e7e80c587786a3c75c82bc7ed2f56"
+    },
+    {
+      "path": "administrator/screens/installer.js",
+      "bytes": 3024,
+      "sha256": "86b983a215ec409a6bbeeff50bf19b4d6f1c1321627c9f843239e80929e7d391"
+    },
+    {
+      "path": "administrator/screens/menus-editor.js",
+      "bytes": 8621,
+      "sha256": "fd728f5a2f558994521c67775a92a30f30e3d6dd66ee388b6a5474869de89c64"
+    },
+    {
+      "path": "administrator/screens/modules-editor.js",
+      "bytes": 9575,
+      "sha256": "925bbdb9ef76112bdd00563fb23d1e569c3b164c81894d7e8414bff9e508731e"
+    },
+    {
+      "path": "administrator/screens/publisher-filters.js",
+      "bytes": 3277,
+      "sha256": "904ef7c905f03578f3fc2a0597dc818b57d0bdc20cf6b3d9924b8873b35761bc"
     },
     {
       "path": "administrator/screens/publisher.js",
-      "bytes": 13972,
-      "sha256": "c80317c8c1e2c2c540b997a9b05208c13533540363053ddc7c4f528e10612f5b"
+      "bytes": 15830,
+      "sha256": "3307b17e159bae8fdc5bd331a24a193970cc708da4988070727acda5d73746b1"
+    },
+    {
+      "path": "kernel/administrator-diagnostics.js",
+      "bytes": 2152,
+      "sha256": "9c7ddb98d506f36a4f2ad79930bb1d125fdaf31983536e4c7da039fc330c1baf"
+    },
+    {
+      "path": "kernel/administrator-permissions.js",
+      "bytes": 1243,
+      "sha256": "33d708a64587e7018ab685b14cfc128c193e82dc70bbd08eba9226996c35c5a8"
     }
   ]
 }
