@@ -97,8 +97,14 @@ e garantir que o MSE correto esteja publicado antes de validar o detalhe editori
 
 A tentativa de leitura REST automatizada do `CanvasContent1` nesta rodada não
 produziu retorno utilizável pelo FIORI-AUTO (a sessão respondeu sem valor CDP),
-portanto não houve escrita nem alteração na página. A tela canônica `Default.aspx`
-continua carregando normalmente; o diagnóstico da página interna permanece aberto
+portanto não houve escrita nem alteração na página. A tela canônica `Default.aspx` continua carregando normalmente. Nesta
+validação, `#/destaques` foi confirmado como rota ativa: a Home renderizou o
+módulo DB com conteúdo real, mas os links ainda apontam para o legado
+`#camap/noticias` em vez de `#/destaques/<id>-<slug>`. Portanto, o próximo
+ajuste funcional é alinhar a configuração `catalogoAlias`/`linkTarget` do DB
+para o roteamento Mini Joomla, sem criar uma nova página SharePoint.
+
+ o diagnóstico da página interna permanece aberto
 para uma sessão SharePoint estável dedicada à leitura/publicação do canvas.
 
 ## Limites (importante)
