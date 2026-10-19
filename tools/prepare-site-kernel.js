@@ -112,6 +112,7 @@ const FILES = [
   "administrator/screens/publisher.js",
   "kernel/administrator-diagnostics.js",
   "kernel/administrator-permissions.js",
+  "kernel/installer.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

@@ -195,6 +195,11 @@
       "path": "kernel/administrator-permissions.js",
       "bytes": 1243,
       "sha256": "33d708a64587e7018ab685b14cfc128c193e82dc70bbd08eba9226996c35c5a8"
+    },
+    {
+      "path": "kernel/installer.js",
+      "bytes": 2355,
+      "sha256": "edaf54e3828b181b7d6b433227fca7411b4a7ff8347bff25a5b6ba1c9d8db0ea"
     }
   ]
 }
