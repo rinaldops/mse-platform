@@ -303,7 +303,10 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
     const read = async (name) => {
       const list = listIds[name];
       if (!list || typeof adminClient?.getListItems !== "function") return [];
-      return adminClient.getListItems(list, { select: fieldsByList[name], top: 5000 });
+      const options = { select: fieldsByList[name], top: 5000 };
+      if (name === "MSEMenu") options.orderBy = "Ordem";
+      if (name === "MSEModulos") options.orderBy = "Ordem";
+      return adminClient.getListItems(list, options);
     };
     const [menus, modules, extensions] = await Promise.all([
       read("MSEMenu"), read("MSEModulos"), read("MSEExtensoes")

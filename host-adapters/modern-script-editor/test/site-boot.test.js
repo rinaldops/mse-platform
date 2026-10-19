@@ -192,4 +192,30 @@ import {
   console.log("site-boot.test.js: createTemplateLayoutResolver rejeita quando o pacote não exporta createTemplate() ok.");
 }
 
+// --- buildAdministratorServices: loader read-only usado pelo diagnóstico ---
+{
+  const reads = [];
+  const result = buildAdministratorServices({
+    client: {
+      async getListItems(list, options) {
+        reads.push({ list, options });
+        return [{ Id: reads.length }];
+      }
+    },
+    resolvedListIds: { MSEMenu: "menu-guid", MSEModulos: "modules-guid", MSEExtensoes: "extensions-guid" }
+  });
+  const structure = await result.loadAdministratorStructure();
+  assert.deepEqual(structure.menus, [{ Id: 1 }]);
+  assert.deepEqual(structure.modules, [{ Id: 2 }]);
+  assert.deepEqual(structure.extensions, [{ Id: 3 }]);
+  assert.equal(structure.routes, structure.menus);
+  assert.deepEqual(reads.map((entry) => entry.list), [
+    { listId: "menu-guid" },
+    { listId: "modules-guid" },
+    { listId: "extensions-guid" }
+  ]);
+  assert.deepEqual(reads.map((entry) => entry.options.top), [5000, 5000, 5000]);
+  console.log("site-boot.test.js: loadAdministratorStructure consulta as três listas estruturais ok.");
+}
+
 console.log("site-boot.test.js (host-adapters): verificações concluídas com sucesso.");
