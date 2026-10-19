@@ -38,8 +38,12 @@ do core, kernel, host-adapter, migrações e Administrator.
 
 ## Pendências conscientes
 
-- `com_config` e `com_installer` continuam placeholders, pois não fazem parte
-  do fechamento estrutural imediato desta etapa.
+- O instalador do kernel está integrado ao host-adapter, mas a aplicação do
+  provisionamento continua protegida por confirmação explícita e não é
+  executada automaticamente no tenant.
+- A tela `com_config` cobre a configuração global; escopos adicionais e
+  edição avançada de configurações permanecem dependentes da evolução do
+  schema de `MSEConfiguracoes`.
 - A consulta de permissões depende de o host-adapter injetar o client REST
   configurado; nenhum acesso ao tenant é executado automaticamente.
 - A integração visual permanece separada desta branch e sob responsabilidade

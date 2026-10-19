@@ -19,4 +19,4 @@ A tela `com_content`/`com_publisher` lê e grava artigos em `CAMAPPublicacoes` (
 
 Categorias, tags, mídia avançada, histórico visual e workflow editorial permanecem extensões futuras. O corpo é armazenado como texto HTML seguro e passa pela política de `core/rich-text.js` antes da gravação.
 
-As telas de Extensões, Menus e Módulos permanecem somente-leitura nesta etapa. Configuração global e Instalador ainda são telas estruturais.
+As telas de Extensões, Menus e Módulos permitem manutenção CRUD com ETag e tratamento de conflitos. Configuração global e Instalador integram os serviços estruturais do kernel; o provisionamento exige confirmação explícita.

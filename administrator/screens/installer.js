@@ -10,10 +10,31 @@ export function renderInstallerScreen({ root, services = {} } = {}) {
   const output = document.createElement("pre"); output.className = "mse-administrator__installer-output";
   const toolbar = document.createElement("div"); const inspect = node(document, "button", "Inspecionar listas"); const verify = node(document, "button", "Verificar listas"); const apply = node(document, "button", "Aplicar provisionamento"); toolbar.append(inspect, verify, apply);
   panel.append(node(document, "h1", "Instalador"), node(document, "p", "Inspeção e verificação são somente leitura. Aplicar exige confirmação explícita."), error, toolbar, output); root.append(panel);
-  const installer = services.installer;
+  const installer = services.kernelInstaller || services.installer;
+  const installerIsKernel = Boolean(services.kernelInstaller);
   const moduleId = services.installerModuleId || "administrator";
   const renderResult = (value) => { output.textContent = JSON.stringify(value, null, 2); };
-  const run = async (operation) => { error.textContent = ""; try { if (!installer || typeof installer[operation] !== "function") throw new Error("Serviço de instalador não configurado."); renderResult(await installer[operation](moduleId)); } catch (cause) { error.textContent = `Falha no instalador: ${cause?.message || "erro desconhecido"}`; } };
-  bind(inspect, () => run("inspect")); bind(verify, () => run("verify")); bind(apply, async () => { if (!globalThis.confirm?.("Aplicar o provisionamento das listas do Administrator?")) return; await run("apply"); });
+  const run = async (operation, applyConfirmed = false) => {
+    error.textContent = "";
+    try {
+      if (!installer || typeof installer[operation] !== "function") throw new Error("Serviço de instalador não configurado.");
+      if (installerIsKernel) {
+        const confirmPlan = applyConfirmed
+          ? async (plan) => globalThis.confirm?.(`Aplicar este plano?\n\n${JSON.stringify(plan, null, 2)}`) === true
+          : undefined;
+        const result = operation === "apply" ? installer[operation](confirmPlan) : installer[operation]();
+        renderResult(await result);
+      } else {
+        const confirmPlan = operation === "apply"
+          ? async (plan) => globalThis.confirm?.(`Aplicar este plano?\n\n${JSON.stringify(plan, null, 2)}`) === true
+          : undefined;
+        const result = operation === "apply"
+          ? installer[operation](moduleId, confirmPlan)
+          : installer[operation](moduleId);
+        renderResult(await result);
+      }
+    } catch (cause) { error.textContent = `Falha no instalador: ${cause?.message || "erro desconhecido"}`; }
+  };
+  bind(inspect, () => run("inspect")); bind(verify, () => run("verify")); bind(apply, async () => { if (!globalThis.confirm?.("Aplicar o provisionamento das listas do Administrator?")) return; await run("apply", true); });
   return { dispose() { panel.remove(); } };
 }

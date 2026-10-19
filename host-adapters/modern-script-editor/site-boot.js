@@ -36,6 +36,7 @@
 import { createSiteApplication } from "../../kernel/application.js";
 import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet } from "../../core/rest.js";
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
+import { createKernelInstaller } from "../../kernel/installer.js";
 
 const MENU_FIELDS = Object.freeze([
   "Id", "Title", "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem",
@@ -297,6 +298,7 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
     Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
   );
   const adminClient = services.adminClient || client;
+  const kernelInstaller = services.kernelInstaller || createKernelInstaller({ client });
   const listIds = Object.freeze({ ...administratorListIds, ...(services.listIds || {}) });
   const loadAdministratorStructure = services.loadAdministratorStructure || (async () => {
     const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModulos: MODULOS_FIELDS, MSEExtensoes: EXTENSOES_FIELDS };
@@ -313,7 +315,7 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
     ]);
     return { menus, modules, extensions, routes: menus };
   });
-  return Object.freeze({ ...services, adminClient, listIds, loadAdministratorStructure });
+  return Object.freeze({ ...services, adminClient, listIds, kernelInstaller, loadAdministratorStructure });
 }
 
 

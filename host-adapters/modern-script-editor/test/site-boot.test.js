@@ -33,6 +33,9 @@ import {
     MSEExtensoes: { listId: "extensions-guid" },
     CAMAPPublicacoes: { listId: "camap-list" }
   });
+  assert.equal(typeof result.kernelInstaller?.inspect, "function");
+  assert.equal(typeof result.kernelInstaller?.verify, "function");
+  assert.equal(typeof result.kernelInstaller?.apply, "function");
   assert.equal(Object.isFrozen(result), true);
   assert.equal(Object.isFrozen(result.listIds), true);
   console.log("site-boot.test.js: buildAdministratorServices preserva serviços e injeta listIds como { listId } ok.");
