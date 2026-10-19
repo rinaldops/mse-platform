@@ -319,7 +319,7 @@ completa aplicada e validada ponta a ponta:
   reenviar a tag anterior para a pasta fixa. O `verify` confere hashes remotos após o envio.
 - **Contrapartida aceita:** substituir arquivos em uso afeta o site imediatamente; por isso
   qualquer envio exige confirmar o destino de produção e a autorização aplicável, e o primeiro
-  teste usa uma página paralela (`Preview.aspx`) antes do cutover.
+  teste usa o `Default.aspx` (canônico), com cache-busting e recarga completa antes do cutover.
 - **Implicação para docs e ferramentas:** `INSTALACAO-MSE.md`, `COMPATIBILIDADE-E-VERSIONAMENTO.md`,
   `core/README.md` e `tools/build-release.js` / `verify-release.js` serão adaptados na Fase 1
   (modo “pasta fixa”). O modo antigo pode permanecer arquivado durante a

@@ -1,23 +1,21 @@
 # Administrator do Mini Joomla!
 
-Componente administrativo enxuto, alinhado ao vocabulário do Joomla! e às
-listas `MSE*` do Site Kernel. Esta primeira etapa fornece o manifesto, a rota
-administrativa por query/hash, o Control Panel e telas estruturais para
-Configuração, Extensões, Menus, Módulos e Instalador.
+Componente administrativo enxuto, alinhado ao vocabulário do Joomla! e às listas `MSE*` do Site Kernel. O SharePoint continua sendo a autoridade de permissões; o componente não implementa ACL própria.
 
-Rotas previstas:
+Rotas:
 
 - `#/administrator?option=com_cpanel`
 - `#/administrator?option=com_config`
+- `#/administrator?option=com_content` — Publicador
 - `#/administrator?option=com_extensions`
 - `#/administrator?option=com_menus`
 - `#/administrator?option=com_modules`
 - `#/administrator?option=com_installer`
 
-A camada de dados real deve usar `kernel/admin-data.js` (CRUD/ETag),
-`kernel/admin-form.js` (descritores de formulário), `kernel/installer.js` e os
-schemas `kernel/schemas/mse-*.js`. O `admin/` existente permanece legado e é
-reaproveitado conceitualmente, sem ser alterado nesta etapa.
+## Publicador
 
-Este componente não implementa ACL próprio; o SharePoint continua decidindo as
-permissões. Não inclui ainda o Publicador/editorial.
+A tela `com_content`/`com_publisher` lê e grava artigos em `CAMAPPublicacoes` (apresentada no SharePoint como `MSE Publicacoes`). A listagem e o formulário são deliberadamente mínimos para o MVP: título, slug, resumo, corpo seguro, estado editorial, vigência, destaque, ordem e categoria. Criação usa `createAdminItem`; edição usa `updateAdminItem`, que busca a ETag atual antes de gravar e propaga conflitos de concorrência.
+
+Categorias, tags, mídia avançada, histórico visual e workflow editorial permanecem extensões futuras. O corpo é armazenado como texto HTML seguro e passa pela política de `core/rich-text.js` antes da gravação.
+
+As telas de Extensões, Menus e Módulos permanecem somente-leitura nesta etapa. Configuração global e Instalador ainda são telas estruturais.

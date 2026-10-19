@@ -58,6 +58,7 @@ const MODULOS_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuloId", "MenuId"])
 // (installer/seed/schemas â€” ver cabeÃ§alho daquele script), entÃ£o o host nÃ£o
 // pode depender desses mÃ³dulos em tempo de execuÃ§Ã£o.
 const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]);
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags"]);
 
 /**
  * Resolve o `listId` (GUID) real de cada lista MSE* a partir do catÃ¡logo de
@@ -93,6 +94,10 @@ async function resolveKernelListIds(client) {
       throw new Error(`site-boot.js: lista "${internalName}" nÃ£o encontrada no catÃ¡logo do site (provisionamento pendente?).`);
     }
     listIdByInternalName[internalName] = listId;
+  }
+  for (const internalName of CONTENT_LIST_INTERNAL_NAMES) {
+    const listId = byInternalName.get(internalName.toLowerCase());
+    if (listId) listIdByInternalName[internalName] = listId;
   }
   return listIdByInternalName;
 }
@@ -131,7 +136,7 @@ async function resolveKernelListIds(client) {
  * @param {ReturnType<typeof createSharePointRestClient>} client
  * @param {typeof fetch} fetchImpl
  */
-function createKernelListLoaders(client, fetchImpl) {
+function createKernelListLoaders(client, fetchImpl, listIdsPromise) {
   const keys = ["loadMenu", "loadExtensions", "loadModulos", "loadModulosMenu"];
 
   let batchPromise = null;
@@ -139,7 +144,7 @@ function createKernelListLoaders(client, fetchImpl) {
     if (!batchPromise) {
       batchPromise = (async () => {
         const [listIdByInternalName, digest] = await Promise.all([
-          resolveKernelListIds(client),
+          listIdsPromise || resolveKernelListIds(client),
           client.getDigest()
         ]);
         const requestsByKey = {
@@ -279,6 +284,27 @@ function adaptTemplateToLayout(template, componentPosition) {
 }
 
 /**
+ * Monta os serviços consumidos pelo Administrator sem apagar extensões do host.
+ * O contrato administrativo usa `{ listId }` para permitir que o client REST
+ * resolva a lista por GUID, enquanto `services` continua podendo injetar
+ * adapters específicos (inclusive em hosts e testes).
+ *
+ * @param {{ resolvedListIds: Record<string,string>, services?: Record<string,unknown>, client: object }} options
+ * @returns {Readonly<Record<string,unknown>>}
+ */
+export function buildAdministratorServices({ resolvedListIds = {}, services = {}, client } = {}) {
+  const administratorListIds = Object.fromEntries(
+    Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
+  );
+  return Object.freeze({
+    ...services,
+    adminClient: services.adminClient || client,
+    listIds: Object.freeze({ ...administratorListIds, ...(services.listIds || {}) })
+  });
+}
+
+
+/**
  * Monta o `resolveLayout` esperado por `kernel/application.js` (ver JSDoc
  * daquela funÃ§Ã£o: `({root, positions, componentPosition, theme}) =>
  * LayoutLike|Promise<LayoutLike>`), ligando o Template configurado
@@ -370,6 +396,15 @@ export async function bootSiteKernel({
   onModuleError
 } = {}) {
   const client = createSharePointRestClient({ webUrl, fetchImpl });
+  const listIdsPromise = resolveKernelListIds(client);
+  const resolvedListIds = await listIdsPromise;
+  // O kernel usa GUIDs crus nos loaders; as telas administrativas recebem o
+  // contrato de lista do REST (`{ listId }`), exigido por admin-data.js.
+  const administratorServices = buildAdministratorServices({
+    resolvedListIds,
+    services,
+    client
+  });
   const configurationStore = createSharePointConfigurationStore({ webUrl: client.webUrl, fetchImpl });
   const importModule = (url) => import(url);
 
@@ -379,11 +414,11 @@ export async function bootSiteKernel({
     positions,
     componentPosition,
     defaultView,
-    ...createKernelListLoaders(client, fetchImpl),
+    ...createKernelListLoaders(client, fetchImpl, listIdsPromise),
     configurationStore,
     resolveManifestUrl: createManifestResolver(releaseBase, manifestPathByElemento),
     importModule,
-    services,
+    services: administratorServices,
     onLoadError,
     onModuleError,
     resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule })

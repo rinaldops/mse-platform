@@ -14,10 +14,11 @@ export default defineModuleManifest({
     { key: "menu", type: "list", internalName: "MSEMenu", displayName: "MSE Menu" },
     { key: "modules", type: "list", internalName: "MSEModulos", displayName: "MSE Módulos" },
     { key: "extensions", type: "list", internalName: "MSEExtensoes", displayName: "MSE Extensões" },
-    { key: "configuration", type: "list", internalName: "MSEConfiguracoes", displayName: "MSE Configurações" }
+    { key: "configuration", type: "list", internalName: "MSEConfiguracoes", displayName: "MSE Configurações" },
+    { key: "publications", type: "list", internalName: "CAMAPPublicacoes", displayName: "MSE Publicacoes" }
   ],
-  capabilities: { full: true, summary: false, settings: true, provisioning: true },
+  capabilities: { full: true, summary: false, settings: true, provisioning: true, publishing: true },
   entrypoints: { full: "./component.js" },
-  views: { controlpanel: true, installer: true, config: true, menus: true, modules: true, extensions: true },
+  views: { controlpanel: true, installer: true, config: true, content: true, publisher: true, menus: true, modules: true, extensions: true },
   routeParams: ["option", "view", "task", "id"]
 });

@@ -87,6 +87,7 @@ const FILES = [
   "core/configuration-store.js",
   "core/provisioning.js",
   "core/navigation.js",
+  "core/rich-text.js",
   // Administrator (18/10/2026) — ver justificativa completa no cabeçalho.
   "core/module-contract.js",
   "kernel/admin-data.js",
@@ -100,7 +101,8 @@ const FILES = [
   "administrator/router.js",
   "administrator/administrator.css",
   "administrator/screens/control-panel.js",
-  "administrator/screens/collections.js"
+  "administrator/screens/collections.js",
+  "administrator/screens/publisher.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

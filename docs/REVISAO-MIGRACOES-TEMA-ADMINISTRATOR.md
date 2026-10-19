@@ -55,7 +55,7 @@ deve ser tratado como decisão de dados, não corrigido silenciosamente.
 
 A ativação do Tema 1 valida a cardinalidade do escopo global, mas a validação de
 que `camap-tema-01` está publicado e compatível com o runtime ocorre na etapa de
-validação visual do `Preview.aspx`, antes da aplicação real.
+validação visual do `Default.aspx` (canônico), antes da aplicação real.
 
 ## 3. Testes locais executados
 
@@ -85,13 +85,13 @@ antes do `--apply`.
 
 ## 4. Procedimento recomendado antes da aplicação real
 
-1. Publicar/conferir o pacote do Tema 1 no `Preview.aspx`.
+1. Publicar/conferir o pacote do Tema 1 no `Default.aspx` (canônico).
 2. Validar visualmente posições, ordem, Hero, breadcrumbs e rodapé.
 3. Executar ambos os runners em `--dry-run` contra o tenant real.
 4. Revisar os planos e os registros já existentes.
 5. Capturar o snapshot das linhas afetadas.
 6. Aplicar primeiro a ativação do Tema 1.
-7. Validar o Preview.
+7. Validar o `Default.aspx`.
 8. Aplicar a rota do Administrator.
 9. Validar `#/administrator` e a proteção da extensão.
 10. Registrar o resultado e o rollback.

@@ -87,7 +87,7 @@
     if (!root) throw new Error("site-runner.js: raiz [data-mse-site] não encontrada" + (instanceId ? " para a instância " + instanceId : "") + ".");
 
     var base = releaseBase.replace(/\/+$/, "");
-    var siteBootUrl = base + "/host-adapters/modern-script-editor/site-boot.js";
+    var siteBootUrl = base + "/host-adapters/modern-script-editor/site-boot.js?mseBootCacheBust=" + Date.now();
     var boot = await import(siteBootUrl);
 
     return boot.bootSiteKernel({

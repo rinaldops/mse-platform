@@ -3,13 +3,13 @@
   "files": [
     {
       "path": "host-adapters/modern-script-editor/site-runner.js",
-      "bytes": 5146,
-      "sha256": "c29f60a00c5366957cd2b8e3ccea3c0507a8ee57c760b952cbd1fe8e8901a695"
+      "bytes": 5177,
+      "sha256": "7e0067be97180368d1802ba5d7066b4e2aa7940e46153d47595009c7b9d29da6"
     },
     {
       "path": "host-adapters/modern-script-editor/site-boot.js",
-      "bytes": 20142,
-      "sha256": "23e40076368e5b93ee064cc93e829fa563bddeb5897035943a517ca735fd2cc0"
+      "bytes": 21801,
+      "sha256": "00ba3bf35bb55930edad6d50949d0194488c28961b72c1e06ccd9420e6afd900"
     },
     {
       "path": "kernel/application.js",
@@ -77,6 +77,11 @@
       "sha256": "9e9a0f3a959d9af843d4f4715f3a97b9373c78a40126f5c8c4831a4678422d7c"
     },
     {
+      "path": "core/rich-text.js",
+      "bytes": 5326,
+      "sha256": "4dcd3a1dc00fbc61291961919fca85edbc5d4fc2b892ae0591093af83f19b12d"
+    },
+    {
       "path": "core/module-contract.js",
       "bytes": 8197,
       "sha256": "8d9f464222fc0e83af52ec853ac607293ac23a35eef633df90a4d9b2fd42f80d"
@@ -113,33 +118,38 @@
     },
     {
       "path": "administrator/manifest.js",
-      "bytes": 1108,
-      "sha256": "b79d7cce6385d6742206a7ca3e2c1ad8154fdf7b4bb177668a20afad0892aceb"
+      "bytes": 1267,
+      "sha256": "1a15de6279ee0cd336d81347310b2c10a40f0415421d5066528096f2720c0248"
     },
     {
       "path": "administrator/component.js",
-      "bytes": 786,
-      "sha256": "d55df980e377297a698a8755c5dbf2b2e3613f0bbf8db5df1667cc03359c0ea3"
+      "bytes": 926,
+      "sha256": "0fc080bba3f4c8195e4cea81527421a4278d065883aeafede15966d9f0e67fbf"
     },
     {
       "path": "administrator/router.js",
-      "bytes": 912,
-      "sha256": "703f8a77a16cb0f8648dc4b32006d79b8d1abfd8b109867733c78338e8715caf"
+      "bytes": 966,
+      "sha256": "7c56d6d1031a9abb361b191d029de273fa764f642be152717e5a9571a48d2052"
     },
     {
       "path": "administrator/administrator.css",
-      "bytes": 1478,
-      "sha256": "f1a0d1029d9bc7285d3354b3396231072a423457010cdddccd5922f08e85ddc7"
+      "bytes": 3640,
+      "sha256": "f891a8b4f78561d870ffb4a957414022768c62eed2c59ba3bcb66836f64804f5"
     },
     {
       "path": "administrator/screens/control-panel.js",
-      "bytes": 889,
-      "sha256": "151ae1513bea64f7af4c2881f2591403415f111bf228beca2fbfcd9cef21d47a"
+      "bytes": 920,
+      "sha256": "cd137090e039d8ad9c87ede590957f1640110286e6210bb33d43bc1033165561"
     },
     {
       "path": "administrator/screens/collections.js",
       "bytes": 7572,
       "sha256": "efc67aab23f679c11caf1c4892e6f731f86b459d0b3f78ea9a53f6b93360147d"
+    },
+    {
+      "path": "administrator/screens/publisher.js",
+      "bytes": 13972,
+      "sha256": "c80317c8c1e2c2c540b997a9b05208c13533540363053ddc7c4f528e10612f5b"
     }
   ]
 }

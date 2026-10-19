@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  buildAdministratorServices,
   createTemplateResolver,
   createTemplateLayoutResolver
 } from "../site-boot.js";
@@ -9,6 +10,33 @@ import {
 // kernel/application.js), sem precisar simular toda a cadeia REST de
 // bootSiteKernel — isso já está coberto por core/test/site-boot.test.js
 // (createManifestResolver + bootSiteKernel ponta a ponta).
+
+// --- buildAdministratorServices: contrato de GUIDs para telas administrativas
+// preserva adapters customizados injetados pelo host ------------------------
+{
+  const client = { name: "client-fake" };
+  const customAdminClient = { name: "custom-admin" };
+  const services = {
+    adminClient: customAdminClient,
+    sanitizeHtml: () => "sanitized",
+    listIds: { CAMAPPublicacoes: { listId: "camap-list" } }
+  };
+  const result = buildAdministratorServices({
+    client,
+    resolvedListIds: { MSEMenu: "menu-guid", MSEExtensoes: "extensions-guid" },
+    services
+  });
+  assert.equal(result.adminClient, customAdminClient, "adapter administrativo customizado deve ser preservado");
+  assert.equal(result.sanitizeHtml, services.sanitizeHtml, "serviços adicionais devem ser preservados");
+  assert.deepEqual(result.listIds, {
+    MSEMenu: { listId: "menu-guid" },
+    MSEExtensoes: { listId: "extensions-guid" },
+    CAMAPPublicacoes: { listId: "camap-list" }
+  });
+  assert.equal(Object.isFrozen(result), true);
+  assert.equal(Object.isFrozen(result.listIds), true);
+  console.log("site-boot.test.js: buildAdministratorServices preserva serviços e injeta listIds como { listId } ok.");
+}
 
 // --- createTemplateResolver: mesmo padrão de createManifestResolver,
 // convenção de pasta fixa (templates/<nome>/index.js) + override pontual ---

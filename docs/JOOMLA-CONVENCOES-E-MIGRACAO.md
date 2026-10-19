@@ -484,7 +484,7 @@ Reaproveitar `admin-data.js`, `admin-form.js`, `kernel/installer.js`, editor ric
 1. Fazer o CAMAP consumir os componentes/módulos do `mse-platform`.
 2. Retirar gradualmente código genérico de `CAMAP-AGP/core`, `modules`, `tests` e `data/provisioning`, preservando backups/documentação.
 3. Manter no CAMAP apenas mídia, `theme/` e documentação conforme o plano aprovado.
-4. Validar `Default.aspx` com um único MSE e Preview antes do cutover.
+4. Validar `Default.aspx` (canônico) com um único MSE antes do cutover.
 5. Só depois arquivar aliases e caminhos históricos.
 
 **Aceite:** Home e páginas internas são rotas do mesmo Site Kernel; nenhuma página depende de fallback monolítico ou de conteúdo externo para o corpo da publicação.
