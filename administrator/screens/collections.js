@@ -41,6 +41,7 @@ import { MSE_MODULOS_SCHEMA } from "../../kernel/schemas/mse-modulos.js";
 import { renderMenusEditor } from "./menus-editor.js";
 import { renderModulesEditor } from "./modules-editor.js";
 import { renderExtensionsEditor } from "./extensions-editor.js";
+import { renderConfigurationEditor } from "./configuration-editor.js";
 
 const labels = {
   com_config: "Configuração global",
@@ -171,7 +172,9 @@ export function renderCollectionScreen({ root, route, services = {} } = {}) {
   h.textContent = labels[route.option] || "Administrator";
   panel.append(h);
 
-  if (route.option === "com_extensions") {
+  if (route.option === "com_config") {
+    renderConfigurationEditor({ root: panel, services });
+  } else if (route.option === "com_extensions") {
     renderExtensionsEditor({ root: panel, services });
   } else if (route.option === "com_menus") {
     renderMenusEditor({ root: panel, services });

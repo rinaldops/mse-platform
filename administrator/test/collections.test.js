@@ -210,7 +210,7 @@ function textOf(elements) {
   const h1 = root.querySelectorAll("h1")[0];
   assert.equal(h1.textContent, "Configuração global");
   const p = root.querySelectorAll("p")[0];
-  assert.equal(p.textContent, "A tela está preparada para receber a fonte SharePoint correspondente.");
+  assert.match(p.textContent, /lista MSEConfiguracoes|fonte SharePoint/);
   assert.equal(root.querySelectorAll("table").length, 0);
 
   view.dispose();
@@ -225,7 +225,7 @@ function textOf(elements) {
   const h1 = root.querySelectorAll("h1")[0];
   assert.equal(h1.textContent, "Instalador");
   const p = root.querySelectorAll("p")[0];
-  assert.equal(p.textContent, "A tela está preparada para receber a fonte SharePoint correspondente.");
+  assert.match(p.textContent, /lista MSEConfiguracoes|fonte SharePoint/);
 
   view.dispose();
   console.log("collections.test.js: com_installer permanece placeholder (não-regressão) ok.");

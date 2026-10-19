@@ -16,3 +16,10 @@ assert.throws(() => validateExtensionValues({ ...extensionBase, Elemento: "Blog 
 assert.throws(() => validateExtensionValues({ ...extensionBase, ParamsJson: "true" }), /ParamsJson/);
 assert.equal(validateExtensionValues({ ...extensionBase, Ordem: "" }).Ordem, null);
 console.log("editor-validation.test.js: verificações concluídas com sucesso.");
+
+import { validateConfigurationValues } from "../screens/configuration-editor.js";
+const config = validateConfigurationValues({ Title: "tema-global", Escopo: "Global", ConfiguracaoJson: "{\"theme\":{}}", Layout: "Contained", Estado: "Publicado", Ativo: true });
+assert.equal(config.Escopo, "Global");
+assert.throws(() => validateConfigurationValues({ Title: "x", Escopo: "Instancia", Modulo: "", ConfiguracaoJson: "{}" }), /Módulo/);
+assert.throws(() => validateConfigurationValues({ Title: "x", Escopo: "Global", ConfiguracaoJson: "[]" }), /Configuração JSON/);
+console.log("editor-validation.test.js: configuração global validada ok.");
