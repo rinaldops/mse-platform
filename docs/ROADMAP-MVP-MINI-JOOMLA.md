@@ -175,6 +175,23 @@ satisfazem este critério.
 
 Painel completo de configuração/instalação, filtros avançados, categorias/tags avançadas, mídia, workflow editorial, histórico visual e editor rico ficam para evolução posterior. Templates e ACL própria continuam fora do escopo conforme decisão do projeto.
 
+## Smoke final no tenant — 19/10/2026
+
+Foi feita uma nova validação funcional, sem escrita, pela sessão FIORI-AUTO
+autorizada:
+
+- `Default.aspx#/destaques`: o componente BLOG montou o catálogo com conteúdo
+  real, filtros e paginação; não houve `data-mse-dispatch-reason`.
+- `Default.aspx#/administrator?option=com_content`: o componente Administrator
+  montou o painel e a navegação para o Publicador permaneceu disponível.
+- A validação foi funcional/estrutural. A aprovação estética definitiva do
+  Tema 1 continua sendo responsabilidade da frente visual e deve ser comparada
+  ao PDF aprovado antes do merge dessa frente.
+- Foram geradas capturas locais temporárias para inspeção; elas não fazem parte
+  do repositório nem do pacote publicado.
+
+Nenhuma alteração foi feita no canvas ou nas listas durante este smoke test.
+
 ## Critérios de encerramento
 
 As Etapas 0–5 estão concluídas com evidência registrada. O código, o
