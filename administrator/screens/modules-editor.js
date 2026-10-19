@@ -19,12 +19,15 @@ export function validateModuleValues(values = {}) {
   const schemaVersao = item.SchemaVersao === "" || item.SchemaVersao == null ? null : Number(item.SchemaVersao);
   if (!Number.isInteger(ordem) || ordem < 0) throw new TypeError("Ordem deve ser um inteiro não negativo.");
   if (schemaVersao !== null && (!Number.isInteger(schemaVersao) || schemaVersao < 0)) throw new TypeError("Versão do schema deve ser um inteiro não negativo.");
-  const publicarEm = item.PublicarEm || null;
-  const publicarAte = item.PublicarAte || null;
-  if (publicarEm && publicarAte && new Date(publicarAte).getTime() < new Date(publicarEm).getTime()) throw new TypeError("Publicar até deve ser maior ou igual a Publicar em.");
-  const paramsJson = item.ParamsJson == null || item.ParamsJson === "" ? "{}" : String(item.ParamsJson);
+  const publicarEm = item.PublicarEm ? new Date(item.PublicarEm) : null;
+  const publicarAte = item.PublicarAte ? new Date(item.PublicarAte) : null;
+  if (publicarEm && Number.isNaN(publicarEm.getTime())) throw new TypeError("Publicar em deve ser uma data válida.");
+  if (publicarAte && Number.isNaN(publicarAte.getTime())) throw new TypeError("Publicar até deve ser uma data válida.");
+  if (publicarEm && publicarAte && publicarAte.getTime() < publicarEm.getTime()) throw new TypeError("Publicar até deve ser maior ou igual a Publicar em.");
+  const publicarEmIso = publicarEm ? publicarEm.toISOString() : null;
+  const publicarAteIso = publicarAte ? publicarAte.toISOString() : null;  const paramsJson = item.ParamsJson == null || item.ParamsJson === "" ? "{}" : String(item.ParamsJson);
   try { const parsed = JSON.parse(paramsJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); } catch { throw new TypeError("ParamsJson deve conter um objeto JSON válido."); }
-  return { Title: title, ModuloTipo: moduloTipo, Posicao: posicao, Ordem: ordem, Estado: estado, PublicarEm: publicarEm, PublicarAte: publicarAte, MostrarTitulo: Boolean(item.MostrarTitulo), Estilo: String(item.Estilo ?? "").trim(), AtribuicaoMenu: atribuicao, ParamsJson: paramsJson, SchemaVersao: schemaVersao };
+  return { Title: title, ModuloTipo: moduloTipo, Posicao: posicao, Ordem: ordem, Estado: estado, PublicarEm: publicarEmIso, PublicarAte: publicarAteIso, MostrarTitulo: Boolean(item.MostrarTitulo), Estilo: String(item.Estilo ?? "").trim(), AtribuicaoMenu: atribuicao, ParamsJson: paramsJson, SchemaVersao: schemaVersao };
 }
 
 function node(document, tag, text = "") { const value = document.createElement(tag); value.textContent = text; return value; }
