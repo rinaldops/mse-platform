@@ -87,6 +87,6 @@ export function renderMenusEditor({ root, services = {} } = {}) {
       table.append(row);
     }
     tableHost.append(table);
-  }  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEMenu não configurado."; return; } try { render(await listAdminItems({ client, list, orderby: "Ordem" })); } catch (e) { error.textContent = message("Falha ao carregar menus", e); } }
+  }  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEMenu não configurado."; return; } try { render(await listAdminItems({ client, list, select: ["Id", "Title", "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem", "Componente", "Visao", "ParamsJson", "Padrao", "AbrirEm", "Estado"], orderby: "Ordem" })); } catch (e) { error.textContent = message("Falha ao carregar menus", e); } }
   bindClick(newButton, () => { currentId = null; form(); }); bindClick(reloadButton, reload); form(); reload(); return { dispose() { panel.remove(); } };
 }
