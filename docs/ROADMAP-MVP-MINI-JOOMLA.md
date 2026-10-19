@@ -87,6 +87,32 @@ O commit/push do estado atual já foi realizado em `0aa7e5f`; esta etapa não é
 reaberta para o código já entregue, apenas para registrar o fechamento da
 validação pendente.
 
+
+## Plano de coordenação da pendência BLOG (ciclo atual)
+
+O ciclo foi dividido em frentes sem escrita concorrente:
+
+| Frente | Responsável | Escopo | Gate |
+|---|---|---|---|
+| Diagnóstico de canvas/publicação | Orquestrador + Implementador A | Ler `CanvasContent1` de `Destaques.aspx` via FIORI-AUTO, sem alterar o tenant inicialmente | Evidência do MSE presente, publicado e apontando para a release correta |
+| Auditoria de roteamento | Implementador B | Conferir contrato local de `MSEMenu`, `router`, `dispatcher` e manifesto BLOG | Alias, Componente, Visão e parâmetros documentados e coerentes |
+| Revisão independente | Revisor | Conferir achados, riscos de produção e critérios de aceite | Aprovação ou lista de correções reproduzíveis |
+| Integração/publicação | Orquestrador | Único responsável por alterações no canvas, upload e validação visual | Nenhuma escrita sem plano, ETag, rollback e evidência prévia |
+
+### Sequência obrigatória
+
+1. Concluir a auditoria local de roteamento e o diagnóstico somente-leitura do canvas.
+2. Comparar o canvas real com o snippet aprovado para `Destaques.aspx`.
+3. Se o MSE estiver ausente, incorreto ou não publicado, preparar plano mínimo de correção; não alterar outras páginas.
+4. Fazer uma única alteração controlada no canvas, somente após confirmar página, webpart, ETag e conteúdo esperado.
+5. Publicar e recarregar `Default.aspx`/rota interna pelo FIORI-AUTO.
+6. Aceitar somente se houver Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno.
+7. Se qualquer gate falhar, reverter pelo histórico nativo do SharePoint e registrar a evidência.
+
+A equipe de agentes não tem autorização para editar o tenant ou arquivos fora de
+seu escopo. O orquestrador mantém a fila de navegador/publicação para evitar
+corridas na mesma sessão e não trata uma resposta vazia do CDP como sucesso.
+
 ## Fora do MVP
 
 Painel completo de configuração/instalação, filtros avançados, categorias/tags avançadas, mídia, workflow editorial, histórico visual e editor rico ficam para evolução posterior. Templates e ACL própria continuam fora do escopo conforme decisão do projeto.
