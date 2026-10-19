@@ -60,8 +60,10 @@ Executar exclusivamente via `app-devs/FIORI-AUTO`/RPC 47175 (instância isolada)
 
 **Gate:** **parcialmente aprovado** para o Administrator: a rota canônica foi
 renderizada no tenant, com leitura, criação, sanitização, ETag e conflito 412
-comprovados. O gate permanece aberto para o conteúdo: a sondagem da rota BLOG
-não montou Componente/Módulo e o item temporário precisa ser retornado a
+comprovados. O gate permanece aberto para o conteúdo: a sondagem de `#/blog` não é uma
+prova válida do catálogo CAMAP, pois o alias previsto é `destaques`; a abertura
+direta de `Destaques.aspx` também não é válida no modelo de página canônica se o
+canvas não contiver um MSE próprio. O item temporário já foi retornado a
 `Lixeira`.
 
 ### Etapa 4 — Correções pós-tenant (aguardando a pendência de conteúdo)
@@ -101,17 +103,33 @@ O ciclo foi dividido em frentes sem escrita concorrente:
 
 ### Sequência obrigatória
 
-1. Concluir a auditoria local de roteamento e o diagnóstico somente-leitura do canvas.
-2. Comparar o canvas real com o snippet aprovado para `Destaques.aspx`.
-3. Se o MSE estiver ausente, incorreto ou não publicado, preparar plano mínimo de correção; não alterar outras páginas.
-4. Fazer uma única alteração controlada no canvas, somente após confirmar página, webpart, ETag e conteúdo esperado.
-5. Publicar e recarregar `Default.aspx`/rota interna pelo FIORI-AUTO.
-6. Aceitar somente se houver Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno.
-7. Se qualquer gate falhar, reverter pelo histórico nativo do SharePoint e registrar a evidência.
+1. [concluído] Concluir a auditoria local de roteamento: o alias esperado do catálogo geral é `destaques`, não `blog`.
+2. [pendente] Ler o `CanvasContent1` de `Default.aspx` e confirmar `site-runner.js`, `data-mse-site`, `current` e overrides do BLOG.
+3. [pendente] Fazer GET de `MSEMenu` por GUID resolvido via `RootFolder/Name` e confirmar `destaques` publicado, `Componente=blog`, `Visao=list`.
+4. [pendente] Fazer GET de `MSEExtensoes` por GUID e confirmar `Elemento=blog`, `Tipo=Componente`, `Habilitado=true`.
+5. [condicional] Se houver divergência, preparar uma única alteração mínima e controlada, sem tocar em outras páginas.
+6. [pendente] Publicar/recarregar `Default.aspx#/destaques` pelo FIORI-AUTO.
+7. [pendente] Aceitar somente se houver Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno.
+8. [condicional] Se qualquer gate falhar após uma escrita autorizada, reverter pelo histórico nativo do SharePoint e registrar a evidência.
 
 A equipe de agentes não tem autorização para editar o tenant ou arquivos fora de
 seu escopo. O orquestrador mantém a fila de navegador/publicação para evitar
 corridas na mesma sessão e não trata uma resposta vazia do CDP como sucesso.
+
+## Matriz de diagnóstico e aceite do BLOG
+
+| Evidência | Interpretação | Ação |
+|---|---|---|
+| `#/blog` vazio | Alias não previsto pelo catálogo, salvo se houver item `Alias=blog` | Não alterar MSEMenu por causa desse teste |
+| `#/destaques` com `reason=not-found` | Item publicado ausente/incompatível em MSEMenu | Corrigir somente após GET confirmatório |
+| `reason=disabled` | BLOG ausente/desabilitado em MSEExtensoes | Corrigir extensão, sem alterar canvas |
+| `reason=error` | Falha de manifesto/ativo/global do adapter | Inspecionar assets e console antes de editar listas |
+| `Destaques.aspx` sem MSE | Página interna não é a página canônica do modelo | Validar a rota hash no `Default.aspx` |
+
+Aceite final: `Default.aspx#/destaques` deve mostrar a grade do BLOG; o clique
+em um item deve produzir `#/destaques/<id>-<slug>` e exibir título, resumo e
+`CorpoHtmlSeguroV1`, com navegação de retorno ao catálogo. Links externos não
+satisfazem este critério.
 
 ## Fora do MVP
 
