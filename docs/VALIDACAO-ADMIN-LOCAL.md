@@ -88,11 +88,12 @@ Foram comprovados no tenant:
 - atualização do item de teste para `Publicado` para sondagem do BLOG.
 
 O item temporário foi retornado a `Lixeira` no tenant após a validação
-(`Id 27`, `HTTP 204`), sem permanecer como conteúdo publicável. A rota BLOG foi sondada no ambiente autorizado, mas a
-tela permaneceu sem Componente/Módulo renderizado (`data-mse-component` vazio).
-Portanto, não se declara ainda a validação do detalhe editorial nesta branch;
-é necessário reconciliar o alias efetivo de `MSEMenu` com a rota esperada antes
-do encerramento.
+(`Id 27`, `HTTP 204`), sem permanecer como conteúdo publicável. A rota BLOG foi sondada no ambiente autorizado. A sessão FIORI-AUTO retornou
+`data-mse-component` vazio tanto na tentativa por `#/blog` quanto ao abrir
+`Destaques.aspx` diretamente; essa página carregou apenas o shell nativo do
+SharePoint. O diagnóstico passa a ser de **canvas/publicação da página**, não
+mais apenas de alias: é necessário conferir o `CanvasContent1` de `Destaques.aspx`
+e garantir que o MSE correto esteja publicado antes de validar o detalhe editorial.
 
 ## Limites (importante)
 
