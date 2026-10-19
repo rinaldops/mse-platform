@@ -158,8 +158,8 @@
     },
     {
       "path": "administrator/screens/extensions-editor.js",
-      "bytes": 7941,
-      "sha256": "e99ed036b936e5334171b695554a2b08189a2551602e1b877fd61ca593191687"
+      "bytes": 7932,
+      "sha256": "96172a5935b37f19169c346210936a2ebe3230915cd9cee752d3d721b25ba741"
     },
     {
       "path": "administrator/screens/installer.js",
@@ -173,8 +173,8 @@
     },
     {
       "path": "administrator/screens/modules-editor.js",
-      "bytes": 9748,
-      "sha256": "16bf23c89843f4755c128fcdbb09cf274cb8c224f1d3f4519e9ed8e3ec6ba581"
+      "bytes": 9742,
+      "sha256": "5443faa34064cd2521d838b9ec3cc5b1c8d5f195a3f19cf4b7507406892cb7e9"
     },
     {
       "path": "administrator/screens/publisher-filters.js",
