@@ -28,9 +28,10 @@
  * `FieldDescriptor.name` para ler o valor bruto do item) — nenhum formulário
  * de edição é desenhado aqui, é renderização somente-leitura.
  *
- * `com_config`/`com_installer` permanecem com o comportamento placeholder
- * original nesta rodada (explicitamente adiados — ver passo 6 da tarefa
- * desta rodada); não consomem `services.adminClient`/`listIds`.
+ * `com_config` usa `configuration-editor.js` para editar MSEConfiguracoes.
+ * `com_installer` é renderizado por `administrator/screens/installer.js` no
+ * roteador principal; este arquivo mantém apenas o fallback de coleção para
+ * hosts que não usam `administrator/component.js`.
  */
 
 import { listAdminItems } from "../../kernel/admin-data.js";
@@ -185,8 +186,8 @@ export function renderCollectionScreen({ root, route, services = {} } = {}) {
     // services.adminClient/services.listIds (ver contrato no topo do arquivo).
     renderListPanel(document, panel, route.option, services);
   } else {
-    // com_config/com_installer: PLACEHOLDER mantido deliberadamente nesta
-    // rodada — conectar a dados reais fica para outra rodada.
+    // O roteador principal trata com_installer antes de chegar aqui. O
+    // fallback preserva uma mensagem segura para hosts antigos.
     const p = document.createElement("p");
     p.textContent = services.status || "A tela está preparada para receber a fonte SharePoint correspondente.";
     panel.append(p);
