@@ -95,6 +95,12 @@ SharePoint. O diagnóstico passa a ser de **canvas/publicação da página**, n�
 mais apenas de alias: é necessário conferir o `CanvasContent1` de `Destaques.aspx`
 e garantir que o MSE correto esteja publicado antes de validar o detalhe editorial.
 
+A tentativa de leitura REST automatizada do `CanvasContent1` nesta rodada não
+produziu retorno utilizável pelo FIORI-AUTO (a sessão respondeu sem valor CDP),
+portanto não houve escrita nem alteração na página. A tela canônica `Default.aspx`
+continua carregando normalmente; o diagnóstico da página interna permanece aberto
+para uma sessão SharePoint estável dedicada à leitura/publicação do canvas.
+
 ## Limites (importante)
 
 Esta validação **não** cobre:
