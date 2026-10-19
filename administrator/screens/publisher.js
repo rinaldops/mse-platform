@@ -20,6 +20,7 @@ import {
 } from "../../kernel/admin-data.js";
 
 import { sanitizeRichText } from "../../core/rich-text.js";
+import { EDITORIAL_STATES, filterPublisherItems } from "./publisher-filters.js";
 
 const ESTADOS = ["Publicado", "Despublicado", "Arquivado", "Lixeira"];
 const DEFAULT_ESTADO = "Despublicado";
@@ -133,7 +134,16 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   const toolbar = el(document, "div", { className: "mse-administrator__toolbar" });
   const btnNew = el(document, "button", { text: "Novo artigo" });
   const btnReload = el(document, "button", { text: "Recarregar" });
-  toolbar.append(btnNew, btnReload);
+  const filterTerm = el(document, "input", { type: "search", name: "FiltroTermo", value: "" });
+  const filterState = el(document, "select", { name: "FiltroEstado" });
+  filterState.append(el(document, "option", { text: "Todos os estados", value: "" }));
+  for (const state of EDITORIAL_STATES) filterState.append(el(document, "option", { text: state, value: state }));
+  const filterCategory = el(document, "input", { type: "search", name: "FiltroCategoria", value: "" });
+  const filterFeatured = el(document, "select", { name: "FiltroDestaque" });
+  filterFeatured.append(el(document, "option", { text: "Todos", value: "" }), el(document, "option", { text: "Destaques", value: "true" }), el(document, "option", { text: "Não destacados", value: "false" }));
+  const filterBar = el(document, "div", { className: "mse-administrator__publisher-filters" });
+  filterBar.append(filterTerm, filterState, filterCategory, filterFeatured);
+  toolbar.append(btnNew, btnReload, filterBar);
 
   const listContainer = el(document, "div", { className: "mse-administrator__publisher-list" });
   const formContainer = el(document, "div", { className: "mse-administrator__publisher-form" });
@@ -144,6 +154,7 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   const adminClient = services.adminClient;
   const list = resolvePublisherList(services.listIds);
   const sanitizeHtml = typeof services.sanitizeHtml === "function" ? services.sanitizeHtml : defaultSanitizeHtml;
+  let loadedItems = [];
 
   if (!adminClient || typeof adminClient.getListItems !== "function") {
     error.textContent = "Não foi possível carregar o Publicador: nenhum client administrativo foi configurado.";
@@ -292,7 +303,14 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
     formContainer.append(h2, form);
   }
 
+  function currentFilters() {
+    return { termo: filterTerm.value, estado: filterState.value, categoria: filterCategory.value, destaque: filterFeatured.value, vigenteEm: new Date() };
+  }
+
   function renderTable(items) {
+    loadedItems = Array.isArray(items) ? items : [];
+    const visibleItems = filterPublisherItems(loadedItems, currentFilters());
+    items = visibleItems;
     clearChildren(listContainer);
     const table = el(document, "table", { className: "mse-administrator__table" });
     const thead = el(document, "thead");
@@ -356,6 +374,13 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
     }
   }
 
+  function applyFilters() { renderTable(loadedItems, { saveItems: false }); }
+  for (const control of [filterTerm, filterState, filterCategory, filterFeatured]) {
+    if (typeof control.addEventListener === "function") control.addEventListener("input", applyFilters);
+    else control.oninput = applyFilters;
+    if (typeof control.addEventListener === "function") control.addEventListener("change", applyFilters);
+    else control.onchange = applyFilters;
+  }
   setClick(btnReload, () => reload());
   setClick(btnNew, () => {
     currentId = null;

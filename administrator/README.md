@@ -6,6 +6,7 @@ Rotas:
 
 - `#/administrator?option=com_cpanel`
 - `#/administrator?option=com_config`
+- `#/administrator?option=com_diagnostics` — diagnóstico estrutural e permissões nativas
 - `#/administrator?option=com_content` — Publicador
 - `#/administrator?option=com_extensions`
 - `#/administrator?option=com_menus`

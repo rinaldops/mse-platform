@@ -296,11 +296,21 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
   const administratorListIds = Object.fromEntries(
     Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
   );
-  return Object.freeze({
-    ...services,
-    adminClient: services.adminClient || client,
-    listIds: Object.freeze({ ...administratorListIds, ...(services.listIds || {}) })
+  const adminClient = services.adminClient || client;
+  const listIds = Object.freeze({ ...administratorListIds, ...(services.listIds || {}) });
+  const loadAdministratorStructure = services.loadAdministratorStructure || (async () => {
+    const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModulos: MODULOS_FIELDS, MSEExtensoes: EXTENSOES_FIELDS };
+    const read = async (name) => {
+      const list = listIds[name];
+      if (!list || typeof adminClient?.getListItems !== "function") return [];
+      return adminClient.getListItems(list, { select: fieldsByList[name], top: 5000 });
+    };
+    const [menus, modules, extensions] = await Promise.all([
+      read("MSEMenu"), read("MSEModulos"), read("MSEExtensoes")
+    ]);
+    return { menus, modules, extensions, routes: menus };
   });
+  return Object.freeze({ ...services, adminClient, listIds, loadAdministratorStructure });
 }
 
 

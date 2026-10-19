@@ -105,7 +105,7 @@ function textOf(elements) {
   assert.equal(h1.textContent, "Extensões");
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", ...buildFormFields(MSE_EXTENSOES_SCHEMA).map((d) => d.label)];
+  const expectedLabels = ["Título", "Tipo", "Elemento", "Versão", "Habilitada", "Protegida", "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1); // pula o cabeçalho
@@ -131,7 +131,7 @@ function textOf(elements) {
   await flush();
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", ...buildFormFields(MSE_MENU_SCHEMA).map((d) => d.label)];
+  const expectedLabels = ["Título", ...buildFormFields(MSE_MENU_SCHEMA).map((d) => d.label), "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1);
@@ -156,7 +156,7 @@ function textOf(elements) {
   await flush();
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", ...buildFormFields(MSE_MODULOS_SCHEMA).map((d) => d.label)];
+  const expectedLabels = ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1);

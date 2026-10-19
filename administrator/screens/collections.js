@@ -38,6 +38,9 @@ import { buildFormFields } from "../../kernel/admin-form.js";
 import { MSE_EXTENSOES_SCHEMA } from "../../kernel/schemas/mse-extensoes.js";
 import { MSE_MENU_SCHEMA } from "../../kernel/schemas/mse-menu.js";
 import { MSE_MODULOS_SCHEMA } from "../../kernel/schemas/mse-modulos.js";
+import { renderMenusEditor } from "./menus-editor.js";
+import { renderModulesEditor } from "./modules-editor.js";
+import { renderExtensionsEditor } from "./extensions-editor.js";
 
 const labels = {
   com_config: "Configuração global",
@@ -168,7 +171,13 @@ export function renderCollectionScreen({ root, route, services = {} } = {}) {
   h.textContent = labels[route.option] || "Administrator";
   panel.append(h);
 
-  if (LIST_BINDINGS[route.option]) {
+  if (route.option === "com_extensions") {
+    renderExtensionsEditor({ root: panel, services });
+  } else if (route.option === "com_menus") {
+    renderMenusEditor({ root: panel, services });
+  } else if (route.option === "com_modules") {
+    renderModulesEditor({ root: panel, services });
+  } else if (LIST_BINDINGS[route.option]) {
     // com_extensions/com_menus/com_modules: dados reais, injetados via
     // services.adminClient/services.listIds (ver contrato no topo do arquivo).
     renderListPanel(document, panel, route.option, services);

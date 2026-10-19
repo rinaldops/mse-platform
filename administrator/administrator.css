@@ -32,3 +32,8 @@
 .mse-administrator__actions { display:flex; gap:8px; }
 .mse-administrator__actions button:last-child { background:var(--camap-white,#FFFFFF); color:var(--camap-ocean,#006298); border-color:var(--camap-line,#75787B); }
 @media (max-width:700px) { .mse-administrator__panel { width:min(100% - 32px,1200px); } .mse-administrator__table { font-size:.85rem; } .mse-administrator__toolbar, .mse-administrator__actions { flex-wrap:wrap; } }
+
+.mse-administrator__publisher-filters { display:flex; flex-wrap:wrap; gap:8px; flex:1; }
+.mse-administrator__publisher-filters input, .mse-administrator__publisher-filters select { min-height:36px; border:1px solid var(--camap-line,#75787B); background:var(--camap-white,#FFFFFF); color:var(--camap-ocean,#006298); padding:7px 10px; font:inherit; }
+.mse-administrator__success { color:var(--camap-green,#008542); border-left:4px solid var(--camap-green,#008542); padding:10px 12px; background:var(--camap-white,#FFFFFF); }
+.mse-administrator__permissions { border-top:3px solid var(--camap-ocean,#006298); margin-top:24px; padding-top:16px; }
