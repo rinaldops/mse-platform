@@ -109,7 +109,7 @@ O ciclo foi dividido em frentes sem escrita concorrente:
 4. [pendente] Fazer GET de `MSEExtensoes` por GUID e confirmar `Elemento=blog`, `Tipo=Componente`, `Habilitado=true`.
 5. [condicional] Se houver divergência, preparar uma única alteração mínima e controlada, sem tocar em outras páginas.
 6. [concluído] Publicar os ativos atualizados do CAMAP em `SiteAssets/camap-agp-modules/0.1.0` e recarregar `Default.aspx#/destaques`; verificação remota `checked=64`, `failures=0`.
-7. [pendente] Aceitar somente após confirmar Componente BLOG renderizado, lista de artigos, título clicável e detalhe com título, resumo e corpo interno. A Home/DB já foi confirmada; a prova final do detalhe permanece aberta.
+7. [parcial] O clique no DB foi validado no tenant e produziu `#/destaques/24-gerentes-a-bordo-ss-81-ns-58`; porém o `data-mse-component` permaneceu vazio e a área de detalhe não renderizou. O aceite final do BLOG continua pendente.
 8. [condicional] Se qualquer gate falhar após uma escrita autorizada, reverter pelo histórico nativo do SharePoint e registrar a evidência.
 
 A equipe de agentes não tem autorização para editar o tenant ou arquivos fora de
@@ -124,6 +124,7 @@ corridas na mesma sessão e não trata uma resposta vazia do CDP como sucesso.
 | `#/destaques` com `reason=not-found` | Item publicado ausente/incompatível em MSEMenu | Corrigir somente após GET confirmatório |
 | `reason=disabled` | BLOG ausente/desabilitado em MSEExtensoes | Corrigir extensão, sem alterar canvas |
 | `reason=error` | Falha de manifesto/ativo/global do adapter | Inspecionar assets e console antes de editar listas |
+| Componente vazio após #/destaques/<id>-<slug> | A rota foi montada, mas BLOG não foi despachado/renderizado | Confirmar MSEMenu/MSEExtensoes por leitura estável antes de qualquer escrita |
 | `Destaques.aspx` sem MSE | Página interna não é a página canônica do modelo | Validar a rota hash no `Default.aspx` |
 
 Aceite final: `Default.aspx#/destaques` deve mostrar a grade do BLOG; o clique
