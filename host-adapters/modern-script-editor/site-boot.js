@@ -59,7 +59,7 @@ const MODULOS_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuloId", "MenuId"])
 // (installer/seed/schemas â€” ver cabeÃ§alho daquele script), entÃ£o o host nÃ£o
 // pode depender desses mÃ³dulos em tempo de execuÃ§Ã£o.
 const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]);
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags"]);
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes"]);
 
 /**
  * Resolve o `listId` (GUID) real de cada lista MSE* a partir do catÃ¡logo de
