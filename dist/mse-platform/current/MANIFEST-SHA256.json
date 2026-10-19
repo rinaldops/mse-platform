@@ -58,8 +58,8 @@
     },
     {
       "path": "core/rest.js",
-      "bytes": 27767,
-      "sha256": "84f66521e8132d86f582fe25364ed5a3f488c3e3baec31d7be319db5eea905d3"
+      "bytes": 27527,
+      "sha256": "a96017b52d8b108f4761a1515fe1cb8f2bf5ea13a763cb6d04315310f8d562f5"
     },
     {
       "path": "core/configuration-store.js",

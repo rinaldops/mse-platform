@@ -675,10 +675,6 @@ export function createSharePointRestClient({
 
   async function getEffectiveBasePermissions(list) {
     const result = await runRequest(`${listApiPath(list)}/EffectiveBasePermissions`);
-    return Object.freeze({ permissions: result.data?.d ?? result.data, status: result.status });
-  }
-  async function getEffectiveBasePermissions(list) {
-    const result = await runRequest(`${listApiPath(list)}/EffectiveBasePermissions`);
     const data = result.data?.d ?? result.data;
     const permissions = data?.EffectiveBasePermissions ?? data?.effectiveBasePermissions ?? data;
     return Object.freeze({ permissions, status: result.status });
