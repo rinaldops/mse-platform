@@ -159,7 +159,7 @@ export function buildListItemsRequest(list, {
   if (!Array.isArray(select) || !select.length || select.some((field) =>
     typeof field !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field)
   )) {
-    throw new TypeError("select deve conter nomes internos de campos válidos.");
+    throw new TypeError(`select deve conter nomes internos de campos válidos: ${JSON.stringify(select)}.`);
   }
   if (!Number.isInteger(top) || top < 1 || top > 5000) {
     throw new TypeError("top deve ser um inteiro entre 1 e 5000.");
@@ -684,7 +684,7 @@ export function createSharePointRestClient({
     if (!Array.isArray(select) || !select.length || select.some((field) =>
       typeof field !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field)
     )) {
-      throw new TypeError("select deve conter nomes internos de campos válidos.");
+      throw new TypeError(`select deve conter nomes internos de campos válidos: ${JSON.stringify(select)}.`);
     }
     const query = [`$select=${select.map(encodeURIComponent).join(",")}`];
     if (expand !== undefined) {

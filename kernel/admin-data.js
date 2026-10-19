@@ -125,10 +125,13 @@ function requirePlainValues(values) {
  * }} options
  * @returns {Promise<object[]>}
  */
-export async function listAdminItems({ client, list, select, filter, orderby } = {}) {
+export async function listAdminItems({ client, list, select = ["Id", "Title"], filter, orderby } = {}) {
   requireClient(client, ["getListItems"]);
   requireList(list);
-  return client.getListItems(list, { select, filter, orderBy: orderby });
+  const fields = (Array.isArray(select) ? select : [])
+    .filter((field) => typeof field === "string" && /^[A-Za-z_][A-Za-z0-9_]*(\/[A-Za-z_][A-Za-z0-9_]*)?$/.test(field));
+  if (!fields.length) fields.push("Id", "Title");
+  return client.getListItems(list, { select: fields, filter, orderBy: orderby });
 }
 
 /**

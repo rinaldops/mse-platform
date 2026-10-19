@@ -58,8 +58,8 @@
     },
     {
       "path": "core/rest.js",
-      "bytes": 27527,
-      "sha256": "a96017b52d8b108f4761a1515fe1cb8f2bf5ea13a763cb6d04315310f8d562f5"
+      "bytes": 27581,
+      "sha256": "6ae06d78d02f21de3bf7ea568a1ccf7fd076eb9c550fc6496d4ca65604c7e641"
     },
     {
       "path": "core/configuration-store.js",
@@ -88,8 +88,8 @@
     },
     {
       "path": "kernel/admin-data.js",
-      "bytes": 7995,
-      "sha256": "780c4a51fd89ca7e6d1ae7d8685c1741923821c73b2086f7b1ae4ecc0bce8bc7"
+      "bytes": 8246,
+      "sha256": "7f9ccc4d8f491aa069cf53e502dfd7bc42e451f464400a836563ea5efc148dd0"
     },
     {
       "path": "kernel/admin-form.js",
@@ -143,8 +143,8 @@
     },
     {
       "path": "administrator/screens/collections.js",
-      "bytes": 8293,
-      "sha256": "b1f8cbb151e640355a261c76c8068376acb617c14ec92a2bb0fbd42b057a2351"
+      "bytes": 8339,
+      "sha256": "0cb877d345cf52327944b397fd09f14f93e08e7d92d5017162638317a9b587c5"
     },
     {
       "path": "administrator/screens/configuration-editor.js",

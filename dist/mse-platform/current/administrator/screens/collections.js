@@ -148,7 +148,7 @@ async function renderListPanel(document, panel, option, services) {
 
   const columns = buildColumns(binding.schema);
   try {
-    const items = await listAdminItems({ client: adminClient, list });
+    const items = await listAdminItems({ client: adminClient, list, select: columns.map((column) => column.name) });
     panel.append(renderTable(document, columns, Array.isArray(items) ? items : []));
   } catch (error) {
     const message = document.createElement("p");
