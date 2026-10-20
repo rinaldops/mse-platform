@@ -345,6 +345,56 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: hashchange do window dispara nova renderização ok.");
 }
 
+// --- CAMAP-AGP (achado 20/10/2026): módulo com AtribuicaoMenu:"Todas" (ex.:
+// SD na Home) não deve duplicar seu contêiner `<div data-mse-module-instance>`
+// na posição a cada troca de rota via hashchange. Antes da correção,
+// `clearModulesForPosition` só fazia dispose() dos módulos anteriores, sem
+// remover o `<div>` em si; `renderModules` então ANEXAVA um novo `<div>` ao
+// lado do antigo (órfão, vazio, já desmontado) a cada render — produzindo
+// contêineres extras na posição depois de navegar e voltar, que o CSS do
+// site (`theme/positions.css`, seletor adjacente entre
+// `[data-mse-module-instance]`) desenhava como linha/espaço visível sem
+// sentido. A posição deve sempre terminar com exatamente 1 filho (o módulo
+// atual), nunca acumular cópias mortas de renders anteriores. -------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  const [, positionElement] = root.children;
+  assert.equal(positionElement.children.length, 1, "boot inicial: 1 só contêiner de módulo");
+
+  // Navega para outra rota e depois volta à raiz — duas trocas de rota, duas
+  // chamadas a renderModules/clearModulesForPosition na mesma posição.
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(positionElement.children.length, 1, "após 1ª navegação: ainda 1 só contêiner, sem acumular órfão");
+
+  dispatchHashChange(window, "#/");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(positionElement.children.length, 1, "após voltar à raiz: ainda 1 só contêiner, sem duplicar");
+  assert.equal(positionElement.children[0].getAttribute("data-mounted"), "sd", "o contêiner restante é o módulo remontado, não um órfão");
+
+  await app.dispose();
+
+  console.log("application.test.js: clearModulesForPosition não duplica contêiner de módulo entre navegações ok.");
+}
+
 // --- loadMenu falhando no boot: aplica fallback (lista vazia) em vez de
 // lançar; dispatcher resolve "not-found" normalmente -----------------------
 

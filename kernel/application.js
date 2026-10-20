@@ -361,15 +361,36 @@ export async function createSiteApplication({
 
   async function clearModulesForPosition(positionName) {
     const previous = disposeModulesByPosition.get(positionName);
-    if (!previous) return;
-    for (const dispose of previous) {
-      try {
-        await dispose();
-      } catch (error) {
-        onModuleError(error, { elemento: "(dispose)", kind: "module", position: positionName });
+    if (previous) {
+      for (const dispose of previous) {
+        try {
+          await dispose();
+        } catch (error) {
+          onModuleError(error, { elemento: "(dispose)", kind: "module", position: positionName });
+        }
       }
+      disposeModulesByPosition.delete(positionName);
     }
-    disposeModulesByPosition.delete(positionName);
+    // Remove também os próprios contêineres `<div data-mse-module-instance>`
+    // (não só o dispose() de cada módulo): sem isto, `renderModules` (abaixo)
+    // ANEXA novos contêineres ao lado dos antigos a cada troca de rota, em
+    // vez de substituí-los — os antigos ficam vazios/órfãos no DOM (já
+    // desmontados, sem conteúdo) e o seletor adjacente de
+    // `theme/positions.css` (`[data-mse-module-instance] +
+    // [data-mse-module-instance] { border-top: ... }`) desenha uma linha
+    // visível na junção entre a cópia morta e a nova, com o espaço vazio da
+    // cópia morta por cima — o "linhas cinzas e espaços em branco sem
+    // sentido" relatado ao navegar via SPA (hash) pela Home. Mesmo padrão já
+    // usado por `clearComponent()` acima para `layout.componentElement`:
+    // limpar o contêiner é responsabilidade de quem o preenche de novo a
+    // cada render, não só desfazer o mount() anterior. Cobre também o caso
+    // de um módulo que falhou ao montar (sem disposer registrado, só
+    // `data-mse-module-error`): `replaceChildren()` limpa tudo, não só o
+    // que tinha disposer rastreado.
+    const positionElement = layout?.positionElements?.get(positionName);
+    if (positionElement && typeof positionElement.replaceChildren === "function") {
+      positionElement.replaceChildren();
+    }
   }
 
   function navigateFn(targetRoute, navigateOptions) {
