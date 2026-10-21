@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { renderMenusScreen } from "../menus-screen.js";
-import { MSE_MENU_SCHEMA } from "../../../kernel/schemas/mse-menu.js";
-import { buildFormFields } from "../../../kernel/admin-form.js";
+import { MENU_FORM_FIELDS } from "../menus-editor.js";
 
 class FakeElement {
   constructor(tag = "div") {
@@ -104,7 +103,7 @@ function textOf(elements) {
 {
   const root = createRoot();
   const items = [
-    { Id: 1, Title: "Início", Alias: "", TipoMenu: "principal", ParentId: 0, Caminho: "", Nivel: 1, Ordem: 0, Componente: "", Visao: "", ParamsJson: null, Padrao: true, AbrirEm: "MesmaAba", Estado: "Publicado" }
+    { Id: 1, Title: "Início", Alias: "", MenuType: "principal", ParentId: 0, Path: "", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: null, Default: true, Target: "SameTab", Published: "Published" }
   ];
   const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
   const view = renderMenusScreen({ root, services });
@@ -114,7 +113,7 @@ function textOf(elements) {
   assert.equal(h1.textContent, "Menus");
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", ...buildFormFields(MSE_MENU_SCHEMA).map((d) => d.label), "Ações"];
+  const expectedLabels = ["Título", ...MENU_FORM_FIELDS.map((d) => d.label), "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1);

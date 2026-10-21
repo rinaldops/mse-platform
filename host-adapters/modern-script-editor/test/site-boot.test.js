@@ -23,14 +23,14 @@ import {
   };
   const result = buildAdministratorServices({
     client,
-    resolvedListIds: { MSEMenu: "menu-guid", MSEExtensoes: "extensions-guid" },
+    resolvedListIds: { MSEMenu: "menu-guid", MSEExtensions: "extensions-guid" },
     services
   });
   assert.equal(result.adminClient, customAdminClient, "adapter administrativo customizado deve ser preservado");
   assert.equal(result.sanitizeHtml, services.sanitizeHtml, "serviços adicionais devem ser preservados");
   assert.deepEqual(result.listIds, {
     MSEMenu: { listId: "menu-guid" },
-    MSEExtensoes: { listId: "extensions-guid" },
+    MSEExtensions: { listId: "extensions-guid" },
     CAMAPPublicacoes: { listId: "camap-list" }
   });
   assert.equal(Object.isFrozen(result), true);

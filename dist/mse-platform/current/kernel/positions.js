@@ -1,11 +1,11 @@
 /**
  * Funções puras de Posições do Site Kernel (mse-platform/docs/PLANO-SITE-KERNEL-MSE.md,
  * seção 4, `kernel/positions.js`: "módulos por posição/vigência/atribuição ao menu";
- * seção 5: "Módulos, posições, atribuição por menu" → `positions.js` + `MSEModulos*`).
+ * seção 5: "Módulos, posições, atribuição por menu" → `positions.js` + `MSEModules*`).
  *
  * Nenhuma função aqui faz REST, toca rede ou DOM: todas recebem arrays de itens
- * já carregados em memória (o shape de campos é o de `MSE_MODULOS_SCHEMA` /
- * `MSE_MODULOS_MENU_SCHEMA`, ver `kernel/schemas/mse-modulos.js`) e devolvem
+ * já carregados em memória (o shape de campos é o de `MSE_MODULES_SCHEMA` /
+ * `MSE_MODULES_MENU_SCHEMA`, ver `kernel/schemas/mse-modules.js`) e devolvem
  * dados derivados. Este módulo é intencionalmente autossuficiente — sem
  * importar `menu.js`, `extension-registry.js` ou `content-services.js` —,
  * seguindo o mesmo princípio de `kernel/menu.js` ("não é importado aqui para
@@ -17,40 +17,45 @@
  * (ver seção 4.1 do plano) — não o shape normalizado em português/camelCase
  * de `kernel/content-services.js`.
  *
- * Shape esperado de cada item de `modulos` (um registro da lista MSEModulos
+ * Fase 4 da normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`):
+ * este módulo passou a ler os campos em inglês de `MSEModules`/
+ * `MSEModulesMenu` (listas novas desde a Fase 3) em vez dos campos PT de
+ * `MSEModulos`/`MSEModulosMenu` (listas antigas, ainda vivas em produção,
+ * mas não mais lidas por nenhum código consumidor).
+ *
+ * Shape esperado de cada item de `modulos` (um registro da lista MSEModules
  * já lido do SharePoint):
  *   {
  *     Id: number,              // id nativo do item na lista; necessário para
- *                               // casar com `ModuloId` em `modulosMenu`
+ *                               // casar com `ModuleId` em `modulosMenu`
  *     Title: string,
- *     ModuloTipo: string,
- *     Posicao: string,         // kebab-case, mesma convenção de kernel/layout.js
- *     Ordem: number,
- *     Estado: "Publicado" | "Despublicado" | "Lixeira",
- *     PublicarEm: string | Date | null | undefined,   // vigência; sem limite = sem restrição
- *     PublicarAte: string | Date | null | undefined,
- *     MostrarTitulo: boolean,
- *     Estilo: string | null | undefined,
- *     AtribuicaoMenu: "Todas" | "Nenhuma" | "Somente" | "Todas exceto",
+ *     Module: string,
+ *     Position: string,        // kebab-case, mesma convenção de kernel/layout.js
+ *     Ordering: number,
+ *     Published: "Published" | "Unpublished" | "Trashed",
+ *     PublishUp: string | Date | null | undefined,   // vigência; sem limite = sem restrição
+ *     PublishDown: string | Date | null | undefined,
+ *     ShowTitle: boolean,
+ *     Style: string | null | undefined,
+ *     MenuAssignment: "All" | "None" | "Only" | "AllExcept",
  *     ParamsJson: string | null | undefined,
- *     SchemaVersao: number | null | undefined
+ *     SchemaVersion: number | null | undefined
  *   }
  *
  * Shape esperado de cada item de `modulosMenu` (um registro da lista
- * MSEModulosMenu, junção N:N entre MSEModulos e MSEMenu):
+ * MSEModulesMenu, junção N:N entre MSEModules e MSEMenu):
  *   {
  *     Id: number,
- *     ModuloId: number,        // referencia o `Id` de um item de `modulos`
+ *     ModuleId: number,        // referencia o `Id` de um item de `modulos`
  *     MenuId: number           // referencia o `Id` de um item de menu
  *                               // (`kernel/menu.js`, mesmo campo `Id`)
  *   }
  *
- * Relevante apenas para módulos com `AtribuicaoMenu` igual a "Somente" ou
- * "Todas exceto"; para "Todas"/"Nenhuma" nenhum par de `modulosMenu` é
- * consultado.
+ * Relevante apenas para módulos com `MenuAssignment` igual a "Only" ou
+ * "AllExcept"; para "All"/"None" nenhum par de `modulosMenu` é consultado.
  */
 
-const PUBLISHED = "Publicado";
+const PUBLISHED = "Published";
 
 function toArray(items) {
   return Array.isArray(items) ? items : [];
@@ -95,7 +100,7 @@ function isWithinWindow(now, deValue, ateValue) {
 }
 
 function isPublished(modulo) {
-  return modulo?.Estado === PUBLISHED;
+  return modulo?.Published === PUBLISHED;
 }
 
 /**
@@ -109,20 +114,20 @@ function isPublished(modulo) {
 function menuIdsForModulo(modulosMenu, moduloId) {
   const ids = new Set();
   for (const par of modulosMenu) {
-    if (par && par.ModuloId === moduloId) ids.add(par.MenuId);
+    if (par && par.ModuleId === moduloId) ids.add(par.MenuId);
   }
   return ids;
 }
 
 /**
  * Decide se `modulo` deve aparecer no item de menu `menuItemId`, de acordo
- * com `modulo.AtribuicaoMenu`:
- * - `"Todas"` → aparece em qualquer item de menu (inclusive sem item ativo).
- * - `"Nenhuma"` → nunca aparece atribuído a um item de menu.
- * - `"Somente"` → aparece só quando `menuItemId` está entre os `MenuId`
+ * com `modulo.MenuAssignment`:
+ * - `"All"` → aparece em qualquer item de menu (inclusive sem item ativo).
+ * - `"None"` → nunca aparece atribuído a um item de menu.
+ * - `"Only"` → aparece só quando `menuItemId` está entre os `MenuId`
  *   listados em `modulosMenu` para este módulo; sem `menuItemId` (null/
  *   undefined), nunca combina (não há item para ser "o único").
- * - `"Todas exceto"` → aparece em qualquer item de menu, exceto quando
+ * - `"AllExcept"` → aparece em qualquer item de menu, exceto quando
  *   `menuItemId` está entre os `MenuId` listados em `modulosMenu` para este
  *   módulo; sem `menuItemId`, não há exclusão a aplicar, então aparece.
  * - Qualquer outro valor (dado malformado vindo do SharePoint) é tratado de
@@ -136,20 +141,20 @@ function menuIdsForModulo(modulosMenu, moduloId) {
  * @returns {boolean}
  */
 function matchesMenuAssignment(modulo, menuItemId, modulosMenu) {
-  const atribuicao = modulo?.AtribuicaoMenu;
+  const atribuicao = modulo?.MenuAssignment;
   const temMenuItemId = menuItemId !== null && menuItemId !== undefined;
 
   switch (atribuicao) {
-    case "Todas":
+    case "All":
       return true;
-    case "Nenhuma":
+    case "None":
       return false;
-    case "Somente": {
+    case "Only": {
       if (!temMenuItemId) return false;
       const ids = menuIdsForModulo(modulosMenu, modulo.Id);
       return ids.has(menuItemId);
     }
-    case "Todas exceto": {
+    case "AllExcept": {
       if (!temMenuItemId) return true;
       const ids = menuIdsForModulo(modulosMenu, modulo.Id);
       return !ids.has(menuItemId);
@@ -174,11 +179,12 @@ function assertValidPosicao(posicao) {
 }
 
 /**
- * Ordena estavelmente por `Ordem` ascendente: itens sem `Ordem` numérico vão
- * para o final, preservando a ordem relativa de entrada entre si (e entre
- * empates de mesma `Ordem`). Mesma técnica de decoração por índice original
- * usada por `sortPlugins` em `kernel/extension-registry.js`, para garantir
- * estabilidade independente do motor de `Array#sort` do runtime.
+ * Ordena estavelmente por `Ordering` ascendente: itens sem `Ordering`
+ * numérico vão para o final, preservando a ordem relativa de entrada entre
+ * si (e entre empates de mesma `Ordering`). Mesma técnica de decoração por
+ * índice original usada por `sortPlugins` em `kernel/extension-registry.js`,
+ * para garantir estabilidade independente do motor de `Array#sort` do
+ * runtime.
  *
  * @param {Array<object>} modulos
  * @returns {Array<object>}
@@ -186,10 +192,10 @@ function assertValidPosicao(posicao) {
 function sortByOrdemEstavel(modulos) {
   const decorated = modulos.map((item, index) => ({ item, index }));
   decorated.sort((a, b) => {
-    const aTem = typeof a.item.Ordem === "number";
-    const bTem = typeof b.item.Ordem === "number";
+    const aTem = typeof a.item.Ordering === "number";
+    const bTem = typeof b.item.Ordering === "number";
     if (aTem && bTem) {
-      if (a.item.Ordem !== b.item.Ordem) return a.item.Ordem - b.item.Ordem;
+      if (a.item.Ordering !== b.item.Ordering) return a.item.Ordering - b.item.Ordering;
       return a.index - b.index;
     }
     if (aTem && !bTem) return -1;
@@ -204,17 +210,17 @@ function sortByOrdemEstavel(modulos) {
  * ordem, para o item de menu ativo `menuItemId`, no instante `agora`.
  *
  * Critérios aplicados (um módulo precisa satisfazer todos):
- * 1. `Posicao === posicao` (comparação exata).
- * 2. `Estado === "Publicado"` (despublicado e lixeira são excluídos).
- * 3. Dentro da janela de vigência `PublicarEm`/`PublicarAte` (lado ausente
+ * 1. `Position === posicao` (comparação exata).
+ * 2. `Published === "Published"` (despublicado e lixeira são excluídos).
+ * 3. Dentro da janela de vigência `PublishUp`/`PublishDown` (lado ausente
  *    ou inválido = sem restrição naquele lado — mesmo padrão de
  *    `isWithinWindow` em `kernel/content-services.js`).
- * 4. Atribuição ao item de menu ativo, conforme `AtribuicaoMenu` (ver
+ * 4. Atribuição ao item de menu ativo, conforme `MenuAssignment` (ver
  *    `matchesMenuAssignment` para a semântica completa de
- *    "Todas"/"Nenhuma"/"Somente"/"Todas exceto").
+ *    "All"/"None"/"Only"/"AllExcept").
  *
- * O resultado é ordenado por `Ordem` ascendente, de forma estável, com
- * itens sem `Ordem` numérica ao final (ver `sortByOrdemEstavel`).
+ * O resultado é ordenado por `Ordering` ascendente, de forma estável, com
+ * itens sem `Ordering` numérica ao final (ver `sortByOrdemEstavel`).
  *
  * `modulos`/`modulosMenu` ausentes/`undefined`/não-array são tratados como
  * lista vazia (nunca lançam); `posicao` ausente ou que não seja uma string
@@ -237,9 +243,9 @@ export function resolveModulesForPosition(modulos, options = {}) {
   const pares = toArray(modulosMenu);
 
   const candidatos = toArray(modulos).filter((modulo) => {
-    if (!modulo || modulo.Posicao !== posicao) return false;
+    if (!modulo || modulo.Position !== posicao) return false;
     if (!isPublished(modulo)) return false;
-    if (!isWithinWindow(now, modulo.PublicarEm, modulo.PublicarAte)) return false;
+    if (!isWithinWindow(now, modulo.PublishUp, modulo.PublishDown)) return false;
     return matchesMenuAssignment(modulo, menuItemId, pares);
   });
 
@@ -249,7 +255,7 @@ export function resolveModulesForPosition(modulos, options = {}) {
 /**
  * Conveniência sobre `resolveModulesForPosition`: agrupa, de uma vez, o
  * resultado para TODAS as posições presentes em `modulos` (valores distintos
- * e não vazios de `Posicao`, na ordem em que aparecem pela primeira vez em
+ * e não vazios de `Position`, na ordem em que aparecem pela primeira vez em
  * `modulos`), cada uma já filtrada/ordenada do mesmo jeito.
  *
  * `modulos`/`modulosMenu` ausentes/`undefined`/não-array são tratados como
@@ -270,7 +276,7 @@ export function groupModulesByPosition(modulos, options = {}) {
   const posicoes = [];
   const vistas = new Set();
   for (const modulo of lista) {
-    const posicao = modulo?.Posicao;
+    const posicao = modulo?.Position;
     if (typeof posicao === "string" && posicao.trim() !== "" && !vistas.has(posicao)) {
       vistas.add(posicao);
       posicoes.push(posicao);

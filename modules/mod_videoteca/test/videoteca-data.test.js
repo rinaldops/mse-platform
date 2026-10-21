@@ -14,12 +14,12 @@ const taxonomy = [
 const relations = [{ VideoId: 2, TagId: 20 }];
 
 const dataSources = {
-  get: (key) => ({ key, listId: "11111111-1111-4111-8111-111111111111", webUrl: "/teams/example" }),
+  get: (key) => ({ key, listId: "194ee687-703d-4cea-93f1-2ecb0eb99466", webUrl: "/teams/td" }),
   getClient: () => ({
     request: async () => ({ data: { value: [{
       id: "drive-id",
       webUrl: "https://example.test/teams/td/VideotecaVideos",
-      sharepointIds: { listId: "11111111-1111-4111-8111-111111111111" }
+      sharepointIds: { listId: "194ee687-703d-4cea-93f1-2ecb0eb99466" }
     }] } }),
     getListItems: async (source, options) => {
       if (source.key === "videoteca-taxonomy") return taxonomy;

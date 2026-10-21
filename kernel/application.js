@@ -437,21 +437,21 @@ export async function createSiteApplication({
       for (const modulo of modulosNaPosicao) {
         const instanceElement = positionElement.ownerDocument.createElement("div");
         instanceElement.setAttribute("data-mse-module-instance", String(modulo.Id ?? ""));
-        instanceElement.setAttribute("data-mse-module-tipo", String(modulo.ModuloTipo ?? ""));
+        instanceElement.setAttribute("data-mse-module-type", String(modulo.Module ?? ""));
         if (typeof positionElement.append === "function") positionElement.append(instanceElement);
         else positionElement.appendChild(instanceElement);
 
         try {
-          // Parâmetros fixos da INSTÂNCIA (MSEModulos.ParamsJson, ex.: title/
+          // Parâmetros fixos da INSTÂNCIA (MSEModules.ParamsJson, ex.: title/
           // items definidos pelo gestor para este módulo específico, não para
           // o tipo inteiro) prevalecem sobre a configuração por extensão
-          // (`extensionConfig`, escopo "Extensao", vale para todo ModuloTipo)
+          // (`extensionConfig`, escopo "Extensao", vale para todo Module)
           // — mesma precedência de "mais específico vence" já usada por
           // `dispatcher.js` ao mesclar `ParamsJson` do item de menu. Sem este
           // merge, nenhuma configuração por instância chegava ao mount() do
           // módulo (gap identificado na Fase C3 do CAMAP-AGP).
           const moduloParams = parseJsonParams(modulo.ParamsJson);
-          const config = { ...globalConfig, ...(await extensionConfig(modulo.ModuloTipo)), ...moduloParams };
+          const config = { ...globalConfig, ...(await extensionConfig(modulo.Module)), ...moduloParams };
           const context = Object.freeze({
             route,
             menuItem,
@@ -460,14 +460,14 @@ export async function createSiteApplication({
             modulo: Object.freeze({
               id: modulo.Id,
               title: modulo.Title ?? null,
-              mostrarTitulo: Boolean(modulo.MostrarTitulo),
-              estilo: modulo.Estilo ?? null,
+              mostrarTitulo: Boolean(modulo.ShowTitle),
+              estilo: modulo.Style ?? null,
               params: moduloParams
             })
           });
           const { dispose } = await mountEntrypoint({
             root: instanceElement,
-            elemento: modulo.ModuloTipo,
+            elemento: modulo.Module,
             entrypointKey: "summary",
             resolveManifestUrl,
             importModule,
@@ -477,7 +477,7 @@ export async function createSiteApplication({
           });
           disposers.push(dispose);
         } catch (error) {
-          onModuleError(error, { elemento: modulo.ModuloTipo, kind: "module", position: positionName });
+          onModuleError(error, { elemento: modulo.Module, kind: "module", position: positionName });
           instanceElement.setAttribute("data-mse-module-error", "true");
         }
       }

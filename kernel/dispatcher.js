@@ -6,7 +6,7 @@
  *
  * Função pura: recebe a rota já interpretada por `kernel/router.js`
  * (`parseRoute`), os itens de menu (`MSEMenu`, shape de `kernel/menu.js`) e as
- * extensões (`MSEExtensoes`, shape de `kernel/extension-registry.js`) já
+ * extensões (`MSEExtensions`, shape de `kernel/extension-registry.js`) já
  * carregados em memória, e devolve QUAL Componente, QUAL visão e QUAIS
  * parâmetros correspondem àquela rota. Nenhuma função aqui faz `fetch`,
  * `import()` dinâmico, acessa `window`/`location` ou qualquer outro efeito
@@ -45,8 +45,7 @@
  *     resolução do item de menu ativo usada em qualquer outro lugar do
  *     kernel que precise disso).
  *   - `isEnabled` é importado de `./extension-registry.js`. Este arquivo
- *     NUNCA reimplementa a tradução `type` (manifesto) <-> `Tipo`
- *     (MSEExtensoes) nem a verificação de habilitação — ambas pertencem
+ *     NUNCA reimplementa a verificação de habilitação — pertence
  *     exclusivamente a `extension-registry.js`, como documentado no
  *     cabeçalho daquele módulo.
  */
@@ -107,7 +106,7 @@ const parseMenuParams = parseJsonParams;
  *   `route` é o shape devolvido por `parseRoute` (`kernel/router.js`).
  *   `menuItems` é o array cru de itens da lista `MSEMenu` (shape de
  *   `kernel/menu.js`). `extensions` é o array cru de itens da lista
- *   `MSEExtensoes` (shape de `kernel/extension-registry.js`). `defaultView`
+ *   `MSEExtensions` (shape de `kernel/extension-registry.js`). `defaultView`
  *   é opcional (padrão `"full"`) e só é usado quando nem a query string nem
  *   o item de menu especificam uma visão.
  * @returns {
@@ -148,7 +147,7 @@ export function resolveDispatch({ route, menuItems, extensions, defaultView = DE
     return { found: false, menuItem: null, reason: "not-found" };
   }
 
-  const componente = typeof menuItem.Componente === "string" ? menuItem.Componente.trim() : "";
+  const componente = typeof menuItem.Component === "string" ? menuItem.Component.trim() : "";
   if (componente === "") {
     return { found: false, menuItem, reason: "modules-only" };
   }
@@ -162,7 +161,7 @@ export function resolveDispatch({ route, menuItems, extensions, defaultView = DE
 
   const view =
     (typeof query.view === "string" && query.view.trim() !== "" && query.view.trim()) ||
-    (typeof menuItem.Visao === "string" && menuItem.Visao.trim() !== "" && menuItem.Visao.trim()) ||
+    (typeof menuItem.View === "string" && menuItem.View.trim() !== "" && menuItem.View.trim()) ||
     defaultView;
 
   const params = { ...query, ...menuParams };

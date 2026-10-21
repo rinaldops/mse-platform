@@ -1,14 +1,14 @@
 # Auditoria e plano de alinhamento Joomla! — Mini Joomla!
 
 **Data:** 17/10/2026
-**Escopo:** `mse-platform` e contratos de migração de consumidores.
+**Escopo:** `web-devs/mse-platform` e o consumidor `web-devs/CAMAP-AGP`
 **Tipo:** auditoria estrutural e plano de migração; esta etapa não move nem renomeia código.
 
-> Este documento distingue implementação local, contratos de compatibilidade e proposta de migração. Estruturas de consumidores são exemplos conceituais, não inventários ou evidências de ambientes reais.
+> Este documento foi produzido a partir da inspeção dos arquivos presentes no workspace, dos manifestos, testes, adaptador MSE, planos, módulos do CAMAP-AGP e da árvore local do Joomla! 6.2.0 em `CAMAP-AGP/layout/Joomla6.2.0/`. Ele não trata os planos anteriores como prova de implementação: o status abaixo distingue código realmente encontrado, código parcial e trabalho ainda inexistente.
 
 ## 1. Conclusão executiva
 
-O `mse-platform` já possui um **Site Kernel funcional em código**, com roteamento, despacho de Componente, posições de Módulos, configuração, eventos, persistência SharePoint, instalador e um início de Administrator. Um consumidor pode fornecer módulos visuais, dados editoriais e templates próprios.
+O `mse-platform` já possui um **Site Kernel funcional em código**, com roteamento, despacho de Componente, posições de Módulos, configuração, eventos, persistência SharePoint, instalador e um início de Administrator. O CAMAP-AGP possui módulos visuais e dados editoriais próprios, além de dois templates experimentais e uma pasta Joomla! 6.2.0 usada como referência.
 
 Entretanto, a organização atual ainda é uma combinação de três convenções:
 
@@ -34,7 +34,7 @@ O alinhamento pretendido é de **vocabulário, localização, manifestos, ciclo 
 - `themes/` — atualmente apenas a estrutura inicial do tema-base;
 - `docs/`, especialmente `PLANO-SITE-KERNEL-MSE.md`, `CONTRATOS-DE-MODULO.md`, `INSTALACAO-MSE.md` e `COMPATIBILIDADE-E-VERSIONAMENTO.md`.
 
-### 2.2 Consumidor de exemplo
+### 2.2 Consumidor CAMAP-AGP
 
 - `core/`, `modules/`, `data/provisioning/`, `tests/` e `webparts/`;
 - `templates/camap-tema-01`, `templates/camap-tema-02` e `templates/system`;
@@ -44,7 +44,7 @@ O alinhamento pretendido é de **vocabulário, localização, manifestos, ciclo 
 
 ### 2.3 Joomla! 6.2.0 local
 
-Referência conceitual: convenções do Joomla! 6.2.0, sem dependência de um checkout privado.
+Fonte: `web-devs/CAMAP-AGP/layout/Joomla6.2.0/`.
 
 Foram conferidas as árvores `administrator/`, `components/`, `modules/`, `plugins/`, `templates/`, `libraries/`, `media/`, `images/`, `language/` e `layouts/`. Também foram observados os templates públicos `cassiopeia`, `cassiopeia_extended`, o fallback técnico `templates/system` e o template administrativo `administrator/templates/atum`.
 
@@ -177,16 +177,12 @@ modules/
 
 Cada produto normalmente combina `manifest.js`, `module.js`, arquivo de dados, loader, view, schema, CSS, README/USAGE, provisionamento e `summary/module.js`. Isso funciona, mas ainda não comunica claramente a distinção física entre `com_*` e `mod_*`.
 
-## 4. Exemplo de consumidor e compatibilidade legada
-
-Os nomes CAMAP usados nos contratos abaixo são identificadores legados de
-compatibilidade, não dados de implantação. A árvore é ilustrativa; inventários,
-conteúdo e configuração de consumidores reais devem permanecer privados.
+## 4. Inventário real do CAMAP-AGP
 
 ### 4.1 Código e módulos
 
 ```text
-site-exemplo/
+CAMAP-AGP/
 ├── core/            runtime/site legado e camada de compatibilidade
 ├── data/            provisionamento e seed SharePoint
 ├── docs/            planos, inventário, identidade e análise Joomla!
@@ -226,12 +222,12 @@ site-exemplo/
 
 A nomenclatura física atual não precisa ser apagada imediatamente. O caminho de migração deve permitir que `modules/blog` seja um alias compatível enquanto o componente formal `components/com_content` é introduzido.
 
-### 4.3 Templates de consumidor
+### 4.3 Templates CAMAP
 
-Um template compatível pode adotar a seguinte estrutura:
+O CAMAP já possui estruturas próximas às esperadas:
 
 ```text
-templates/tema-exemplo/
+templates/camap-tema-01/
 ├── template.json
 ├── index.js
 ├── component.js
@@ -243,7 +239,7 @@ templates/tema-exemplo/
 └── images/
 ```
 
-Outros temas podem adotar o mesmo desenho e `templates/system` pode servir de fallback técnico simplificado. Como Templates completos estão fora do escopo do kernel nesta fase, essas pastas representam **artefatos compatíveis e futuros**, não prova de mecanismo já integrado de override.
+`camap-tema-02` possui o mesmo desenho e `templates/system` é um fallback técnico simplificado. Como Templates completos estão fora do escopo do kernel nesta fase, essas pastas devem permanecer como **artefatos compatíveis e futuros**, sem serem tratadas como mecanismo já integrado de override.
 
 ## 5. O que o Joomla! 6.2.0 estabelece como convenção
 
@@ -553,3 +549,76 @@ Essa sequência atende ao pedido de “dar um passo atrás”: primeiro se fixa 
 - A branch do CAMAP permanece `feature/template-camap-tema-02`; alterações preexistentes no plano do CAMAP foram preservadas.
 - O TD foi tratado nesta auditoria como consumidor futuro separado: nenhuma exigência de retrocompatibilidade com ele foi incluída no alvo do Mini Joomla!.
 - O push da branch do CAMAP continua uma pendência operacional já conhecida (`HTTP 403`); não é parte desta auditoria.
+
+## 14. Mudança de estratégia: reestruturação completa e imediata, não gradual (20–21/10/2026)
+
+Esta seção **não descarta** a auditoria e o plano acima — o inventário, a
+matriz de conformidade e a estrutura-alvo recomendada (seções 1–11) seguem
+válidos como registro histórico e continuam descrevendo corretamente o
+estado em 17/10/2026 e o raciocínio que levou à convenção-alvo. O que muda é
+a **estratégia de migração** descrita na seção 8 ("Plano de migração em
+fases", Fase A–G): aquele roteiro recomendava explicitamente **não fazer
+uma grande renomeação imediata**, preferindo aliases/reexports e migração
+gradual de componentes e módulos, com o modo legado isolado e arquivado
+depois.
+
+Em sessão posterior (20–21/10/2026), o usuário confirmou explicitamente a
+decisão de **reestruturação completa e imediata**, por fase testável e
+revertível isoladamente (sem aliases permanentes), em vez do caminho
+gradual Fase A–G. Esta seção registra a decisão e o resultado efetivamente
+entregue; o plano de execução detalhado foi um artefato de sessão, fora do
+versionamento deste repositório.
+
+Motivos da mudança, tal como discutidos com o usuário:
+
+- O `mse-platform` é maior, mas o número de consumidores reais (CAMAP-AGP)
+  é pequeno e controlado — o custo de coordenar aliases temporários superava
+  o custo de uma quebra controlada, fase a fase, com `npm test` verde a cada
+  checkpoint.
+- Aliases/reexports permanentes tendem a nunca ser removidos na prática
+  (a "limpeza controlada" da Fase G do plano original ficaria
+  indefinidamente pendente); a reestruturação imediata elimina esse risco
+  ao preço de uma janela de republicação manual mais abrupta.
+- O volume de mudança (estrutura de pastas inteira, mais tarde listas e
+  campos SharePoint) é grande demais para uma única sessão, mas cabe em
+  fases sequenciais, cada uma testável e revertível via Git — o mesmo
+  benefício de segurança que a estratégia gradual buscava, sem o custo de
+  manter dois vocabulários vivos ao mesmo tempo.
+
+Execução realizada (branch `feature/normalizacao-joomla`, worktree
+dedicado):
+
+- **Fase 1** (`1fb4954`): reestruturação completa de pastas —
+  `administrator/` → `components/com_cpanel/` + demais `components/com_xxx/`
+  (um por `option`), `modules/<nome>` → `modules/mod_<nome>`, `modules/ui/`
+  → `libraries/ui/`, `plugins/` reservada criada vazia. `admin/` (painel
+  histórico pré-Site-Kernel) permanece intocado, fora de escopo.
+- **Fase 2** (`285bbfd`): `kernel/events.js#KERNEL_EVENTS` normalizado para
+  `onAfterRoute`/`onBeforeRender`/`onAfterRender` (convenção Joomla!
+  `on<Área><Momento>`).
+- **Fase 3** (`a5b6ad1`): criadas as listas SharePoint em inglês
+  (`MSEModules`, `MSEExtensions`, `MSEModulesMenu`, `MSEMenuTypes`) e os
+  campos em inglês acrescentados a `MSEMenu` (lado a lado com os 12 campos
+  PT, que ficam `DEPRECATED`); dados reais de produção copiados para as
+  listas novas via script idempotente, com script de verificação
+  campo a campo.
+- **Fase 4** (`8aca410`): todo o código consumidor (kernel, `site-boot.js`,
+  os 3 editores do Administrator, diagnóstico) migrado para ler/escrever os
+  campos/listas em inglês; removida de `extension-registry.js` a camada de
+  tradução `type`↔`Tipo`, que não tem equivalente real no Joomla! original.
+- **Fase 5** (esta edição): documentação — `README.md` de cada pasta
+  renomeada, esta seção, e `docs/CONVENCAO-JOOMLA.md` (tabela de
+  equivalência Joomla! ↔ mse-platform definitiva, pós-normalização).
+
+Pendências explícitas, fora desta rodada (registradas para não serem
+confundidas com trabalho esquecido):
+
+- **Fase 3b** (`MSEConfiguracoes`): fora de escopo desta normalização;
+  fica para uma rodada dedicada futura.
+- **Decomissionamento das listas/campos PT**: `MSEModulos`/`MSEExtensoes`/
+  `MSEModulosMenu`/`MSEMenuTipos` (listas antigas) e os 12 campos PT de
+  `MSEMenu` continuam vivos em produção — nenhum código novo os lê, mas a
+  remoção/decomissionamento real é uma limpeza futura, não feita nesta
+  normalização.
+- `admin/` (painel pré-Site-Kernel) continua congelado, sem prazo de
+  migração definido.

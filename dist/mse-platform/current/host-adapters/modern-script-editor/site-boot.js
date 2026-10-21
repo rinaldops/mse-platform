@@ -13,8 +13,8 @@
  * host, nÃ£o do kernel (mesmo princÃ­pio de neutralidade da seÃ§Ã£o 3 do plano:
  * "o kernel nÃ£o conhece CAMAP-AGP").
  *
- * `$batch` real (Fase 3): as 4 listas MSE* (`MSEMenu`, `MSEExtensoes`,
- * `MSEModulos`, `MSEModulosMenu`) sÃ£o carregadas com uma Ãºnica chamada
+ * `$batch` real (Fase 3): as 4 listas MSE* (`MSEMenu`, `MSEExtensions`,
+ * `MSEModules`, `MSEModulesMenu`) sÃ£o carregadas com uma Ãºnica chamada
  * `batchGet` (`core/rest.js`), memoizada em `createKernelListLoaders` â€” a
  * promise do batch Ã© disparada sÃ³ na primeira das 4 funÃ§Ãµes a ser chamada e
  * compartilhada pelas outras 3. `MSEConfiguracoes` (config global) fica DE
@@ -38,17 +38,17 @@ import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
 
 const MENU_FIELDS = Object.freeze([
-  "Id", "Title", "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem",
-  "Componente", "Visao", "ParamsJson", "Padrao", "AbrirEm", "Estado"
+  "Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering",
+  "Component", "View", "ParamsJson", "Default", "Target", "Published"
 ]);
-const EXTENSOES_FIELDS = Object.freeze([
-  "Id", "Title", "Tipo", "Elemento", "Versao", "Habilitado", "Protegido", "Ordem", "ParamsJson"
+const EXTENSIONS_FIELDS = Object.freeze([
+  "Id", "Title", "Type", "Element", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
 ]);
-const MODULOS_FIELDS = Object.freeze([
-  "Id", "Title", "ModuloTipo", "Posicao", "Ordem", "Estado", "PublicarEm", "PublicarAte",
-  "MostrarTitulo", "Estilo", "AtribuicaoMenu", "ParamsJson", "SchemaVersao"
+const MODULES_FIELDS = Object.freeze([
+  "Id", "Title", "Module", "Position", "Ordering", "Published", "PublishUp", "PublishDown",
+  "ShowTitle", "Style", "MenuAssignment", "ParamsJson", "SchemaVersion"
 ]);
-const MODULOS_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuloId", "MenuId"]);
+const MODULES_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuleId", "MenuId"]);
 
 // Nomes internos tÃ©cnicos das 4 listas MSE* carregadas no boot (ver
 // `kernel/installer.js#KERNEL_LIST_SCHEMAS`). Deliberadamente duplicados
@@ -57,7 +57,7 @@ const MODULOS_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuloId", "MenuId"])
 // `tools/prepare-site-kernel.js`, que exclui tudo que Ã© Node-only
 // (installer/seed/schemas â€” ver cabeÃ§alho daquele script), entÃ£o o host nÃ£o
 // pode depender desses mÃ³dulos em tempo de execuÃ§Ã£o.
-const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]);
+const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu"]);
 const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags"]);
 
 /**
@@ -148,10 +148,10 @@ function createKernelListLoaders(client, fetchImpl, listIdsPromise) {
           client.getDigest()
         ]);
         const requestsByKey = {
-          loadMenu: buildListItemsRequest({ listId: listIdByInternalName.MSEMenu }, { select: MENU_FIELDS, orderBy: "Ordem", top: 2000 }),
-          loadExtensions: buildListItemsRequest({ listId: listIdByInternalName.MSEExtensoes }, { select: EXTENSOES_FIELDS, top: 500 }),
-          loadModulos: buildListItemsRequest({ listId: listIdByInternalName.MSEModulos }, { select: MODULOS_FIELDS, orderBy: "Ordem", top: 2000 }),
-          loadModulosMenu: buildListItemsRequest({ listId: listIdByInternalName.MSEModulosMenu }, { select: MODULOS_MENU_FIELDS, top: 5000 })
+          loadMenu: buildListItemsRequest({ listId: listIdByInternalName.MSEMenu }, { select: MENU_FIELDS, orderBy: "Ordering", top: 2000 }),
+          loadExtensions: buildListItemsRequest({ listId: listIdByInternalName.MSEExtensions }, { select: EXTENSIONS_FIELDS, top: 500 }),
+          loadModulos: buildListItemsRequest({ listId: listIdByInternalName.MSEModules }, { select: MODULES_FIELDS, orderBy: "Ordering", top: 2000 }),
+          loadModulosMenu: buildListItemsRequest({ listId: listIdByInternalName.MSEModulesMenu }, { select: MODULES_MENU_FIELDS, top: 5000 })
         };
         return batchGet(
           keys.map((key) => ({ key, path: requestsByKey[key].path })),
@@ -301,14 +301,14 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
   const adminClient = services.adminClient || client;
   const listIds = Object.freeze({ ...administratorListIds, ...(services.listIds || {}) });
   const loadAdministratorStructure = services.loadAdministratorStructure || (async () => {
-    const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModulos: MODULOS_FIELDS, MSEExtensoes: EXTENSOES_FIELDS };
+    const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModules: MODULES_FIELDS, MSEExtensions: EXTENSIONS_FIELDS };
     const read = async (name) => {
       const list = listIds[name];
       if (!list || typeof adminClient?.getListItems !== "function") return [];
       return adminClient.getListItems(list, { select: fieldsByList[name], top: 5000 });
     };
     const [menus, modules, extensions] = await Promise.all([
-      read("MSEMenu"), read("MSEModulos"), read("MSEExtensoes")
+      read("MSEMenu"), read("MSEModules"), read("MSEExtensions")
     ]);
     return { menus, modules, extensions, routes: menus };
   });

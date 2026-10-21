@@ -6,6 +6,13 @@
  * já carregado em memória (o shape de campos é o de `MSE_MENU_SCHEMA`, ver
  * `kernel/schemas/mse-menu.js`), e devolvem dados derivados.
  *
+ * Fase 4 da normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`):
+ * este módulo passou a ler os campos em inglês de `MSEMenu` (já presentes na
+ * mesma lista desde a Fase 3, gravados in-place junto aos campos PT antigos)
+ * em vez dos campos PT (`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/`Componente`/
+ * `Visao`/`Padrao`/`AbrirEm`/`Estado`), que continuam vivos na lista mas não
+ * são mais lidos por nenhum código consumidor.
+ *
  * Shape esperado de cada item de `items` (um registro da lista MSEMenu já
  * lido do SharePoint e normalizado pelo chamador):
  *   {
@@ -14,17 +21,17 @@
  *                             // SharePoint; necessário para resolver ParentId)
  *     Title: string,
  *     Alias: string,
- *     TipoMenu: string,
+ *     MenuType: string,
  *     ParentId: number | null | undefined,  // ausente/0 = raiz
- *     Caminho: string | null,
- *     Nivel: number,
- *     Ordem: number,
- *     Componente: string | null,
- *     Visao: string | null,
+ *     Path: string | null,
+ *     Level: number,
+ *     Ordering: number,
+ *     Component: string | null,
+ *     View: string | null,
  *     ParamsJson: string | null,
- *     Padrao: boolean,
- *     AbrirEm: "MesmaAba" | "NovaAba",
- *     Estado: "Publicado" | "Despublicado" | "Lixeira"
+ *     Default: boolean,
+ *     Target: "SameTab" | "NewTab",
+ *     Published: "Published" | "Unpublished" | "Trashed"
  *   }
  *
  * Shape esperado do objeto `route` (produzido pelo router do kernel,
@@ -38,20 +45,20 @@
  *   }
  */
 
-const PUBLISHED = "Publicado";
+const PUBLISHED = "Published";
 
 function isRootParent(parentId) {
   return parentId === null || parentId === undefined || parentId === 0;
 }
 
 function isPublished(item) {
-  return item?.Estado === PUBLISHED;
+  return item?.Published === PUBLISHED;
 }
 
 /**
  * Monta a árvore hierárquica dos itens de menu publicados, a partir de
- * ParentId. Cada nível é ordenado por Ordem (crescente). Itens cujo
- * Estado não é "Publicado" são ignorados — tanto como nós quanto como pais
+ * ParentId. Cada nível é ordenado por Ordering (crescente). Itens cujo
+ * Published não é "Published" são ignorados — tanto como nós quanto como pais
  * (um filho de um item despublicado também não aparece na árvore, pois seu
  * ParentId não resolve a nenhum nó presente).
  *
@@ -77,7 +84,7 @@ export function buildMenuTree(items) {
     }
   }
 
-  const byOrdem = (a, b) => (a.Ordem ?? 0) - (b.Ordem ?? 0);
+  const byOrdem = (a, b) => (a.Ordering ?? 0) - (b.Ordering ?? 0);
   const sortTree = (nodes) => {
     nodes.sort(byOrdem);
     for (const node of nodes) sortTree(node.children);
@@ -93,7 +100,7 @@ export function buildMenuTree(items) {
  * - Se `route.alias` for um texto não vazio, procura o item publicado cujo
  *   Alias corresponde exatamente.
  * - Se `route.alias` for vazio/ausente (raiz do site), cai no item
- *   publicado com `Padrao === true` (o item "Início").
+ *   publicado com `Default === true` (o item "Início").
  * - Retorna `null` quando nenhum item publicado corresponde.
  *
  * @param {Array<object>} items
@@ -109,7 +116,7 @@ export function findActiveMenuItem(items, route) {
   if (alias !== "") {
     return published.find((item) => item.Alias === alias) ?? null;
   }
-  return published.find((item) => item.Padrao === true) ?? null;
+  return published.find((item) => item.Default === true) ?? null;
 }
 
 /**

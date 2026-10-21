@@ -95,9 +95,9 @@ function createFakeAdminClient({ items, shouldReject } = {}) {
 }
 
 const LIST_IDS = Object.freeze({
-  MSEExtensoes: LIST,
+  MSEExtensions: LIST,
   MSEMenu: LIST,
-  MSEModulos: LIST
+  MSEModules: LIST
 });
 
 function textOf(elements) {
@@ -109,8 +109,8 @@ function textOf(elements) {
 {
   const root = createRoot();
   const items = [
-    { Id: 1, Title: "Blog", Tipo: "Componente", Elemento: "blog", Versao: "1.0.0", Habilitado: true, Protegido: false, Ordem: null, ParamsJson: null },
-    { Id: 2, Title: "SD", Tipo: "Modulo", Elemento: "sd", Versao: "1.0.0", Habilitado: true, Protegido: false, Ordem: 1, ParamsJson: "{}" }
+    { Id: 1, Title: "Blog", Type: "Component", Element: "blog", Version: "1.0.0", Enabled: true, Protected: false, Ordering: null, ParamsJson: null },
+    { Id: 2, Title: "SD", Type: "Module", Element: "sd", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: "{}" }
   ];
   const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
   const view = renderExtensionsScreen({ root, services });

@@ -17,11 +17,11 @@ import { buildKernelSeed, seedKernelLists } from "../seed.js";
  * nome interno nos testes.
  */
 const LIST_IDS = Object.freeze({
-  MSEMenuTipos: "10000000-0000-4000-8000-000000000001",
+  MSEMenuTypes: "10000000-0000-4000-8000-000000000001",
   MSEMenu: "10000000-0000-4000-8000-000000000002",
-  MSEExtensoes: "10000000-0000-4000-8000-000000000003",
-  MSEModulos: "10000000-0000-4000-8000-000000000004",
-  MSEModulosMenu: "10000000-0000-4000-8000-000000000005"
+  MSEExtensions: "10000000-0000-4000-8000-000000000003",
+  MSEModules: "10000000-0000-4000-8000-000000000004",
+  MSEModulesMenu: "10000000-0000-4000-8000-000000000005"
 });
 
 function createFakeClient(initialItems = {}) {
@@ -79,20 +79,20 @@ function fakeInstaller({ verifyError } = {}) {
   const seed = buildKernelSeed();
   assert.ok(Object.isFrozen(seed));
   assert.ok(Object.isFrozen(seed.MSEMenu));
-  assert.deepEqual(Object.keys(seed), ["MSEMenuTipos", "MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]);
+  assert.deepEqual(Object.keys(seed), ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu"]);
 
-  assert.equal(seed.MSEMenuTipos.items.length, 1);
-  assert.equal(seed.MSEMenuTipos.items[0].Chave, "principal");
+  assert.equal(seed.MSEMenuTypes.items.length, 1);
+  assert.equal(seed.MSEMenuTypes.items[0].Key, "principal");
 
   assert.equal(seed.MSEMenu.items.length, 1);
   const inicio = seed.MSEMenu.items[0];
   assert.equal(inicio.Alias, "inicio");
-  assert.equal(inicio.TipoMenu, "principal");
-  assert.equal(inicio.Padrao, true);
-  assert.equal(inicio.Componente, undefined); // item "somente módulos"
+  assert.equal(inicio.MenuType, "principal");
+  assert.equal(inicio.Default, true);
+  assert.equal(inicio.Component, undefined); // item "somente módulos"
 
-  assert.equal(seed.MSEModulos.items.length, 0);
-  assert.equal(seed.MSEModulosMenu.items.length, 0);
+  assert.equal(seed.MSEModules.items.length, 0);
+  assert.equal(seed.MSEModulesMenu.items.length, 0);
 
   // Nenhum dado real de tenant: nada de nomes de empresa/site reais ou GUIDs.
   const serialized = JSON.stringify(seed);
@@ -134,14 +134,14 @@ function fakeInstaller({ verifyError } = {}) {
   const installer = fakeInstaller();
   const result = await seedKernelLists({ installer, client, confirm: () => true });
   assert.equal(result.status, "seeded");
-  assert.equal(creates.length, 3); // MSEMenuTipos(1) + MSEMenu(1) + MSEExtensoes(1); MSEModulos/MSEModulosMenu vazios
+  assert.equal(creates.length, 3); // MSEMenuTypes(1) + MSEMenu(1) + MSEExtensions(1); MSEModules/MSEModulesMenu vazios
   assert.deepEqual(
     result.created.map((entry) => entry.list).sort(),
-    ["MSEExtensoes", "MSEMenu", "MSEMenuTipos"].sort()
+    ["MSEExtensions", "MSEMenu", "MSEMenuTypes"].sort()
   );
-  assert.equal(creates.find((entry) => entry.list === "MSEMenuTipos").values.Chave, "principal");
+  assert.equal(creates.find((entry) => entry.list === "MSEMenuTypes").values.Key, "principal");
   assert.equal(creates.find((entry) => entry.list === "MSEMenu").values.Alias, "inicio");
-  assert.equal(creates.find((entry) => entry.list === "MSEExtensoes").values.Elemento, "exemplo");
+  assert.equal(creates.find((entry) => entry.list === "MSEExtensions").values.Element, "exemplo");
 }
 
 // Idempotência: rodar duas vezes não duplica (a segunda consulta já encontra o item).
@@ -157,9 +157,9 @@ function fakeInstaller({ verifyError } = {}) {
   assert.equal(second.status, "seeded");
   assert.equal(second.created.length, 0); // nada novo: todas as chaves já existem
   assert.equal(creates.length, 3); // nenhuma escrita adicional
-  assert.equal(lists.get("MSEMenuTipos").length, 1);
+  assert.equal(lists.get("MSEMenuTypes").length, 1);
   assert.equal(lists.get("MSEMenu").length, 1);
-  assert.equal(lists.get("MSEExtensoes").length, 1);
+  assert.equal(lists.get("MSEExtensions").length, 1);
 }
 
 console.log("seed.test.js (kernel): verificações concluídas com sucesso.");

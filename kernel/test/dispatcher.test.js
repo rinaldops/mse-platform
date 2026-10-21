@@ -4,32 +4,32 @@ import { resolveDispatch } from "../dispatcher.js";
 // --- fixtures --------------------------------------------------------------
 //
 // Itens de menu (shape cru de MSEMenu, ver kernel/menu.js):
-//   Id 1 - "Início" (raiz, Padrao, SEM Componente -> "somente módulos")
-//   Id 2 - "Blog" (Componente "blog", habilitado, Visao "lista", sem ParamsJson)
-//   Id 3 - "Destaques" (Componente "blog", Visao "destaques",
+//   Id 1 - "Início" (raiz, Default, SEM Component -> "somente módulos")
+//   Id 2 - "Blog" (Component "blog", habilitado, View "lista", sem ParamsJson)
+//   Id 3 - "Destaques" (Component "blog", View "destaques",
 //          ParamsJson válido: {"categoria":"principal"})
-//   Id 4 - "Legado" (Componente "legado", Visao "lista",
+//   Id 4 - "Legado" (Component "legado", View "lista",
 //          ParamsJson malformado -> tratado como {})
-//   Id 5 - "Forum" (Componente "forum", DESABILITADO em MSEExtensoes)
-//   Id 6 - "Oculto" (Componente "inexistente-no-registro", não cadastrado
-//          em MSEExtensoes -> isEnabled trata como desabilitado)
+//   Id 5 - "Forum" (Component "forum", DESABILITADO em MSEExtensions)
+//   Id 6 - "Oculto" (Component "inexistente-no-registro", não cadastrado
+//          em MSEExtensions -> isEnabled trata como desabilitado)
 
 function fixtureMenuItems() {
   return [
-    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Componente: null, Visao: null, ParamsJson: null, Padrao: true, Estado: "Publicado" },
-    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Componente: "blog", Visao: "lista", ParamsJson: null, Padrao: false, Estado: "Publicado" },
-    { Id: 3, Title: "Destaques", Alias: "destaques", ParentId: 0, Componente: "blog", Visao: "destaques", ParamsJson: '{"categoria":"principal"}', Padrao: false, Estado: "Publicado" },
-    { Id: 4, Title: "Legado", Alias: "legado", ParentId: 0, Componente: "legado", Visao: "lista", ParamsJson: "{isso nao e json}", Padrao: false, Estado: "Publicado" },
-    { Id: 5, Title: "Forum", Alias: "forum", ParentId: 0, Componente: "forum", Visao: null, ParamsJson: null, Padrao: false, Estado: "Publicado" },
-    { Id: 6, Title: "Oculto", Alias: "oculto", ParentId: 0, Componente: "inexistente-no-registro", Visao: null, ParamsJson: null, Padrao: false, Estado: "Publicado" }
+    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Component: null, View: null, ParamsJson: null, Default: true, Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Component: "blog", View: "lista", ParamsJson: null, Default: false, Published: "Published" },
+    { Id: 3, Title: "Destaques", Alias: "destaques", ParentId: 0, Component: "blog", View: "destaques", ParamsJson: '{"categoria":"principal"}', Default: false, Published: "Published" },
+    { Id: 4, Title: "Legado", Alias: "legado", ParentId: 0, Component: "legado", View: "lista", ParamsJson: "{isso nao e json}", Default: false, Published: "Published" },
+    { Id: 5, Title: "Forum", Alias: "forum", ParentId: 0, Component: "forum", View: null, ParamsJson: null, Default: false, Published: "Published" },
+    { Id: 6, Title: "Oculto", Alias: "oculto", ParentId: 0, Component: "inexistente-no-registro", View: null, ParamsJson: null, Default: false, Published: "Published" }
   ];
 }
 
 function fixtureExtensions() {
   return [
-    { Title: "Blog", Tipo: "Componente", Elemento: "blog", Versao: "1.0.0", Habilitado: true, Protegido: false },
-    { Title: "Legado", Tipo: "Componente", Elemento: "legado", Versao: "0.1.0", Habilitado: true, Protegido: false },
-    { Title: "Fórum", Tipo: "Componente", Elemento: "forum", Versao: "1.0.0", Habilitado: false, Protegido: false }
+    { Title: "Blog", Type: "Component", Element: "blog", Version: "1.0.0", Enabled: true, Protected: false },
+    { Title: "Legado", Type: "Component", Element: "legado", Version: "0.1.0", Enabled: true, Protected: false },
+    { Title: "Fórum", Type: "Component", Element: "forum", Version: "1.0.0", Enabled: false, Protected: false }
   ];
 }
 
@@ -37,7 +37,7 @@ function emptyQueryRoute(overrides = {}) {
   return { alias: "", id: null, slug: null, query: {}, ...overrides };
 }
 
-// --- rota raiz sem Componente (Home "somente módulos") ---------------------
+// --- rota raiz sem Component (Home "somente módulos") ---------------------
 
 {
   const result = resolveDispatch({
@@ -51,10 +51,10 @@ function emptyQueryRoute(overrides = {}) {
   assert.ok(result.menuItem);
   assert.equal(result.menuItem.Id, 1);
 
-  console.log("dispatcher.test.js: rota raiz sem Componente (modules-only) ok.");
+  console.log("dispatcher.test.js: rota raiz sem Component (modules-only) ok.");
 }
 
-// --- rota com Componente habilitado -----------------------------------------
+// --- rota com Component habilitado -----------------------------------------
 
 {
   const result = resolveDispatch({
@@ -71,10 +71,10 @@ function emptyQueryRoute(overrides = {}) {
   assert.equal(result.routeId, null);
   assert.equal(result.routeSlug, null);
 
-  console.log("dispatcher.test.js: Componente habilitado ok.");
+  console.log("dispatcher.test.js: Component habilitado ok.");
 }
 
-// --- rota com Componente desabilitado ---------------------------------------
+// --- rota com Component desabilitado ---------------------------------------
 
 {
   const result = resolveDispatch({
@@ -87,10 +87,10 @@ function emptyQueryRoute(overrides = {}) {
   assert.equal(result.reason, "disabled");
   assert.equal(result.menuItem.Id, 5);
 
-  console.log("dispatcher.test.js: Componente desabilitado ok.");
+  console.log("dispatcher.test.js: Component desabilitado ok.");
 }
 
-// --- Componente ausente do registro de extensões (tratado como desabilitado) -
+// --- Component ausente do registro de extensões (tratado como desabilitado) -
 
 {
   const result = resolveDispatch({
@@ -102,7 +102,7 @@ function emptyQueryRoute(overrides = {}) {
   assert.equal(result.found, false);
   assert.equal(result.reason, "disabled");
 
-  console.log("dispatcher.test.js: Componente não cadastrado em MSEExtensoes ok.");
+  console.log("dispatcher.test.js: Component não cadastrado em MSEExtensions ok.");
 }
 
 // --- rota sem item de menu correspondente (404) -----------------------------
@@ -198,7 +198,7 @@ function emptyQueryRoute(overrides = {}) {
   console.log("dispatcher.test.js: mesclagem de query string + ParamsJson ok.");
 }
 
-// --- resolução de view: query.view tem prioridade sobre Visao do menu ------
+// --- resolução de view: query.view tem prioridade sobre View do menu -------
 
 {
   const result = resolveDispatch({
@@ -212,14 +212,14 @@ function emptyQueryRoute(overrides = {}) {
   // "view" na query também aparece em params (não é removida do merge).
   assert.equal(result.params.view, "card");
 
-  console.log("dispatcher.test.js: query.view prevalece sobre Visao do item de menu ok.");
+  console.log("dispatcher.test.js: query.view prevalece sobre View do item de menu ok.");
 }
 
 // --- resolução de view: default quando nem query nem menu especificam ------
 
 {
   const items = fixtureMenuItems();
-  items[1] = { ...items[1], Visao: null };
+  items[1] = { ...items[1], View: null };
   const result = resolveDispatch({
     route: emptyQueryRoute({ alias: "blog" }),
     menuItems: items,
@@ -240,10 +240,10 @@ function emptyQueryRoute(overrides = {}) {
   console.log("dispatcher.test.js: visão padrão (defaultView) ok.");
 }
 
-// --- rota raiz sem nenhum item Padrao publicado também é not-found ---------
+// --- rota raiz sem nenhum item Default publicado também é not-found --------
 
 {
-  const items = fixtureMenuItems().map((item) => (item.Id === 1 ? { ...item, Padrao: false } : item));
+  const items = fixtureMenuItems().map((item) => (item.Id === 1 ? { ...item, Default: false } : item));
   const result = resolveDispatch({
     route: emptyQueryRoute(),
     menuItems: items,
@@ -253,7 +253,7 @@ function emptyQueryRoute(overrides = {}) {
   assert.equal(result.found, false);
   assert.equal(result.reason, "not-found");
 
-  console.log("dispatcher.test.js: raiz sem item Padrao publicado (not-found) ok.");
+  console.log("dispatcher.test.js: raiz sem item Default publicado (not-found) ok.");
 }
 
 console.log("dispatcher.test.js: verificações concluídas com sucesso.");

@@ -131,10 +131,13 @@ function createFakeClient() {
 }
 
 // KERNEL_LIST_SCHEMAS deve conter exatamente as 5 listas fixas do kernel.
+// Fase 3 da normalização Joomla!: MSEMenu continua com esse internalName
+// (campos novos em inglês acrescentados in-place), as outras 4 passam a
+// ser as listas novas em inglês.
 assert.equal(KERNEL_LIST_SCHEMAS.length, 5);
 assert.deepEqual(
   KERNEL_LIST_SCHEMAS.map((schema) => schema.internalName),
-  ["MSEMenuTipos", "MSEMenu", "MSEExtensoes", "MSEModulos", "MSEModulosMenu"]
+  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu"]
 );
 assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
 
@@ -177,11 +180,12 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   const applied = await installer.apply(() => true);
   assert.equal(applied.status, "provisioned");
   assert.equal(state.lists.size, 5);
-  assert.equal(state.lists.get("MSEMenuTipos").fields.some((field) => field.InternalName === "Chave"), true);
+  assert.equal(state.lists.get("MSEMenuTypes").fields.some((field) => field.InternalName === "Key"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Alias"), true);
-  assert.equal(state.lists.get("MSEExtensoes").fields.some((field) => field.InternalName === "Elemento"), true);
-  assert.equal(state.lists.get("MSEModulos").fields.some((field) => field.InternalName === "ModuloTipo"), true);
-  assert.equal(state.lists.get("MSEModulosMenu").fields.some((field) => field.InternalName === "ModuloId"), true);
+  assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Component"), true);
+  assert.equal(state.lists.get("MSEExtensions").fields.some((field) => field.InternalName === "Element"), true);
+  assert.equal(state.lists.get("MSEModules").fields.some((field) => field.InternalName === "Module"), true);
+  assert.equal(state.lists.get("MSEModulesMenu").fields.some((field) => field.InternalName === "ModuleId"), true);
 
   const verified = await installer.verify();
   assert.equal(verified.status, "ready");
@@ -191,9 +195,9 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
 // propaga erro sem escrita parcial que corrompa o estado.
 {
   const { client, state } = createFakeClient();
-  state.lists.set("MSEMenuTipos", {
+  state.lists.set("MSEMenuTypes", {
     id: "00000000-0000-4000-8000-000000000099",
-    internalName: "MSEMenuTipos",
+    internalName: "MSEMenuTypes",
     displayName: "Tipos de menu",
     template: 100,
     versioning: true,
@@ -210,9 +214,9 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
       EnforceUniqueValues: false,
       Choices: []
     }, {
-      InternalName: "Chave",
-      StaticName: "Chave",
-      Title: "Chave",
+      InternalName: "Key",
+      StaticName: "Key",
+      Title: "Key",
       TypeAsString: "Number", // conflita com o schema (Text)
       Required: true,
       Indexed: true,
@@ -225,7 +229,7 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
     installer.apply(() => true),
     (error) => error instanceof ListProvisioningError
       && error.code === "schema-conflict"
-      && error.fieldName === "Chave"
+      && error.fieldName === "Key"
   );
   assert.equal(state.writes.length, 0);
   // Nenhuma das outras 4 listas foi criada: inspectSchemas falha antes do confirm.

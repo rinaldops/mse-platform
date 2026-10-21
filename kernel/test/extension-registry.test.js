@@ -1,51 +1,47 @@
 import assert from "node:assert/strict";
-import { MSE_EXTENSOES_SCHEMA } from "../schemas/mse-extensoes.js";
-import {
-  isEnabled, resolveExtension, sortPlugins, listByType,
-  EXTENSION_TYPE_BY_MANIFEST_TYPE, MANIFEST_TYPE_BY_EXTENSION_TYPE,
-  extensionTypeFromManifestType, manifestTypeFromExtensionType
-} from "../extension-registry.js";
+import { MSE_EXTENSIONS_SCHEMA } from "../schemas/mse-extensions.js";
+import { isEnabled, resolveExtension, sortPlugins, listByType } from "../extension-registry.js";
 
-// --- MSE_EXTENSOES_SCHEMA ------------------------------------------------
+// --- MSE_EXTENSIONS_SCHEMA ------------------------------------------------
 
-assert.ok(Object.isFrozen(MSE_EXTENSOES_SCHEMA));
-assert.ok(Object.isFrozen(MSE_EXTENSOES_SCHEMA.fields));
-assert.equal(MSE_EXTENSOES_SCHEMA.titleField.displayName, "Título");
-assert.equal(MSE_EXTENSOES_SCHEMA.internalName, "MSEExtensoes");
+assert.ok(Object.isFrozen(MSE_EXTENSIONS_SCHEMA));
+assert.ok(Object.isFrozen(MSE_EXTENSIONS_SCHEMA.fields));
+assert.equal(MSE_EXTENSIONS_SCHEMA.titleField.displayName, "Title");
+assert.equal(MSE_EXTENSIONS_SCHEMA.internalName, "MSEExtensions");
 
-const fieldNames = MSE_EXTENSOES_SCHEMA.fields.map((field) => field.internalName);
+const fieldNames = MSE_EXTENSIONS_SCHEMA.fields.map((field) => field.internalName);
 assert.deepEqual(fieldNames, [
-  "Tipo", "Elemento", "Versao", "Habilitado", "Protegido", "Ordem", "ParamsJson"
+  "Type", "Element", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
 ]);
 // Title + 7 campos declarados em `fields[]` = 8 campos no total, como
-// descrito na tarefa (Title, Tipo, Elemento, Versao, Habilitado, Protegido,
-// Ordem, ParamsJson).
+// descrito na tarefa (Title, Type, Element, Version, Enabled, Protected,
+// Ordering, ParamsJson).
 assert.equal(fieldNames.length + 1, 8);
 
-for (const field of MSE_EXTENSOES_SCHEMA.fields) {
+for (const field of MSE_EXTENSIONS_SCHEMA.fields) {
   assert.ok(Object.isFrozen(field));
   assert.ok(typeof field.displayName === "string" && field.displayName.length > 0);
   assert.ok(typeof field.type === "string" && field.type.length > 0);
   assert.equal(typeof field.required, "boolean");
 }
 
-const tipo = MSE_EXTENSOES_SCHEMA.fields.find((f) => f.internalName === "Tipo");
-assert.deepEqual([...tipo.choices], ["Componente", "Modulo", "Plugin"]);
+const tipo = MSE_EXTENSIONS_SCHEMA.fields.find((f) => f.internalName === "Type");
+assert.deepEqual([...tipo.choices], ["Component", "Module", "Plugin"]);
 
-console.log("extension-registry.test.js: MSE_EXTENSOES_SCHEMA verificado.");
+console.log("extension-registry.test.js: MSE_EXTENSIONS_SCHEMA verificado.");
 
 // --- fixtures -------------------------------------------------------------
 
 function fixtureItems() {
   return [
-    { Title: "Fórum", Tipo: "Componente", Elemento: "forum", Versao: "1.0.0", Habilitado: true, Protegido: false, Ordem: undefined, ParamsJson: null },
-    { Title: "Explore Mais", Tipo: "Modulo", Elemento: "explore-mais", Versao: "1.0.0", Habilitado: false, Protegido: false, Ordem: undefined, ParamsJson: null },
-    { Title: "Breadcrumbs", Tipo: "Modulo", Elemento: "breadcrumbs", Versao: "1.0.0", Habilitado: true, Protegido: true, Ordem: undefined, ParamsJson: null },
-    { Title: "Auditoria", Tipo: "Plugin", Elemento: "auditoria", Versao: "1.0.0", Habilitado: true, Protegido: true, Ordem: 2, ParamsJson: null },
-    { Title: "Cache", Tipo: "Plugin", Elemento: "cache", Versao: "1.0.0", Habilitado: true, Protegido: false, Ordem: 1, ParamsJson: null },
-    { Title: "Legado", Tipo: "Plugin", Elemento: "legado", Versao: "0.9.0", Habilitado: true, Protegido: false, ParamsJson: null }, // sem Ordem
-    { Title: "Beta", Tipo: "Plugin", Elemento: "beta", Versao: "0.1.0", Habilitado: true, Protegido: false, ParamsJson: null }, // sem Ordem, após Legado
-    { Title: "Desligado", Tipo: "Plugin", Elemento: "desligado", Versao: "1.0.0", Habilitado: false, Protegido: false, Ordem: 0, ParamsJson: null }
+    { Title: "Fórum", Type: "Component", Element: "forum", Version: "1.0.0", Enabled: true, Protected: false, Ordering: undefined, ParamsJson: null },
+    { Title: "Explore Mais", Type: "Module", Element: "explore-mais", Version: "1.0.0", Enabled: false, Protected: false, Ordering: undefined, ParamsJson: null },
+    { Title: "Breadcrumbs", Type: "Module", Element: "breadcrumbs", Version: "1.0.0", Enabled: true, Protected: true, Ordering: undefined, ParamsJson: null },
+    { Title: "Auditoria", Type: "Plugin", Element: "auditoria", Version: "1.0.0", Enabled: true, Protected: true, Ordering: 2, ParamsJson: null },
+    { Title: "Cache", Type: "Plugin", Element: "cache", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: null },
+    { Title: "Legado", Type: "Plugin", Element: "legado", Version: "0.9.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering
+    { Title: "Beta", Type: "Plugin", Element: "beta", Version: "0.1.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering, após Legado
+    { Title: "Desligado", Type: "Plugin", Element: "desligado", Version: "1.0.0", Enabled: false, Protected: false, Ordering: 0, ParamsJson: null }
   ];
 }
 
@@ -83,29 +79,29 @@ function fixtureItems() {
 
 {
   const items = fixtureItems();
-  const originalOrder = items.map((item) => item.Elemento);
+  const originalOrder = items.map((item) => item.Element);
 
   const plugins = sortPlugins(items);
 
   // Apenas Plugins habilitados: auditoria, cache, legado, beta (desligado e
   // não-Plugin excluídos).
   assert.deepEqual(
-    plugins.map((p) => p.Elemento),
+    plugins.map((p) => p.Element),
     ["cache", "auditoria", "legado", "beta"]
   );
 
   // Não muta o array de entrada nem os itens.
-  assert.deepEqual(items.map((item) => item.Elemento), originalOrder);
+  assert.deepEqual(items.map((item) => item.Element), originalOrder);
 
-  // Sort estável entre itens sem Ordem: Legado aparece antes de Beta na
+  // Sort estável entre itens sem Ordering: Legado aparece antes de Beta na
   // fixture original, e essa ordem relativa é preservada.
-  const semOrdem = plugins.filter((p) => typeof p.Ordem !== "number");
-  assert.deepEqual(semOrdem.map((p) => p.Elemento), ["legado", "beta"]);
+  const semOrdem = plugins.filter((p) => typeof p.Ordering !== "number");
+  assert.deepEqual(semOrdem.map((p) => p.Element), ["legado", "beta"]);
 
   // Lista vazia / sem Plugins não quebra.
   assert.deepEqual(sortPlugins([]), []);
   assert.deepEqual(sortPlugins(undefined), []);
-  assert.deepEqual(sortPlugins([{ Tipo: "Componente", Habilitado: true, Elemento: "forum" }]), []);
+  assert.deepEqual(sortPlugins([{ Type: "Component", Enabled: true, Element: "forum" }]), []);
 
   console.log("extension-registry.test.js: sortPlugins ok.");
 }
@@ -115,63 +111,24 @@ function fixtureItems() {
 {
   const items = fixtureItems();
 
-  const modulos = listByType(items, "Modulo");
+  const modulos = listByType(items, "Module");
   assert.deepEqual(
-    modulos.map((m) => m.Elemento).sort(),
+    modulos.map((m) => m.Element).sort(),
     ["breadcrumbs", "explore-mais"]
   );
   // Inclui habilitados e desabilitados.
-  assert.ok(modulos.some((m) => m.Habilitado === false));
-  assert.ok(modulos.some((m) => m.Habilitado === true));
+  assert.ok(modulos.some((m) => m.Enabled === false));
+  assert.ok(modulos.some((m) => m.Enabled === true));
 
   const plugins = listByType(items, "Plugin");
   assert.equal(plugins.length, 5); // auditoria, cache, legado, beta, desligado
-  assert.ok(plugins.some((p) => p.Habilitado === false));
+  assert.ok(plugins.some((p) => p.Enabled === false));
 
   assert.deepEqual(listByType([], "Plugin"), []);
   assert.deepEqual(listByType(undefined, "Plugin"), []);
   assert.deepEqual(listByType(items, "Inexistente"), []);
 
   console.log("extension-registry.test.js: listByType ok.");
-}
-
-// --- mapeamento type (manifesto v2) <-> Tipo (MSEExtensoes) ---------------
-
-{
-  assert.ok(Object.isFrozen(EXTENSION_TYPE_BY_MANIFEST_TYPE));
-  assert.ok(Object.isFrozen(MANIFEST_TYPE_BY_EXTENSION_TYPE));
-
-  assert.deepEqual(EXTENSION_TYPE_BY_MANIFEST_TYPE, {
-    component: "Componente", module: "Modulo", plugin: "Plugin"
-  });
-
-  // As choices do schema real devem bater exatamente com os valores do mapa,
-  // para nunca divergir do que é persistido na lista MSEExtensoes.
-  const tipoField = MSE_EXTENSOES_SCHEMA.fields.find((f) => f.internalName === "Tipo");
-  assert.deepEqual(
-    [...tipoField.choices].sort(),
-    Object.values(EXTENSION_TYPE_BY_MANIFEST_TYPE).sort()
-  );
-
-  // Round-trip nos dois sentidos.
-  for (const manifestType of ["component", "module", "plugin"]) {
-    const tipo = extensionTypeFromManifestType(manifestType);
-    assert.equal(manifestTypeFromExtensionType(tipo), manifestType);
-  }
-  assert.equal(extensionTypeFromManifestType("component"), "Componente");
-  assert.equal(extensionTypeFromManifestType("module"), "Modulo");
-  assert.equal(extensionTypeFromManifestType("plugin"), "Plugin");
-  assert.equal(manifestTypeFromExtensionType("Componente"), "component");
-  assert.equal(manifestTypeFromExtensionType("Modulo"), "module");
-  assert.equal(manifestTypeFromExtensionType("Plugin"), "plugin");
-
-  // Valores desconhecidos lançam, nunca retornam undefined silenciosamente.
-  assert.throws(() => extensionTypeFromManifestType("widget"), TypeError);
-  assert.throws(() => extensionTypeFromManifestType(undefined), TypeError);
-  assert.throws(() => manifestTypeFromExtensionType("Módulo"), TypeError); // com acento: não é o literal persistido
-  assert.throws(() => manifestTypeFromExtensionType(undefined), TypeError);
-
-  console.log("extension-registry.test.js: mapeamento type<->Tipo ok.");
 }
 
 console.log("extension-registry.test.js: verificações concluídas com sucesso.");

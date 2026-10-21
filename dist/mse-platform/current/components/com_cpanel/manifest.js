@@ -12,8 +12,8 @@ export default defineModuleManifest({
   styles: ["./administrator.css"],
   dataSources: [
     { key: "menu", type: "list", internalName: "MSEMenu", displayName: "MSE Menu" },
-    { key: "modules", type: "list", internalName: "MSEModulos", displayName: "MSE Módulos" },
-    { key: "extensions", type: "list", internalName: "MSEExtensoes", displayName: "MSE Extensões" },
+    { key: "modules", type: "list", internalName: "MSEModules", displayName: "MSE Módulos" },
+    { key: "extensions", type: "list", internalName: "MSEExtensions", displayName: "MSE Extensões" },
     { key: "configuration", type: "list", internalName: "MSEConfiguracoes", displayName: "MSE Configurações" },
     { key: "publications", type: "list", internalName: "CAMAPPublicacoes", displayName: "MSE Publicacoes" }
   ],

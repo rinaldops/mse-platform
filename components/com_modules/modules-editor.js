@@ -1,30 +1,30 @@
 import { createAdminItem, deleteAdminItem, listAdminItems, updateAdminItem } from "../../kernel/admin-data.js";
 
-const ESTADOS = ["Publicado", "Despublicado", "Lixeira"];
-const ATRIBUICOES = ["Todas", "Nenhuma", "Somente", "Todas exceto"];
+const ESTADOS = ["Published", "Unpublished", "Trashed"];
+const ATRIBUICOES = ["All", "None", "Only", "AllExcept"];
 
 export function validateModuleValues(values = {}) {
   const item = values && typeof values === "object" ? values : {};
   const title = String(item.Title ?? "").trim();
-  const moduloTipo = String(item.ModuloTipo ?? "").trim();
-  const posicao = String(item.Posicao ?? "").trim();
-  const estado = String(item.Estado ?? "Publicado");
-  const atribuicao = String(item.AtribuicaoMenu ?? "Todas");
+  const moduloTipo = String(item.Module ?? "").trim();
+  const posicao = String(item.Position ?? "").trim();
+  const estado = String(item.Published ?? "Published");
+  const atribuicao = String(item.MenuAssignment ?? "All");
   if (!title) throw new TypeError("Título é obrigatório.");
   if (!moduloTipo || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(moduloTipo)) throw new TypeError("Tipo de módulo deve usar letras minúsculas, números e hífens.");
   if (!posicao || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(posicao)) throw new TypeError("Posição deve usar letras minúsculas, números e hífens.");
   if (!ESTADOS.includes(estado)) throw new TypeError(`Estado inválido: ${estado}.`);
   if (!ATRIBUICOES.includes(atribuicao)) throw new TypeError(`Atribuição de menu inválida: ${atribuicao}.`);
-  const ordem = item.Ordem === "" || item.Ordem == null ? 0 : Number(item.Ordem);
-  const schemaVersao = item.SchemaVersao === "" || item.SchemaVersao == null ? null : Number(item.SchemaVersao);
+  const ordem = item.Ordering === "" || item.Ordering == null ? 0 : Number(item.Ordering);
+  const schemaVersao = item.SchemaVersion === "" || item.SchemaVersion == null ? null : Number(item.SchemaVersion);
   if (!Number.isInteger(ordem) || ordem < 0) throw new TypeError("Ordem deve ser um inteiro não negativo.");
   if (schemaVersao !== null && (!Number.isInteger(schemaVersao) || schemaVersao < 0)) throw new TypeError("Versão do schema deve ser um inteiro não negativo.");
-  const publicarEm = item.PublicarEm || null;
-  const publicarAte = item.PublicarAte || null;
+  const publicarEm = item.PublishUp || null;
+  const publicarAte = item.PublishDown || null;
   if (publicarEm && publicarAte && new Date(publicarAte).getTime() < new Date(publicarEm).getTime()) throw new TypeError("Publicar até deve ser maior ou igual a Publicar em.");
   const paramsJson = item.ParamsJson == null || item.ParamsJson === "" ? "{}" : String(item.ParamsJson);
   try { const parsed = JSON.parse(paramsJson); if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(); } catch { throw new TypeError("ParamsJson deve conter um objeto JSON válido."); }
-  return { Title: title, ModuloTipo: moduloTipo, Posicao: posicao, Ordem: ordem, Estado: estado, PublicarEm: publicarEm, PublicarAte: publicarAte, MostrarTitulo: Boolean(item.MostrarTitulo), Estilo: String(item.Estilo ?? "").trim(), AtribuicaoMenu: atribuicao, ParamsJson: paramsJson, SchemaVersao: schemaVersao };
+  return { Title: title, Module: moduloTipo, Position: posicao, Ordering: ordem, Published: estado, PublishUp: publicarEm, PublishDown: publicarAte, ShowTitle: Boolean(item.ShowTitle), Style: String(item.Style ?? "").trim(), MenuAssignment: atribuicao, ParamsJson: paramsJson, SchemaVersion: schemaVersao };
 }
 
 function node(document, tag, text = "") { const value = document.createElement(tag); value.textContent = text; return value; }
@@ -38,7 +38,7 @@ function errorText(prefix, error) { const code = statusCode(error); if (code ===
 export function renderModulesEditor({ root, services = {} } = {}) {
   const document = root?.ownerDocument;
   const client = services.adminClient;
-  const list = services.listIds?.MSEModulos;
+  const list = services.listIds?.MSEModules;
   if (!document) throw new TypeError("root é obrigatório.");
   const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__modules";
   const error = node(document, "p"); error.className = "mse-administrator__error";
@@ -46,19 +46,19 @@ export function renderModulesEditor({ root, services = {} } = {}) {
   const toolbar = document.createElement("div"); const newButton = node(document, "button", "Novo módulo"); const reloadButton = node(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
   panel.append(node(document, "h2", "Instâncias de módulo"), error, toolbar, tableHost, formHost); root.append(panel);
   let currentId = null; let controls = {};
-  const read = () => ({ Title: controls.Title.value, ModuloTipo: controls.ModuloTipo.value, Posicao: controls.Posicao.value, Ordem: controls.Ordem.value, Estado: controls.Estado.value, PublicarEm: controls.PublicarEm.value, PublicarAte: controls.PublicarAte.value, MostrarTitulo: controls.MostrarTitulo.checked, Estilo: controls.Estilo.value, AtribuicaoMenu: controls.AtribuicaoMenu.value, ParamsJson: controls.ParamsJson.value, SchemaVersao: controls.SchemaVersao.value });
+  const read = () => ({ Title: controls.Title.value, Module: controls.Module.value, Position: controls.Position.value, Ordering: controls.Ordering.value, Published: controls.Published.value, PublishUp: controls.PublishUp.value, PublishDown: controls.PublishDown.value, ShowTitle: controls.ShowTitle.checked, Style: controls.Style.value, MenuAssignment: controls.MenuAssignment.value, ParamsJson: controls.ParamsJson.value, SchemaVersion: controls.SchemaVersion.value });
   function renderForm(item = {}) {
     clear(formHost); controls = {};
     const box = document.createElement("div"); box.className = "mse-administrator__form";
-    const fields = [["Título", "Title"], ["Tipo de módulo", "ModuloTipo"], ["Posição", "Posicao"], ["Ordem", "Ordem"], ["Publicar em", "PublicarEm"], ["Publicar até", "PublicarAte"], ["Estilo", "Estilo"], ["Parâmetros (JSON)", "ParamsJson"], ["Versão do schema", "SchemaVersao"]];
-    for (const [label, name] of fields) { const row = document.createElement("label"); row.textContent = label; controls[name] = input(document, name, item[name] ?? (name === "ParamsJson" ? "{}" : "")); if (name === "PublicarEm" || name === "PublicarAte") controls[name].type = "datetime-local"; row.append(controls[name]); box.append(row); }
-    controls.Estado = select(document, "Estado", ESTADOS, item.Estado || "Publicado"); controls.AtribuicaoMenu = select(document, "AtribuicaoMenu", ATRIBUICOES, item.AtribuicaoMenu || "Todas");
-    for (const [label, control] of [["Estado", controls.Estado], ["Atribuição de menu", controls.AtribuicaoMenu]]) { const row = document.createElement("label"); row.textContent = label; row.append(control); box.append(row); }
-    const titleRow = document.createElement("label"); titleRow.textContent = "Mostrar título"; controls.MostrarTitulo = document.createElement("input"); controls.MostrarTitulo.type = "checkbox"; controls.MostrarTitulo.checked = Boolean(item.MostrarTitulo); titleRow.append(controls.MostrarTitulo); box.append(titleRow);
+    const fields = [["Título", "Title"], ["Tipo de módulo", "Module"], ["Posição", "Position"], ["Ordem", "Ordering"], ["Publicar em", "PublishUp"], ["Publicar até", "PublishDown"], ["Estilo", "Style"], ["Parâmetros (JSON)", "ParamsJson"], ["Versão do schema", "SchemaVersion"]];
+    for (const [label, name] of fields) { const row = document.createElement("label"); row.textContent = label; controls[name] = input(document, name, item[name] ?? (name === "ParamsJson" ? "{}" : "")); if (name === "PublishUp" || name === "PublishDown") controls[name].type = "datetime-local"; row.append(controls[name]); box.append(row); }
+    controls.Published = select(document, "Published", ESTADOS, item.Published || "Published"); controls.MenuAssignment = select(document, "MenuAssignment", ATRIBUICOES, item.MenuAssignment || "All");
+    for (const [label, control] of [["Estado", controls.Published], ["Atribuição de menu", controls.MenuAssignment]]) { const row = document.createElement("label"); row.textContent = label; row.append(control); box.append(row); }
+    const titleRow = document.createElement("label"); titleRow.textContent = "Mostrar título"; controls.ShowTitle = document.createElement("input"); controls.ShowTitle.type = "checkbox"; controls.ShowTitle.checked = Boolean(item.ShowTitle); titleRow.append(controls.ShowTitle); box.append(titleRow);
     const save = node(document, "button", "Salvar"); const cancel = node(document, "button", "Cancelar"); bind(cancel, () => { currentId = null; renderForm(); });
     bind(save, async () => { error.textContent = ""; try { const values = validateModuleValues(read()); if (currentId == null) await createAdminItem({ client, list, values }); else await updateAdminItem({ client, list, id: currentId, values }); currentId = null; renderForm(); await reload(); } catch (e) { error.textContent = errorText("Falha ao salvar", e); } }); box.append(save, cancel); formHost.append(box);
   }
-  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.ModuloTipo, item.Posicao, item.Ordem, item.Estado, item.AtribuicaoMenu]) row.append(node(document, "td", String(value ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); actions.append(edit, remove); row.append(actions); table.append(row); } tableHost.append(table); }
-  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEModulos não configurado."; return; } try { renderTable(await listAdminItems({ client, list, orderby: "Posicao,Ordem" })); } catch (e) { error.textContent = errorText("Falha ao carregar módulos", e); } }
+  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Module, item.Position, item.Ordering, item.Published, item.MenuAssignment]) row.append(node(document, "td", String(value ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); actions.append(edit, remove); row.append(actions); table.append(row); } tableHost.append(table); }
+  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEModules não configurado."; return; } try { renderTable(await listAdminItems({ client, list, orderby: "Position,Ordering" })); } catch (e) { error.textContent = errorText("Falha ao carregar módulos", e); } }
   bind(newButton, () => { currentId = null; renderForm(); }); bind(reloadButton, reload); renderForm(); reload(); return { dispose() { panel.remove(); } };
 }

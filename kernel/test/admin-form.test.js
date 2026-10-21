@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { buildFormFields } from "../admin-form.js";
-import { MSE_EXTENSOES_SCHEMA } from "../schemas/mse-extensoes.js";
-import { MSE_MODULOS_SCHEMA, MSE_MODULOS_MENU_SCHEMA } from "../schemas/mse-modulos.js";
-import { MSE_MENU_SCHEMA, MSE_MENU_TIPOS_SCHEMA } from "../schemas/mse-menu.js";
+import { MSE_EXTENSIONS_SCHEMA } from "../schemas/mse-extensions.js";
+import { MSE_MODULES_SCHEMA } from "../schemas/mse-modules.js";
+import { MSE_MODULES_MENU_SCHEMA } from "../schemas/mse-modules-menu.js";
+import { MSE_MENU_SCHEMA } from "../schemas/mse-menu.js";
+import { MSE_MENU_TYPES_SCHEMA } from "../schemas/mse-menu-types.js";
 
 function byName(descriptors, name) {
   const found = descriptors.find((descriptor) => descriptor.name === name);
@@ -109,75 +111,75 @@ function byName(descriptors, name) {
   console.log("admin-form.test.js: schema malformado lança TypeError ok.");
 }
 
-// --- schemas REAIS do kernel: MSEExtensoes ----------------------------------
+// --- schemas REAIS do kernel: MSEExtensions ----------------------------------
 
 {
-  const descriptors = buildFormFields(MSE_EXTENSOES_SCHEMA);
-  assert.equal(descriptors.length, MSE_EXTENSOES_SCHEMA.fields.length);
+  const descriptors = buildFormFields(MSE_EXTENSIONS_SCHEMA);
+  assert.equal(descriptors.length, MSE_EXTENSIONS_SCHEMA.fields.length);
 
-  assert.equal(byName(descriptors, "Tipo").inputType, "select");
-  assert.deepEqual(byName(descriptors, "Tipo").options, ["Componente", "Modulo", "Plugin"]);
-  assert.equal(byName(descriptors, "Elemento").inputType, "text");
-  assert.equal(byName(descriptors, "Elemento").maxLength, 128);
-  assert.equal(byName(descriptors, "Habilitado").inputType, "boolean");
-  assert.equal(byName(descriptors, "Habilitado").defaultValue, true);
-  assert.equal(byName(descriptors, "Protegido").defaultValue, false);
-  assert.equal(byName(descriptors, "Ordem").inputType, "number");
+  assert.equal(byName(descriptors, "Type").inputType, "select");
+  assert.deepEqual(byName(descriptors, "Type").options, ["Component", "Module", "Plugin"]);
+  assert.equal(byName(descriptors, "Element").inputType, "text");
+  assert.equal(byName(descriptors, "Element").maxLength, 128);
+  assert.equal(byName(descriptors, "Enabled").inputType, "boolean");
+  assert.equal(byName(descriptors, "Enabled").defaultValue, true);
+  assert.equal(byName(descriptors, "Protected").defaultValue, false);
+  assert.equal(byName(descriptors, "Ordering").inputType, "number");
   assert.equal(byName(descriptors, "ParamsJson").inputType, "textarea");
 
-  console.log("admin-form.test.js: MSE_EXTENSOES_SCHEMA real ok.");
+  console.log("admin-form.test.js: MSE_EXTENSIONS_SCHEMA real ok.");
 }
 
-// --- schemas REAIS do kernel: MSEModulos / MSEModulosMenu -------------------
+// --- schemas REAIS do kernel: MSEModules / MSEModulesMenu -------------------
 
 {
-  const descriptors = buildFormFields(MSE_MODULOS_SCHEMA);
-  assert.equal(descriptors.length, MSE_MODULOS_SCHEMA.fields.length);
+  const descriptors = buildFormFields(MSE_MODULES_SCHEMA);
+  assert.equal(descriptors.length, MSE_MODULES_SCHEMA.fields.length);
 
-  assert.equal(byName(descriptors, "ModuloTipo").inputType, "text");
-  assert.equal(byName(descriptors, "Posicao").inputType, "text");
-  assert.equal(byName(descriptors, "Ordem").inputType, "number");
-  assert.equal(byName(descriptors, "Estado").inputType, "select");
-  assert.deepEqual(byName(descriptors, "Estado").options, ["Publicado", "Despublicado", "Lixeira"]);
-  assert.equal(byName(descriptors, "PublicarEm").inputType, "date");
-  assert.equal(byName(descriptors, "PublicarAte").inputType, "date");
-  assert.equal(byName(descriptors, "MostrarTitulo").inputType, "boolean");
-  assert.equal(byName(descriptors, "AtribuicaoMenu").inputType, "select");
-  assert.deepEqual(byName(descriptors, "AtribuicaoMenu").options, ["Todas", "Nenhuma", "Somente", "Todas exceto"]);
+  assert.equal(byName(descriptors, "Module").inputType, "text");
+  assert.equal(byName(descriptors, "Position").inputType, "text");
+  assert.equal(byName(descriptors, "Ordering").inputType, "number");
+  assert.equal(byName(descriptors, "Published").inputType, "select");
+  assert.deepEqual(byName(descriptors, "Published").options, ["Published", "Unpublished", "Trashed"]);
+  assert.equal(byName(descriptors, "PublishUp").inputType, "date");
+  assert.equal(byName(descriptors, "PublishDown").inputType, "date");
+  assert.equal(byName(descriptors, "ShowTitle").inputType, "boolean");
+  assert.equal(byName(descriptors, "MenuAssignment").inputType, "select");
+  assert.deepEqual(byName(descriptors, "MenuAssignment").options, ["All", "None", "Only", "AllExcept"]);
   assert.equal(byName(descriptors, "ParamsJson").inputType, "textarea");
-  assert.equal(byName(descriptors, "SchemaVersao").inputType, "number");
+  assert.equal(byName(descriptors, "SchemaVersion").inputType, "number");
 
-  const modulosMenuDescriptors = buildFormFields(MSE_MODULOS_MENU_SCHEMA);
+  const modulosMenuDescriptors = buildFormFields(MSE_MODULES_MENU_SCHEMA);
   assert.equal(modulosMenuDescriptors.length, 2);
-  assert.equal(byName(modulosMenuDescriptors, "ModuloId").inputType, "number");
+  assert.equal(byName(modulosMenuDescriptors, "ModuleId").inputType, "number");
   assert.equal(byName(modulosMenuDescriptors, "MenuId").inputType, "number");
 
-  console.log("admin-form.test.js: MSE_MODULOS_SCHEMA/MSE_MODULOS_MENU_SCHEMA reais ok.");
+  console.log("admin-form.test.js: MSE_MODULES_SCHEMA/MSE_MODULES_MENU_SCHEMA reais ok.");
 }
 
-// --- schemas REAIS do kernel: MSEMenu / MSEMenuTipos ------------------------
+// --- schemas REAIS do kernel: MSEMenu / MSEMenuTypes ------------------------
 
 {
   const descriptors = buildFormFields(MSE_MENU_SCHEMA);
   assert.equal(descriptors.length, MSE_MENU_SCHEMA.fields.length);
 
   assert.equal(byName(descriptors, "Alias").inputType, "text");
-  assert.equal(byName(descriptors, "TipoMenu").inputType, "text");
+  assert.equal(byName(descriptors, "MenuType").inputType, "text");
   assert.equal(byName(descriptors, "ParentId").inputType, "number");
-  assert.equal(byName(descriptors, "Nivel").inputType, "number");
-  assert.equal(byName(descriptors, "Componente").inputType, "text");
+  assert.equal(byName(descriptors, "Level").inputType, "number");
+  assert.equal(byName(descriptors, "Component").inputType, "text");
   assert.equal(byName(descriptors, "ParamsJson").inputType, "textarea");
-  assert.equal(byName(descriptors, "Padrao").inputType, "boolean");
-  assert.equal(byName(descriptors, "AbrirEm").inputType, "select");
-  assert.deepEqual(byName(descriptors, "AbrirEm").options, ["MesmaAba", "NovaAba"]);
-  assert.equal(byName(descriptors, "Estado").inputType, "select");
+  assert.equal(byName(descriptors, "Default").inputType, "boolean");
+  assert.equal(byName(descriptors, "Target").inputType, "select");
+  assert.deepEqual(byName(descriptors, "Target").options, ["SameTab", "NewTab"]);
+  assert.equal(byName(descriptors, "Published").inputType, "select");
 
-  const menuTiposDescriptors = buildFormFields(MSE_MENU_TIPOS_SCHEMA);
+  const menuTiposDescriptors = buildFormFields(MSE_MENU_TYPES_SCHEMA);
   assert.equal(menuTiposDescriptors.length, 2);
-  assert.equal(byName(menuTiposDescriptors, "Chave").inputType, "text");
-  assert.equal(byName(menuTiposDescriptors, "Descricao").inputType, "textarea");
+  assert.equal(byName(menuTiposDescriptors, "Key").inputType, "text");
+  assert.equal(byName(menuTiposDescriptors, "Description").inputType, "textarea");
 
-  console.log("admin-form.test.js: MSE_MENU_SCHEMA/MSE_MENU_TIPOS_SCHEMA reais ok.");
+  console.log("admin-form.test.js: MSE_MENU_SCHEMA/MSE_MENU_TYPES_SCHEMA reais ok.");
 }
 
 console.log("admin-form.test.js: verificações concluídas com sucesso.");

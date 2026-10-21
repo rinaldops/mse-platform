@@ -8,13 +8,13 @@
     },
     {
       "path": "host-adapters/modern-script-editor/site-boot.js",
-      "bytes": 22600,
-      "sha256": "176ec1aa17af90854e6da188d0852c240ff1be78d7c50515b0aff208ff1f2332"
+      "bytes": 22613,
+      "sha256": "f07db15645f7f56139e7272cbfbc95afe6f37f0dcc8b11c51c9bd85e00db32f6"
     },
     {
       "path": "kernel/application.js",
-      "bytes": 24906,
-      "sha256": "aaea7b6fc3f6d20409390d1b2dced60995bdc7f8757eb2a70076f8802f40bfeb"
+      "bytes": 24881,
+      "sha256": "47741a05eda03331c4469d8174e7cd236c573d687ca7dc3ad7287cac90094c48"
     },
     {
       "path": "kernel/router.js",
@@ -23,23 +23,23 @@
     },
     {
       "path": "kernel/menu.js",
-      "bytes": 5002,
-      "sha256": "79b2469651712c133ce590a81391dfaef32d012acbf7c19d51105b45dd0bbacb"
+      "bytes": 5462,
+      "sha256": "84705e35c51334a739f74a3463d21e85b5fef6699dc11540983fe5cbe591e97c"
     },
     {
       "path": "kernel/dispatcher.js",
-      "bytes": 8544,
-      "sha256": "53ec22bdccb3bca6d29515431228e63dfa73f724b2d933147047fcbd80e9a368"
+      "bytes": 8465,
+      "sha256": "20d456dfca6011e6fa13cb574c06ecdcb361514f0756abd23f7d95649463ad05"
     },
     {
       "path": "kernel/extension-registry.js",
-      "bytes": 5842,
-      "sha256": "646ea064da72249c4b3e7386172e33db3456c3bc38c9b3ba7d12f5e4b10b0392"
+      "bytes": 4456,
+      "sha256": "bbf8095127596251368414875eabf257c9ec27b60fef8c79c918e6d926452a93"
     },
     {
       "path": "kernel/positions.js",
-      "bytes": 11484,
-      "sha256": "f35e487db05c8dc438ac03e9251e8ab1ce499314f64a3ae3a050e70872381505"
+      "bytes": 11820,
+      "sha256": "dc24f22a60718dce450edea86927a33836adf27660c510c9b87bd236b0ef86c1"
     },
     {
       "path": "kernel/layout.js",
@@ -97,19 +97,19 @@
       "sha256": "088fc1d08bd53d30bd754a55111b00e7212ea7b792e825024bab83479829ec54"
     },
     {
-      "path": "kernel/schemas/mse-extensoes.js",
-      "bytes": 3460,
-      "sha256": "167461786c57b0c210d4590745484d8dd9e6c56d3df6381f39d07103ed28ec6d"
+      "path": "kernel/schemas/mse-extensions.js",
+      "bytes": 2160,
+      "sha256": "022f02a3c7e7980b8ac223cbfeb11230a646df3f40fe84e0ca0f3b2996fc789e"
     },
     {
       "path": "kernel/schemas/mse-menu.js",
-      "bytes": 5145,
-      "sha256": "f83f68653656ade184e3784d94814926aaeebb38d104f84e36f85e0ffa7a747f"
+      "bytes": 8980,
+      "sha256": "7af10ea5d5c70f9f2933aaaef891b7443c0ece08a47e5913581672b92bd112b0"
     },
     {
-      "path": "kernel/schemas/mse-modulos.js",
-      "bytes": 7965,
-      "sha256": "96441fe4f5b369d39eedb69a92b6b49a025e0ff054d36b658d24c486d1c1ff63"
+      "path": "kernel/schemas/mse-modules.js",
+      "bytes": 3852,
+      "sha256": "f106e278e0f32d43e9caa550ad647d227f8fadb656e9420e005e7b347cd3c09a"
     },
     {
       "path": "core/list-provisioning.js",
@@ -118,8 +118,8 @@
     },
     {
       "path": "components/com_cpanel/manifest.js",
-      "bytes": 1289,
-      "sha256": "30f08a12bc53273d4f6af65fecbf6c2031493ff9209a81cd8bb13ea93bc38640"
+      "bytes": 1290,
+      "sha256": "9343c381eb4cf4b8179b40e543ddbcd51081fab7de82e60cf5ab9c6c46988796"
     },
     {
       "path": "components/com_cpanel/component.js",
@@ -153,8 +153,8 @@
     },
     {
       "path": "components/com_extensions/extensions-editor.js",
-      "bytes": 7836,
-      "sha256": "9134a268dd4da7b98933359f15bbfaad987e7e80c587786a3c75c82bc7ed2f56"
+      "bytes": 7833,
+      "sha256": "d1b3cfca6a1e1509d888edcac7671183d1db33706b16c9e97477e7050115b117"
     },
     {
       "path": "components/com_menus/menus-screen.js",
@@ -163,8 +163,8 @@
     },
     {
       "path": "components/com_menus/menus-editor.js",
-      "bytes": 8621,
-      "sha256": "fd728f5a2f558994521c67775a92a30f30e3d6dd66ee388b6a5474869de89c64"
+      "bytes": 9206,
+      "sha256": "1781efc491af9abcb1a638075e264ba8427ddac50cd869d4ea16bdf7733bf640"
     },
     {
       "path": "components/com_modules/modules-screen.js",
@@ -173,8 +173,8 @@
     },
     {
       "path": "components/com_modules/modules-editor.js",
-      "bytes": 9150,
-      "sha256": "b0e1cd648a12daf2c8b2ee5249da6e1e748ffe4a8bcdf9b189051849492758f4"
+      "bytes": 9131,
+      "sha256": "6d12ade0eafaef8b364dba0c09a15bc96269a32da48786ba88631260e7a8f468"
     },
     {
       "path": "components/com_config/config-screen.js",

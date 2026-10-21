@@ -12,12 +12,12 @@ class FakeElement {
 const document = { createElement(tag) { const node = new FakeElement(tag); node.ownerDocument = document; return node; } };
 const root = () => { const node = new FakeElement(); node.ownerDocument = document; return node; };
 const list = { listId: "10000000-0000-4000-8000-000000000001" };
-const valid = { Title: "Início", Alias: "inicio", TipoMenu: "principal", ParentId: 0, Caminho: "inicio", Nivel: 1, Ordem: 0, Componente: "", Visao: "", ParamsJson: "{}", Padrao: false, AbrirEm: "MesmaAba", Estado: "Publicado" };
+const valid = { Title: "Início", Alias: "inicio", MenuType: "principal", ParentId: 0, Path: "inicio", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: "{}", Default: false, Target: "SameTab", Published: "Published" };
 
 assert.equal(validateMenuValues(valid).Alias, "inicio");
 assert.throws(() => validateMenuValues({ ...valid, Alias: "Não-válido" }), /Alias/);
 assert.throws(() => validateMenuValues({ ...valid, ParamsJson: "[]" }), /ParamsJson/);
-assert.throws(() => validateMenuValues({ ...valid, Ordem: -1 }), /Ordem/);
+assert.throws(() => validateMenuValues({ ...valid, Ordering: -1 }), /Ordem/);
 
 const calls = [];
 let items = [{ Id: 1, ...valid, Title: "Início" }];
@@ -41,7 +41,7 @@ assert.ok(buttons.some((button) => button.textContent === "Excluir"));
 buttons.find((button) => button.textContent === "Novo item").click();
 const inputs = viewRoot.querySelectorAll("input");
 const byName = Object.fromEntries(inputs.map((input) => [input.name, input]));
-byName.Title.value = "Notícias"; byName.Alias.value = "noticias"; byName.Caminho.value = "noticias";
+byName.Title.value = "Notícias"; byName.Alias.value = "noticias"; byName.Path.value = "noticias";
 viewRoot.querySelectorAll("button").find((button) => button.textContent === "Salvar").click();
 await new Promise((resolve) => setTimeout(resolve, 0)); await Promise.resolve();
 assert.equal(calls[0][0], "create");

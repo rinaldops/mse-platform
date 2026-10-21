@@ -91,7 +91,7 @@ function createFakeAdminClient({ items, shouldReject } = {}) {
   };
 }
 
-const LIST_IDS = Object.freeze({ MSEModulos: LIST });
+const LIST_IDS = Object.freeze({ MSEModules: LIST });
 
 function textOf(elements) {
   return elements.map((el) => el.textContent);
@@ -102,9 +102,9 @@ function textOf(elements) {
 {
   const root = createRoot();
   const items = [
-    { Id: 1, Title: "sd-principal", ModuloTipo: "sd", Posicao: "home-a", Ordem: 1, Estado: "Publicado", PublicarEm: null, PublicarAte: null, MostrarTitulo: false, Estilo: null, AtribuicaoMenu: "Todas", ParamsJson: "{}", SchemaVersao: null },
-    { Id: 2, Title: "footer-principal", ModuloTipo: "footer", Posicao: "rodape", Ordem: 1, Estado: "Publicado", PublicarEm: null, PublicarAte: null, MostrarTitulo: false, Estilo: null, AtribuicaoMenu: "Todas", ParamsJson: "{}", SchemaVersao: null },
-    { Id: 3, Title: "mc-principal", ModuloTipo: "mc", Posicao: "home-c", Ordem: 1, Estado: "Publicado", PublicarEm: null, PublicarAte: null, MostrarTitulo: false, Estilo: null, AtribuicaoMenu: "Todas", ParamsJson: "{}", SchemaVersao: null }
+    { Id: 1, Title: "sd-principal", Module: "sd", Position: "home-a", Ordering: 1, Published: "Published", PublishUp: null, PublishDown: null, ShowTitle: false, Style: null, MenuAssignment: "All", ParamsJson: "{}", SchemaVersion: null },
+    { Id: 2, Title: "footer-principal", Module: "footer", Position: "rodape", Ordering: 1, Published: "Published", PublishUp: null, PublishDown: null, ShowTitle: false, Style: null, MenuAssignment: "All", ParamsJson: "{}", SchemaVersion: null },
+    { Id: 3, Title: "mc-principal", Module: "mc", Position: "home-c", Ordering: 1, Published: "Published", PublishUp: null, PublishDown: null, ShowTitle: false, Style: null, MenuAssignment: "All", ParamsJson: "{}", SchemaVersion: null }
   ];
   const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
   const view = renderModulesScreen({ root, services });

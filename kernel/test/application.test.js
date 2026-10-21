@@ -73,27 +73,27 @@ function dispatchHashChange(window, hash) {
   window.listeners.get("hashchange")?.();
 }
 
-// --- fixtures de dados (shape cru MSEMenu/MSEExtensoes/MSEModulos*) --------
+// --- fixtures de dados (shape cru MSEMenu/MSEExtensions/MSEModules*) --------
 
 function fixtureMenuItems() {
   return [
-    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Componente: null, Visao: null, ParamsJson: null, Padrao: true, Estado: "Publicado" },
-    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Componente: "blog", Visao: "lista", ParamsJson: null, Padrao: false, Estado: "Publicado" },
-    { Id: 3, Title: "Quebrado", Alias: "quebrado", ParentId: 0, Componente: "quebrado", Visao: null, ParamsJson: null, Padrao: false, Estado: "Publicado" }
+    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Component: null, View: null, ParamsJson: null, Default: true, Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Component: "blog", View: "lista", ParamsJson: null, Default: false, Published: "Published" },
+    { Id: 3, Title: "Quebrado", Alias: "quebrado", ParentId: 0, Component: "quebrado", View: null, ParamsJson: null, Default: false, Published: "Published" }
   ];
 }
 
 function fixtureExtensions() {
   return [
-    { Title: "Blog", Tipo: "Componente", Elemento: "blog", Versao: "1.0.0", Habilitado: true, Protegido: false },
-    { Title: "Quebrado", Tipo: "Componente", Elemento: "quebrado", Versao: "1.0.0", Habilitado: true, Protegido: false },
-    { Title: "SD", Tipo: "Modulo", Elemento: "sd", Versao: "1.0.0", Habilitado: true, Protegido: false }
+    { Title: "Blog", Type: "Component", Element: "blog", Version: "1.0.0", Enabled: true, Protected: false },
+    { Title: "Quebrado", Type: "Component", Element: "quebrado", Version: "1.0.0", Enabled: true, Protected: false },
+    { Title: "SD", Type: "Module", Element: "sd", Version: "1.0.0", Enabled: true, Protected: false }
   ];
 }
 
 function fixtureModulos() {
   return [
-    { Id: 10, Title: "SD", ModuloTipo: "sd", Posicao: "topo", Ordem: 1, Estado: "Publicado", AtribuicaoMenu: "Todas", MostrarTitulo: true }
+    { Id: 10, Title: "SD", Module: "sd", Position: "topo", Ordering: 1, Published: "Published", MenuAssignment: "All", ShowTitle: true }
   ];
 }
 
@@ -102,12 +102,12 @@ function fixtureModulosComParams() {
     {
       Id: 11,
       Title: "sd-principal",
-      ModuloTipo: "sd",
-      Posicao: "topo",
-      Ordem: 1,
-      Estado: "Publicado",
-      AtribuicaoMenu: "Todas",
-      MostrarTitulo: true,
+      Module: "sd",
+      Position: "topo",
+      Ordering: 1,
+      Published: "Published",
+      MenuAssignment: "All",
+      ShowTitle: true,
       ParamsJson: JSON.stringify({ title: "Comece por aqui", limit: 3 })
     }
   ];
@@ -118,12 +118,12 @@ function fixtureModulosComParamsInvalido() {
     {
       Id: 12,
       Title: "sd-quebrado",
-      ModuloTipo: "sd",
-      Posicao: "topo",
-      Ordem: 1,
-      Estado: "Publicado",
-      AtribuicaoMenu: "Todas",
-      MostrarTitulo: false,
+      Module: "sd",
+      Position: "topo",
+      Ordering: 1,
+      Published: "Published",
+      MenuAssignment: "All",
+      ShowTitle: false,
       ParamsJson: "{ isto não é json válido"
     }
   ];
@@ -374,7 +374,7 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: falha ao carregar MSEMenu degrada para fallback (not-found) ok.");
 }
 
-// --- MSEModulos.ParamsJson válido chega ao config/context.modulo do
+// --- MSEModules.ParamsJson válido chega ao config/context.modulo do
 // módulo (C3: gap de threading de ParamsJson por instância) --------------
 
 {
@@ -407,7 +407,7 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: ParamsJson válido chega a context.modulo.params ok.");
 }
 
-// --- MSEModulos.ParamsJson ausente/invalido nunca quebra o boot: degrada
+// --- MSEModules.ParamsJson ausente/invalido nunca quebra o boot: degrada
 // para {} (mesma tolerância de parseJsonParams/dispatcher.js) ------------
 
 {
@@ -498,8 +498,8 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
     ...fixtureMenuItems(),
     {
       Id: 4, Title: "Quem somos", Alias: "quem-somos", ParentId: 0,
-      Componente: "blog", Visao: "article", ParamsJson: JSON.stringify({ id: 99 }),
-      Padrao: false, Estado: "Publicado"
+      Component: "blog", View: "article", ParamsJson: JSON.stringify({ id: 99 }),
+      Default: false, Published: "Published"
     }
   ];
 

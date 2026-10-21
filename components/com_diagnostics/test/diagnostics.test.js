@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { diagnoseAdministratorStructure } from "../../../kernel/administrator-diagnostics.js";
-const result = diagnoseAdministratorStructure({ menus: [{ Id: 1, Alias: "inicio", Padrao: true, Estado: "Publicado", Componente: "blog" }], modules: [{ Id: 2, Title: "Hero", ModuloTipo: "hero", Posicao: "home-x" }], extensions: [{ Tipo: "Modulo", Elemento: "hero", Habilitado: true }], routes: [{ Id: 1, Alias: "inicio", Componente: "blog" }], positions: ["home-a"] });
+const result = diagnoseAdministratorStructure({ menus: [{ Id: 1, Alias: "inicio", Default: true, Published: "Published", Component: "blog" }], modules: [{ Id: 2, Title: "Hero", Module: "hero", Position: "home-x" }], extensions: [{ Type: "Module", Element: "hero", Enabled: true }], routes: [{ Id: 1, Alias: "inicio", Component: "blog" }], positions: ["home-a"] });
 assert.equal(result.ok, false);
 assert.ok(result.issues.some((issue) => issue.code === "route-component-missing"));
 assert.ok(result.issues.some((issue) => issue.code === "module-position-invalid"));
-const clean = diagnoseAdministratorStructure({ menus: [{ Padrao: true, Estado: "Publicado" }], modules: [], extensions: [], positions: [] });
+const clean = diagnoseAdministratorStructure({ menus: [{ Default: true, Published: "Published" }], modules: [], extensions: [], positions: [] });
 assert.equal(clean.ok, true);
 assert.equal(diagnoseAdministratorStructure({ menus: null }).issues[0].code, "menus-empty");
 console.log("diagnostics.test.js: verificações concluídas com sucesso.");

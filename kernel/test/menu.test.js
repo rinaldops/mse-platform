@@ -1,22 +1,23 @@
 import assert from "node:assert/strict";
-import { MSE_MENU_SCHEMA, MSE_MENU_TIPOS_SCHEMA } from "../schemas/mse-menu.js";
+import { MSE_MENU_SCHEMA } from "../schemas/mse-menu.js";
+import { MSE_MENU_TYPES_SCHEMA } from "../schemas/mse-menu-types.js";
 import { buildMenuTree, buildPathway, findActiveMenuItem } from "../menu.js";
 
-// --- MSE_MENU_TIPOS_SCHEMA ---------------------------------------------
+// --- MSE_MENU_TYPES_SCHEMA ---------------------------------------------
 
-assert.ok(Object.isFrozen(MSE_MENU_TIPOS_SCHEMA));
-assert.ok(Object.isFrozen(MSE_MENU_TIPOS_SCHEMA.fields));
-assert.equal(MSE_MENU_TIPOS_SCHEMA.internalName, "MSEMenuTipos");
-assert.equal(MSE_MENU_TIPOS_SCHEMA.titleField.displayName, "Título");
-const tiposFieldNames = MSE_MENU_TIPOS_SCHEMA.fields.map((field) => field.internalName);
-assert.deepEqual(tiposFieldNames, ["Chave", "Descricao"]);
-for (const field of MSE_MENU_TIPOS_SCHEMA.fields) {
+assert.ok(Object.isFrozen(MSE_MENU_TYPES_SCHEMA));
+assert.ok(Object.isFrozen(MSE_MENU_TYPES_SCHEMA.fields));
+assert.equal(MSE_MENU_TYPES_SCHEMA.internalName, "MSEMenuTypes");
+assert.equal(MSE_MENU_TYPES_SCHEMA.titleField.displayName, "Title");
+const tiposFieldNames = MSE_MENU_TYPES_SCHEMA.fields.map((field) => field.internalName);
+assert.deepEqual(tiposFieldNames, ["Key", "Description"]);
+for (const field of MSE_MENU_TYPES_SCHEMA.fields) {
   assert.ok(Object.isFrozen(field));
   assert.ok(typeof field.displayName === "string" && field.displayName.length > 0);
   assert.ok(typeof field.type === "string" && field.type.length > 0);
   assert.equal(typeof field.required, "boolean");
 }
-assert.equal(MSE_MENU_TIPOS_SCHEMA.fields.find((f) => f.internalName === "Chave").indexed, true);
+assert.equal(MSE_MENU_TYPES_SCHEMA.fields.find((f) => f.internalName === "Key").indexed, true);
 
 // --- MSE_MENU_SCHEMA ----------------------------------------------------
 
@@ -27,7 +28,13 @@ assert.equal(MSE_MENU_SCHEMA.titleField.displayName, "Título");
 const menuFieldNames = MSE_MENU_SCHEMA.fields.map((field) => field.internalName);
 assert.deepEqual(menuFieldNames, [
   "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem",
-  "Componente", "Visao", "ParamsJson", "Padrao", "AbrirEm", "Estado"
+  "Componente", "Visao", "ParamsJson", "Padrao", "AbrirEm", "Estado",
+  // Fase 3 da normalização Joomla! (docs/JOOMLA-CONVENCOES-E-MIGRACAO.md):
+  // campos em inglês acrescentados in-place, lado a lado com os PT acima.
+  // Os PT continuam vivos na lista (não removidos nesta fase); a Fase 4
+  // só trocou quem LÊ o quê (ver kernel/menu.js) — não o schema.
+  "MenuType", "Path", "Level", "Ordering", "Component", "View",
+  "Default", "Target", "Published"
 ]);
 for (const field of MSE_MENU_SCHEMA.fields) {
   assert.ok(Object.isFrozen(field));
@@ -35,30 +42,30 @@ for (const field of MSE_MENU_SCHEMA.fields) {
   assert.ok(typeof field.type === "string" && field.type.length > 0);
   assert.equal(typeof field.required, "boolean");
 }
-const abrirEm = MSE_MENU_SCHEMA.fields.find((f) => f.internalName === "AbrirEm");
-assert.deepEqual([...abrirEm.choices], ["MesmaAba", "NovaAba"]);
-const estado = MSE_MENU_SCHEMA.fields.find((f) => f.internalName === "Estado");
-assert.deepEqual([...estado.choices], ["Publicado", "Despublicado", "Lixeira"]);
+const target = MSE_MENU_SCHEMA.fields.find((f) => f.internalName === "Target");
+assert.deepEqual([...target.choices], ["SameTab", "NewTab"]);
+const published = MSE_MENU_SCHEMA.fields.find((f) => f.internalName === "Published");
+assert.deepEqual([...published.choices], ["Published", "Unpublished", "Trashed"]);
 
 console.log("menu.test.js: esquemas verificados.");
 
 // --- fixture compartilhada: 3 níveis -----------------------------------
 //
-// Início (raiz, Padrao)
+// Início (raiz, Default)
 // Blog (raiz)
 //   Destaques (filho de Blog)
 //     Em Foco (nieto de Blog, filho de Destaques)
-//   Rascunho (filho de Blog, Despublicado -> deve ser ignorado)
-// Contatos (raiz, Despublicado -> deve ser ignorado por completo)
+//   Rascunho (filho de Blog, Unpublished -> deve ser ignorado)
+// Contatos (raiz, Unpublished -> deve ser ignorado por completo)
 
 function fixtureItems() {
   return [
-    { Id: 1, Title: "Início", Alias: "", TipoMenu: "principal", ParentId: 0, Caminho: "", Nivel: 1, Ordem: 1, Componente: null, Visao: null, ParamsJson: null, Padrao: true, AbrirEm: "MesmaAba", Estado: "Publicado" },
-    { Id: 2, Title: "Blog", Alias: "blog", TipoMenu: "principal", ParentId: 0, Caminho: "blog", Nivel: 1, Ordem: 2, Componente: "blog", Visao: "lista", ParamsJson: null, Padrao: false, AbrirEm: "MesmaAba", Estado: "Publicado" },
-    { Id: 3, Title: "Destaques", Alias: "destaques", TipoMenu: "principal", ParentId: 2, Caminho: "blog/destaques", Nivel: 2, Ordem: 1, Componente: "blog", Visao: "destaques", ParamsJson: null, Padrao: false, AbrirEm: "MesmaAba", Estado: "Publicado" },
-    { Id: 4, Title: "Em Foco", Alias: "em-foco", TipoMenu: "principal", ParentId: 3, Caminho: "blog/destaques/em-foco", Nivel: 3, Ordem: 1, Componente: "blog", Visao: "em-foco", ParamsJson: null, Padrao: false, AbrirEm: "MesmaAba", Estado: "Publicado" },
-    { Id: 5, Title: "Rascunho", Alias: "rascunho", TipoMenu: "principal", ParentId: 2, Caminho: "blog/rascunho", Nivel: 2, Ordem: 2, Componente: "blog", Visao: "lista", ParamsJson: null, Padrao: false, AbrirEm: "MesmaAba", Estado: "Despublicado" },
-    { Id: 6, Title: "Contatos", Alias: "contatos", TipoMenu: "principal", ParentId: 0, Caminho: "contatos", Nivel: 1, Ordem: 3, Componente: "contatos", Visao: null, ParamsJson: null, Padrao: false, AbrirEm: "MesmaAba", Estado: "Despublicado" }
+    { Id: 1, Title: "Início", Alias: "", MenuType: "principal", ParentId: 0, Path: "", Level: 1, Ordering: 1, Component: null, View: null, ParamsJson: null, Default: true, Target: "SameTab", Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", MenuType: "principal", ParentId: 0, Path: "blog", Level: 1, Ordering: 2, Component: "blog", View: "lista", ParamsJson: null, Default: false, Target: "SameTab", Published: "Published" },
+    { Id: 3, Title: "Destaques", Alias: "destaques", MenuType: "principal", ParentId: 2, Path: "blog/destaques", Level: 2, Ordering: 1, Component: "blog", View: "destaques", ParamsJson: null, Default: false, Target: "SameTab", Published: "Published" },
+    { Id: 4, Title: "Em Foco", Alias: "em-foco", MenuType: "principal", ParentId: 3, Path: "blog/destaques/em-foco", Level: 3, Ordering: 1, Component: "blog", View: "em-foco", ParamsJson: null, Default: false, Target: "SameTab", Published: "Published" },
+    { Id: 5, Title: "Rascunho", Alias: "rascunho", MenuType: "principal", ParentId: 2, Path: "blog/rascunho", Level: 2, Ordering: 2, Component: "blog", View: "lista", ParamsJson: null, Default: false, Target: "SameTab", Published: "Unpublished" },
+    { Id: 6, Title: "Contatos", Alias: "contatos", MenuType: "principal", ParentId: 0, Path: "contatos", Level: 1, Ordering: 3, Component: "contatos", View: null, ParamsJson: null, Default: false, Target: "SameTab", Published: "Unpublished" }
   ];
 }
 
@@ -96,7 +103,7 @@ function fixtureItems() {
   const fallbackToDefault = findActiveMenuItem(items, { alias: "" });
   assert.ok(fallbackToDefault);
   assert.equal(fallbackToDefault.Id, 1);
-  assert.equal(fallbackToDefault.Padrao, true);
+  assert.equal(fallbackToDefault.Default, true);
 
   const fallbackNoRoute = findActiveMenuItem(items, undefined);
   assert.ok(fallbackNoRoute);

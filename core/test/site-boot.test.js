@@ -45,9 +45,9 @@ import { bootSiteKernel, createManifestResolver } from "../../host-adapters/mode
 
 const LIST_IDS = Object.freeze({
   MSEMenu: "11111111-1111-4111-8111-111111111111",
-  MSEExtensoes: "22222222-2222-4222-8222-222222222222",
-  MSEModulos: "33333333-3333-4333-8333-333333333333",
-  MSEModulosMenu: "44444444-4444-4444-8444-444444444444"
+  MSEExtensions: "22222222-2222-4222-8222-222222222222",
+  MSEModules: "33333333-3333-4333-8333-333333333333",
+  MSEModulesMenu: "44444444-4444-4444-8444-444444444444"
 });
 
 function catalogResponse() {
@@ -242,10 +242,10 @@ function batchFetchResponse(urls, responseForUrl) {
 
   assert.equal(calls.filter((url) => url.endsWith("/_api/$batch")).length, 1);
   assert.equal(batchHeaders["X-RequestDigest"], "digest-fake");
-  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEMenu}')`) && batchBody.includes("$orderby=Ordem") && batchBody.includes("$top=2000"));
-  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEExtensoes}')`) && batchBody.includes("$top=500"));
-  assert.ok(batchBody.match(new RegExp(`lists\\(guid'${LIST_IDS.MSEModulos}'\\)[^\\n]*\\$top=2000[^\\n]*\\$orderby=Ordem`)));
-  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEModulosMenu}')`) && batchBody.includes("$top=5000"));
+  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEMenu}')`) && batchBody.includes("$orderby=Ordering") && batchBody.includes("$top=2000"));
+  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEExtensions}')`) && batchBody.includes("$top=500"));
+  assert.ok(batchBody.match(new RegExp(`lists\\(guid'${LIST_IDS.MSEModules}'\\)[^\\n]*\\$top=2000[^\\n]*\\$orderby=Ordering`)));
+  assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEModulesMenu}')`) && batchBody.includes("$top=5000"));
   assert.ok(calls.some((url) => url.includes("getbytitle('MSEConfiguracoes')") && url.includes("$filter=Ativo eq 1")));
 
   await app.dispose();

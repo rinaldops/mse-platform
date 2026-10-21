@@ -6,9 +6,9 @@ Branch: `feature/administrator-editorial-operations`
 
 - `com_menus`: CRUD de `MSEMenu`, com validação de alias, hierarquia,
   `ParamsJson`, estado, janela padrão e proteção da rota padrão contra exclusão.
-- `com_modules`: CRUD de `MSEModulos`, com validação de posição, tipo técnico,
+- `com_modules`: CRUD de `MSEModules`, com validação de posição, tipo técnico,
   ordem, vigência, atribuição por menu e parâmetros.
-- `com_extensions`: CRUD de `MSEExtensoes`, com validação de tipo/elemento e
+- `com_extensions`: CRUD de `MSEExtensions`, com validação de tipo/elemento e
   bloqueio de desabilitação/exclusão de extensões protegidas.
 - `com_content`: filtros locais por termo, estado, categoria, destaque e
   vigência; funções puras de transição editorial.
@@ -24,10 +24,14 @@ continua fora das telas. Atualização e exclusão usam `kernel/admin-data.js`, 
 lê a ETag imediatamente antes da operação. Erros 403 e 412 são apresentados ao
 usuário sem ocultar a falha. O conteúdo HTML do Publicador continua sanitizado.
 
-Os nomes das listas e campos seguem o contrato do Mini Joomla!/SharePoint:
-`MSEMenu`, `MSEModulos`, `MSEExtensoes` e campos declarados em
-`kernel/schemas/`. A consulta de permissões usa somente o mecanismo nativo do
-SharePoint; não substitui nem simula ACL.
+Os nomes das listas e campos seguem o contrato do Mini Joomla!/SharePoint, já
+normalizado para a convenção Joomla! (inglês — ver
+`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`): `MSEMenu`, `MSEModules`,
+`MSEExtensions` e campos declarados em `kernel/schemas/`. `MSEMenu` ainda
+mantém, lado a lado, os 12 campos em português (DEPRECATED, decomissionamento
+pendente) e os 9 campos em inglês — só os últimos são lidos pelo código atual.
+A consulta de permissões usa somente o mecanismo nativo do SharePoint; não
+substitui nem simula ACL.
 
 ## Testes
 

@@ -46,8 +46,8 @@
 // só valia enquanto nenhum manifesto real o importava em runtime).
 // `administrator/screens/collections.js` importa por sua vez
 // `kernel/admin-data.js`, `kernel/admin-form.js` e os 3 schemas usados nas
-// telas já conectadas a dados reais (`kernel/schemas/mse-extensoes.js`,
-// `mse-menu.js`, `mse-modulos.js`), que importam `core/list-provisioning.js`
+// telas já conectadas a dados reais (`kernel/schemas/mse-extensions.js`,
+// `mse-menu.js`, `mse-modules.js`), que importam `core/list-provisioning.js`
 // (só para `defineListSchema` — não aciona nenhum provisionamento de rede
 // nesse caminho). Fica tudo sob `administrator/` e `kernel/`/`core/`
 // (mesmos caminhos relativos do fonte, preservando os `import`s existentes
@@ -92,9 +92,9 @@ const FILES = [
   "core/module-contract.js",
   "kernel/admin-data.js",
   "kernel/admin-form.js",
-  "kernel/schemas/mse-extensoes.js",
+  "kernel/schemas/mse-extensions.js",
   "kernel/schemas/mse-menu.js",
-  "kernel/schemas/mse-modulos.js",
+  "kernel/schemas/mse-modules.js",
   "core/list-provisioning.js",
   "components/com_cpanel/manifest.js",
   "components/com_cpanel/component.js",

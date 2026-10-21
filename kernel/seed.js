@@ -14,8 +14,17 @@
  * IMPORTANTE: nenhum dado aqui pode referenciar um tenant real (nome de
  * empresa, GUID corporativo, nome de site real) — apenas valores genéricos
  * de exemplo, com os nomes de campo exatos confirmados em
- * `kernel/schemas/mse-menu.js`, `kernel/schemas/mse-extensoes.js` e
- * `kernel/schemas/mse-modulos.js`.
+ * `kernel/schemas/mse-menu.js`, `kernel/schemas/mse-menu-types.js`,
+ * `kernel/schemas/mse-extensions.js` e `kernel/schemas/mse-modules.js`.
+ *
+ * Fase 3 da normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`):
+ * as chaves/`internalName` de `MSEMenuTipos`/`MSEExtensoes`/`MSEModulos`/
+ * `MSEModulosMenu` passaram a `MSEMenuTypes`/`MSEExtensions`/`MSEModules`/
+ * `MSEModulesMenu` (listas novas em inglês, `KERNEL_LIST_SCHEMAS`). `MSEMenu`
+ * manteve o `internalName`; os campos em inglês foram ACRESCENTADOS ao
+ * schema (coexistem com os PT, que continuam vivos na lista — ver
+ * `kernel/schemas/mse-menu.js`). Fase 4: o item de seed de `MSEMenu` passou
+ * a usar os campos em inglês.
  */
 
 function deepFreeze(value) {
@@ -33,22 +42,22 @@ function deepFreeze(value) {
  * `seedKernelLists` para checar idempotência antes de criar cada item.
  *
  * @returns {{
- *   MSEMenuTipos: { keyField: string, items: object[] },
+ *   MSEMenuTypes: { keyField: string, items: object[] },
  *   MSEMenu: { keyField: string, items: object[] },
- *   MSEExtensoes: { keyField: string, items: object[] },
- *   MSEModulos: { keyField: string, items: object[] },
- *   MSEModulosMenu: { keyField: string, items: object[] }
+ *   MSEExtensions: { keyField: string, items: object[] },
+ *   MSEModules: { keyField: string, items: object[] },
+ *   MSEModulesMenu: { keyField: string, items: object[] }
  * }}
  */
 export function buildKernelSeed() {
   return deepFreeze({
-    MSEMenuTipos: {
-      keyField: "Chave",
+    MSEMenuTypes: {
+      keyField: "Key",
       items: [
         {
           Title: "Principal",
-          Chave: "principal",
-          Descricao: "Menu principal do site"
+          Key: "principal",
+          Description: "Menu principal do site"
         }
       ]
     },
@@ -56,39 +65,40 @@ export function buildKernelSeed() {
       keyField: "Alias",
       items: [
         {
-          // Item raiz "Início": somente módulos (Componente vazio/ausente),
-          // item padrão da árvore de menu "principal".
+          // Item raiz "Início": somente módulos (Component vazio/ausente),
+          // item padrão da árvore de menu "principal". Usa os campos em
+          // inglês de MSEMenu (Fase 4).
           Title: "Início",
           Alias: "inicio",
-          TipoMenu: "principal",
-          Nivel: 1,
-          Ordem: 0,
-          Padrao: true,
-          AbrirEm: "MesmaAba",
-          Estado: "Publicado"
+          MenuType: "principal",
+          Level: 1,
+          Ordering: 0,
+          Default: true,
+          Target: "SameTab",
+          Published: "Published"
         }
       ]
     },
-    MSEExtensoes: {
-      keyField: "Elemento",
+    MSEExtensions: {
+      keyField: "Element",
       items: [
         {
           // Registro de exemplo claramente genérico — não representa uma
           // extensão real do catálogo.
           Title: "Exemplo",
-          Tipo: "Modulo",
-          Elemento: "exemplo",
-          Habilitado: true,
-          Protegido: false
+          Type: "Module",
+          Element: "exemplo",
+          Enabled: true,
+          Protected: false
         }
       ]
     },
-    MSEModulos: {
-      keyField: "ModuloTipo",
+    MSEModules: {
+      keyField: "Module",
       items: []
     },
-    MSEModulosMenu: {
-      keyField: "ModuloId",
+    MSEModulesMenu: {
+      keyField: "ModuleId",
       items: []
     }
   });
