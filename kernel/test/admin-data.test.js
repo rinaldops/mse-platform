@@ -67,6 +67,26 @@ const LIST = Object.freeze({ listId: "10000000-0000-4000-8000-000000000001" });
   console.log("admin-data.test.js: listAdminItems pass-through ok.");
 }
 
+// --- listAdminItems: sem select, usa o default ["Id","Title"] em vez de
+// repassar undefined ao client REST (bug de produção 21/10/2026: as 3 telas
+// de coleção chamavam sem select e core/rest.js lançava TypeError) ---------
+
+{
+  const { client, calls } = createFakeClient();
+  await listAdminItems({ client, list: LIST, orderby: "Title" });
+  assert.deepEqual(calls[0].options, { select: ["Id", "Title"], filter: undefined, orderBy: "Title" });
+
+  console.log("admin-data.test.js: listAdminItems usa select default quando ausente ok.");
+}
+
+{
+  const { client, calls } = createFakeClient();
+  await listAdminItems({ client, list: LIST, select: [] });
+  assert.deepEqual(calls[0].options.select, ["Id", "Title"]);
+
+  console.log("admin-data.test.js: listAdminItems usa select default quando array vazio ok.");
+}
+
 // --- createAdminItem: delega a client.createListItem -----------------------
 
 {

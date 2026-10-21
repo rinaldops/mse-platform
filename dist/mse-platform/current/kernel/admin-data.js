@@ -116,6 +116,16 @@ function requirePlainValues(values) {
  * { select, filter, orderBy })`. Ver cabeçalho do arquivo sobre por que este
  * wrapper existe mesmo sendo pass-through.
  *
+ * `select`: todo chamador DEVE informar os campos que vai efetivamente
+ * exibir/editar (ver cada tela do Administrator) — `core/rest.js` exige um
+ * array não vazio e lança `TypeError` caso contrário (bug de produção
+ * encontrado em 21/10/2026: as 3 telas de coleção chamavam esta função sem
+ * `select`, quebrando sempre contra o SharePoint real). Como rede de
+ * segurança adicional (não um contrato que os chamadores devam depender),
+ * se `select` vier ausente/vazio aqui, usamos `["Id", "Title"]` — o mínimo
+ * universal que qualquer lista do kernel possui — em vez de deixar
+ * `undefined` chegar ao client REST.
+ *
  * @param {{
  *   client: { getListItems: Function },
  *   list: {listId: string},
@@ -128,7 +138,8 @@ function requirePlainValues(values) {
 export async function listAdminItems({ client, list, select, filter, orderby } = {}) {
   requireClient(client, ["getListItems"]);
   requireList(list);
-  return client.getListItems(list, { select, filter, orderBy: orderby });
+  const fields = Array.isArray(select) && select.length ? select : ["Id", "Title"];
+  return client.getListItems(list, { select: fields, filter, orderBy: orderby });
 }
 
 /**

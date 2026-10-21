@@ -9,6 +9,7 @@ class FakeElement {
     this.textContent = "";
     this.className = "";
     this.parentNode = null;
+    this.onclick = null;
   }
 
   append(...children) {
@@ -24,6 +25,14 @@ class FakeElement {
       if (index !== -1) this.parentNode.children.splice(index, 1);
       this.parentNode = null;
     }
+  }
+
+  addEventListener(type, handler) {
+    if (type === "click") this.onclick = handler;
+  }
+
+  click() {
+    return this.onclick?.({ currentTarget: this });
   }
 
   querySelectorAll(tag) {
@@ -54,19 +63,81 @@ function createRoot() {
   return root;
 }
 
-// --- com_installer: não-regressão do placeholder ----------------------------
+async function flush() {
+  for (let i = 0; i < 8; i += 1) await Promise.resolve();
+}
+
+function buttons(root) {
+  return root.querySelectorAll("button");
+}
+
+// --- com_installer: inspecionar/verificar são somente leitura; aplicar exige
+// confirmação inicial + confirmação do plano antes de qualquer escrita -----
 
 {
   const root = createRoot();
-  const view = renderInstallerScreen({ root });
+  const calls = [];
+  let confirmCalls = 0;
+  const previousConfirm = globalThis.confirm;
+  globalThis.confirm = () => { confirmCalls += 1; return true; };
+  const kernelInstaller = {
+    async inspect(...args) { calls.push(["inspect", args]); return { lists: 5 }; },
+    async verify(...args) { calls.push(["verify", args]); return { valid: true }; },
+    async apply(confirm) {
+      calls.push(["apply", [confirm]]);
+      assert.equal(typeof confirm, "function");
+      assert.equal(await confirm({ create: ["MSEMenu"] }), true);
+      return { applied: true };
+    }
+  };
+  const view = renderInstallerScreen({ root, services: { kernelInstaller } });
 
-  const h1 = root.querySelectorAll("h1")[0];
-  assert.equal(h1.textContent, "Instalador");
-  const p = root.querySelectorAll("p")[0];
-  assert.equal(p.textContent, "A tela está preparada para receber a fonte SharePoint correspondente.");
+  buttons(root).find((button) => button.textContent === "Inspecionar listas").click();
+  await flush();
+  buttons(root).find((button) => button.textContent === "Verificar listas").click();
+  await flush();
+  assert.deepEqual(calls.slice(0, 2), [["inspect", []], ["verify", []]]);
+
+  buttons(root).find((button) => button.textContent === "Aplicar provisionamento").click();
+  await flush();
+  assert.equal(calls[2][0], "apply");
+  assert.equal(confirmCalls, 2, "confirmação inicial e confirmação do plano");
+  assert.match(root.querySelectorAll("pre")[0].textContent, /applied/);
 
   view.dispose();
-  console.log("installer-screen.test.js: com_installer permanece placeholder (não-regressão) ok.");
+  assert.equal(root.children.length, 0);
+  globalThis.confirm = previousConfirm;
+  console.log("installer-screen.test.js: kernelInstaller com confirmações explícitas ok.");
+}
+
+// --- apply cancelado na confirmação inicial: nunca chama installer.apply ---
+
+{
+  const root = createRoot();
+  const calls = [];
+  const previousConfirm = globalThis.confirm;
+  globalThis.confirm = () => false;
+  const kernelInstaller = { async apply(...args) { calls.push(args); return {}; } };
+  const view = renderInstallerScreen({ root, services: { kernelInstaller } });
+
+  buttons(root).find((button) => button.textContent === "Aplicar provisionamento").click();
+  await flush();
+  assert.equal(calls.length, 0, "apply não deve ser chamado sem confirmação inicial");
+
+  view.dispose();
+  globalThis.confirm = previousConfirm;
+  console.log("installer-screen.test.js: cancelamento na confirmação inicial não aplica ok.");
+}
+
+// --- Ausência de serviço deve ser apresentada na tela, sem lançar ao chamador --
+
+{
+  const root = createRoot();
+  renderInstallerScreen({ root });
+  buttons(root).find((button) => button.textContent === "Inspecionar listas").click();
+  await flush();
+  assert.match(root.querySelectorAll("p").find((p) => p.className === "mse-administrator__error").textContent, /não configurado/);
+  console.log("installer-screen.test.js: erro amigável sem serviço ok.");
 }
 
 console.log("installer-screen.test.js: verificações concluídas com sucesso.");

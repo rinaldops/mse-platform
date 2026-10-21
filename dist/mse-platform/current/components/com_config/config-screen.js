@@ -3,18 +3,30 @@
  * Joomla! (ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`): componente em sua
  * própria pasta física, fiel à convenção `components/com_xxx/` do Joomla!.
  *
- * Fora de escopo de implementação nesta rodada (decisão já tomada antes da
- * normalização) — mantém o comportamento placeholder original de
- * `administrator/screens/collections.js`, agora via o helper comum
- * `components/_shared/collection-view.js#renderPlaceholderScreen`. Ver
- * `README.md` desta pasta.
+ * Reproduz exatamente o wrapper que as outras telas de coleção desenham
+ * (section.mse-administrator__panel + h1 + o editor CRUD montado dentro,
+ * ver `components/com_extensions/extensions-screen.js`): `com_config`
+ * deixou de ser placeholder — `config-editor.js` conecta o CRUD real de
+ * `MSEConfiguracoes` (ver seu próprio cabeçalho sobre a decisão de manter
+ * os nomes de campo em português).
  *
  * @param {{ root: Element, services?: object }} options
  * @returns {{ dispose(): void }}
  */
-import { renderPlaceholderScreen } from "../_shared/collection-view.js";
+import { renderConfigurationEditor } from "./config-editor.js";
 
 export function renderConfigScreen({ root, services = {} } = {}) {
   const document = root.ownerDocument;
-  return renderPlaceholderScreen({ root, document, label: "Configuração global", services });
+  const panel = document.createElement("section");
+  panel.className = "mse-administrator__panel";
+  const h1 = document.createElement("h1");
+  h1.textContent = "Configuração global";
+  panel.append(h1);
+  root.append(panel);
+  renderConfigurationEditor({ root: panel, services });
+  return {
+    dispose() {
+      panel.remove();
+    }
+  };
 }

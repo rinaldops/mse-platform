@@ -29,9 +29,15 @@
 //     responsabilidade do CSS do site") — decisão já confirmada pelo
 //     usuário para o C3 (reaproveitar o CSS legado do CAMAP-AGP via `<link>`
 //     direto no snippet, sem mecanismo novo de injeção).
-//   - NÃO inclui `kernel/installer.js`, `kernel/seed.js`: rodam em Node
-//     (FIORI-AUTO/REST, provisionamento/migração de dados), nunca
-//     carregados pelo navegador.
+//   - NÃO inclui `kernel/seed.js`: roda em Node (FIORI-AUTO/REST, migração de
+//     dados), nunca carregado pelo navegador. `kernel/installer.js` (ver nota
+//     abaixo) deixou de se qualificar para esta exclusão em 21/10/2026: o
+//     Administrator (`com_installer`) passou a importá-lo em runtime do
+//     navegador (`host-adapters/modern-script-editor/site-boot.js#buildAdministratorServices`
+//     -> `createKernelInstaller`), então ele e seus próprios imports
+//     (`kernel/schemas/mse-menu-types.js`, `mse-modules-menu.js` — os únicos
+//     dois schemas que ainda não estavam nesta lista; os outros 3 já vinham
+//     do Administrator, ver nota abaixo) precisam ser publicados.
 //   - NÃO inclui `kernel/content-services.js`: serviço opcional, não
 //     importado por `kernel/application.js` nesta configuração (nenhum
 //     módulo do CAMAP-AGP usa com_content ainda).
@@ -95,6 +101,9 @@ const FILES = [
   "kernel/schemas/mse-extensions.js",
   "kernel/schemas/mse-menu.js",
   "kernel/schemas/mse-modules.js",
+  "kernel/schemas/mse-menu-types.js",
+  "kernel/schemas/mse-modules-menu.js",
+  "kernel/installer.js",
   "core/list-provisioning.js",
   "components/com_cpanel/manifest.js",
   "components/com_cpanel/component.js",
@@ -109,6 +118,7 @@ const FILES = [
   "components/com_modules/modules-screen.js",
   "components/com_modules/modules-editor.js",
   "components/com_config/config-screen.js",
+  "components/com_config/config-editor.js",
   "components/com_installer/installer-screen.js",
   "components/com_content/publisher.js",
   "components/com_content/publisher-filters.js",

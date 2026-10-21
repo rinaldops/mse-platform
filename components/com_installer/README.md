@@ -1,11 +1,17 @@
-# com_installer — Instalador (reservado)
+# com_installer — Instalador do kernel
 
-Pasta reservada para o componente `com_installer` (Instalador de
-extensões) do Administrator, seguindo a convenção de diretórios do
-Joomla! (`components/com_xxx/`).
+Componente `com_installer` do Administrator, seguindo a convenção de
+diretórios do Joomla! (`components/com_xxx/`).
 
-**Fora de escopo de implementação** nesta rodada — decisão já tomada antes
-da normalização Joomla! (ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`). A
-rota `option=com_installer` renderiza apenas uma tela placeholder
-(`installer-screen.js`, via `components/_shared/collection-view.js#renderPlaceholderScreen`),
-sem nenhuma fonte de dados real conectada.
+Conecta a tela a `services.kernelInstaller`
+(`kernel/installer.js#createKernelInstaller`, injetado por
+`host-adapters/modern-script-editor/site-boot.js#buildAdministratorServices`):
+inspeção e verificação são sempre somente leitura; aplicar o provisionamento
+exige confirmação explícita (diálogo inicial + confirmação do plano
+detalhado antes de qualquer escrita real no SharePoint).
+
+Não suporta o contrato legado "instalador modular por `moduleId`"
+(`admin/installer.js`) — esse é o modelo antigo de 1 MSE por módulo, fora do
+escopo do Site Kernel/Administrator.
+
+Ver `test/` para a cobertura.

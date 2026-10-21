@@ -36,6 +36,7 @@
 import { createSiteApplication } from "../../kernel/application.js";
 import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet } from "../../core/rest.js";
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
+import { createKernelInstaller } from "../../kernel/installer.js";
 
 const MENU_FIELDS = Object.freeze([
   "Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering",
@@ -58,7 +59,14 @@ const MODULES_MENU_FIELDS = Object.freeze(["Id", "Title", "ModuleId", "MenuId"])
 // (installer/seed/schemas â€” ver cabeÃ§alho daquele script), entÃ£o o host nÃ£o
 // pode depender desses mÃ³dulos em tempo de execuÃ§Ã£o.
 const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu"]);
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags"]);
+// MSEConfiguracoes (config global/por instância/por extensão, nome em
+// português deliberadamente — ver components/com_config/README.md) não faz
+// parte do batch acima: continua resolvida aqui só para expor seu listId a
+// `services.listIds.MSEConfiguracoes` (consumido por
+// components/com_config/config-editor.js), sem mudar como
+// core/configuration-store.js é lido (ele resolve seu próprio listId por
+// Title, de forma independente).
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes"]);
 
 /**
  * Resolve o `listId` (GUID) real de cada lista MSE* a partir do catÃ¡logo de
@@ -299,6 +307,7 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
     Object.entries(resolvedListIds).map(([internalName, listId]) => [internalName, { listId }])
   );
   const adminClient = services.adminClient || client;
+  const kernelInstaller = services.kernelInstaller || createKernelInstaller({ client });
   const listIds = Object.freeze({ ...administratorListIds, ...(services.listIds || {}) });
   const loadAdministratorStructure = services.loadAdministratorStructure || (async () => {
     const fieldsByList = { MSEMenu: MENU_FIELDS, MSEModules: MODULES_FIELDS, MSEExtensions: EXTENSIONS_FIELDS };
@@ -312,7 +321,7 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
     ]);
     return { menus, modules, extensions, routes: menus };
   });
-  return Object.freeze({ ...services, adminClient, listIds, loadAdministratorStructure });
+  return Object.freeze({ ...services, adminClient, listIds, kernelInstaller, loadAdministratorStructure });
 }
 
 

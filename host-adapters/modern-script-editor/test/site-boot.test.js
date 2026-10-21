@@ -38,6 +38,38 @@ import {
   console.log("site-boot.test.js: buildAdministratorServices preserva serviços e injeta listIds como { listId } ok.");
 }
 
+// --- buildAdministratorServices: expõe kernelInstaller por padrão (criado a
+// partir do client), preservando um kernelInstaller customizado injetado ---
+{
+  const client = { name: "client-fake" };
+  const result = buildAdministratorServices({ client, resolvedListIds: {}, services: {} });
+  assert.equal(typeof result.kernelInstaller?.inspect, "function");
+  assert.equal(typeof result.kernelInstaller?.verify, "function");
+  assert.equal(typeof result.kernelInstaller?.apply, "function");
+
+  const customInstaller = { inspect() {}, verify() {}, apply() {} };
+  const withCustom = buildAdministratorServices({
+    client,
+    resolvedListIds: {},
+    services: { kernelInstaller: customInstaller }
+  });
+  assert.equal(withCustom.kernelInstaller, customInstaller, "kernelInstaller customizado deve ser preservado");
+  console.log("site-boot.test.js: buildAdministratorServices expõe kernelInstaller (default e customizado) ok.");
+}
+
+// --- buildAdministratorServices: MSEConfiguracoes resolvido pelo boot chega
+// a listIds no mesmo formato { listId } das demais listas administrativas --
+{
+  const client = { name: "client-fake" };
+  const result = buildAdministratorServices({
+    client,
+    resolvedListIds: { MSEMenu: "menu-guid", MSEConfiguracoes: "config-guid" },
+    services: {}
+  });
+  assert.deepEqual(result.listIds.MSEConfiguracoes, { listId: "config-guid" });
+  console.log("site-boot.test.js: buildAdministratorServices expõe listIds.MSEConfiguracoes ok.");
+}
+
 // --- createTemplateResolver: mesmo padrão de createManifestResolver,
 // convenção de pasta fixa (templates/<nome>/index.js) + override pontual ---
 
