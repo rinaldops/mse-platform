@@ -1,8 +1,13 @@
 # Local tool/runtime state
+.claude/
 .tmp/
 .vscode/
 node_modules/
 graphify-out/
+
+# Workspace policy (web-devs): dist/ is the publishable artifact and stays versioned.
+tmp/
+bkp/
 
 # OS
 .DS_Store
