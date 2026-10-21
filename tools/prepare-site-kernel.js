@@ -110,7 +110,6 @@ const FILES = [
   "components/com_cpanel/router.js",
   "components/com_cpanel/administrator.css",
   "components/com_cpanel/control-panel.js",
-  "components/_shared/collection-view.js",
   "components/com_extensions/extensions-screen.js",
   "components/com_extensions/extensions-editor.js",
   "components/com_menus/menus-screen.js",

@@ -157,11 +157,6 @@
       "sha256": "ac45636ae746c3dd210bf695c0b560b735383d2ff6b5332be0551e0c37465f2d"
     },
     {
-      "path": "components/_shared/collection-view.js",
-      "bytes": 2149,
-      "sha256": "96ad38436f6e744facfc6f85cc1dd4c4c1a3cda6585d8e9c3146eaf1354a073a"
-    },
-    {
       "path": "components/com_extensions/extensions-screen.js",
       "bytes": 1158,
       "sha256": "2a0060ba63d3af0b01cff76a8df31bde50e23d6c68a54e3fbcb6f9ce16868a85"

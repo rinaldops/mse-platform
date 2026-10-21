@@ -1,45 +1,60 @@
 // mse-platform/tools/migrate-mse-administrator-route.js
 //
 // Propõe a rota de menu e o registro de extensão necessários para o
-// Administrator (painel administrativo estilo Joomla!, `administrator/`,
+// Administrator (painel administrativo estilo Joomla!, `components/com_cpanel/`,
 // Site Kernel Fase 5 — ver mse-platform/docs/PLANO-SITE-KERNEL-MSE.md
 // seção 5) aparecer no site real:
 //
 // - Em `MSEMenu`: um item com `Alias: "administrator"` apontando para o
-//   Componente `"administrator"`, Visão `"controlpanel"` (a tela inicial do
-//   Administrator, `administrator/screens/control-panel.js`).
-// - Em `MSEExtensoes`: um registro `Tipo: "Componente"`, `Elemento:
+//   Component `"administrator"`, View `"controlpanel"` (a tela inicial do
+//   Administrator, `components/com_cpanel/control-panel.js`).
+// - Em `MSEExtensions`: um registro `Type: "Component"`, `Element:
 //   "administrator"`, habilitado e protegido (o Administrator não pode ser
 //   desabilitado pelo próprio gestor através da sua própria UI — mesmo
-//   princípio de proteção documentado em `kernel/schemas/mse-extensoes.js`
+//   princípio de proteção documentado em `kernel/schemas/mse-extensions.js`
 //   para extensões essenciais).
+//
+// Correção de 21/10/2026 (descoberta ao revisar o "próximo passo" de
+// `docs/ADMINISTRATOR-OPERACOES.md`): este script gravava, originalmente, só
+// os nomes de lista/campo em PORTUGUÊS antigos (`MSEExtensoes`, `TipoMenu`,
+// `Caminho`, `Nivel`, `Ordem`, `Componente`, `Visao`, `Padrao`, `AbrirEm`,
+// `Estado`, `Tipo`, `Elemento`, `Habilitado`, `Protegido`) — escritos antes da
+// normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`) e nunca
+// atualizados por ela. O código consumidor real já lê SÓ os campos em inglês
+// (`kernel/extension-registry.js#isEnabled` lê `MSEExtensions.Element`/
+// `.Enabled`; `kernel/menu.js#findActiveMenuItem` e
+// `kernel/dispatcher.js#resolveDispatch` leem `MSEMenu.Published`/
+// `.Component`/`.View`, nunca os campos PT) — rodar a versão antiga deste
+// script contra o tenant real criaria um item de menu/extensão que o kernel
+// NUNCA reconheceria como a rota do Administrator, falhando silenciosamente.
+// Corrigido para gravar diretamente nos campos em inglês já normalizados.
 //
 // Decisões desta migração (sem especificação exata no pedido original,
 // registradas aqui para rastreabilidade):
-// - `TipoMenu: "sistema"` — nenhum item real de `MSEMenu` lido neste
+// - `MenuType: "system"` — nenhum item real de `MSEMenu` lido neste
 //   repositório usa outro valor que não "principal" (ver
 //   `tools/migrate-camap-home.js`/`migrate-camap-content-routes.js`); como o
 //   Administrator não é um item do menu principal de navegação do site
-//   público, foi escolhido um valor descritivo e distinto ("sistema") em vez
+//   público, foi escolhido um valor descritivo e distinto ("system") em vez
 //   de reaproveitar "principal", para permitir no futuro listar/filtrar itens
 //   de sistema separadamente dos itens de navegação do site. Ajustável sem
 //   custo nesta fase (o campo não é validado por referência a
-//   `MSEMenuTipos`, ver `kernel/schemas/mse-menu.js#MSE_MENU_SCHEMA.TipoMenu`).
-// - `Nivel: 1`, `Ordem: 0`, `ParentId: 0` — item raiz, sem posição relativa
-//   relevante (não aparece em nenhuma navegação visual que dependa de
-//   ordem).
-// - `AbrirEm: "MesmaAba"`, `Estado: "Publicado"` — valores padrão já usados
+//   `MSEMenuTypes`, ver `kernel/schemas/mse-menu.js#MSE_MENU_SCHEMA.MenuType`).
+// - `Level: 1`, `Ordering: 0`, `ParentId: 0` — item raiz, sem posição
+//   relativa relevante (não aparece em nenhuma navegação visual que dependa
+//   de ordem).
+// - `Target: "SameTab"`, `Published: "Published"` — valores padrão já usados
 //   por toda rota real de `MSEMenu` neste repositório.
-// - `Padrao: false` — o Administrator nunca deve ser a Home do site.
-// - Em `MSEExtensoes`: `Versao`/`Ordem`/`ParamsJson` ficam ausentes (nenhum
-//   é `required` em `MSE_EXTENSOES_SCHEMA`); `Habilitado: true`,
-//   `Protegido: true` (ver acima).
+// - `Default: false` — o Administrator nunca deve ser a Home do site.
+// - Em `MSEExtensions`: `Version`/`Ordering`/`ParamsJson` ficam ausentes
+//   (nenhum é `required` em `MSE_EXTENSIONS_SCHEMA`); `Enabled: true`,
+//   `Protected: true` (ver acima).
 //
 // Mesmo padrão de todo o resto de `tools/` (ver `migrate-camap-home.js`,
 // `migrate-camap-activate-tema-01.js`): `buildX()` função pura e congelada
 // que descreve o plano sem rede, e `migrateX({ client, listIds, confirm })`
 // que aplica de fato — só grava atrás de `confirm(plan)` explícito.
-// Idempotente por chave natural (`MSEMenu.Alias`, `MSEExtensoes.Elemento`),
+// Idempotente por chave natural (`MSEMenu.Alias`, `MSEExtensions.Element`),
 // mesmo princípio de `createIfMissing` usado em
 // `migrate-camap-content-routes.js`/`migrate-camap-institutional-drafts.js`
 // (função replicada aqui localmente, não importada, pelo mesmo motivo de
@@ -58,12 +73,12 @@ function deepFreeze(value) {
 
 /**
  * Dados puros do plano de migração: a linha de `MSEMenu` e o registro de
- * `MSEExtensoes` que tornam o Administrator navegável/conhecido pelo site.
+ * `MSEExtensions` que tornam o Administrator navegável/conhecido pelo site.
  * Sem rede, sem `Id` (resolvido em runtime pela própria migração).
  *
  * @returns {{
  *   MSEMenu: { keyField: "Alias", values: object },
- *   MSEExtensoes: { keyField: "Elemento", values: object }
+ *   MSEExtensions: { keyField: "Element", values: object }
  * }}
  */
 export function buildMseAdministratorRouteMigration() {
@@ -73,27 +88,27 @@ export function buildMseAdministratorRouteMigration() {
       values: {
         Title: "Administrator",
         Alias: "administrator",
-        TipoMenu: "sistema",
+        MenuType: "system",
         ParentId: 0,
-        Caminho: "administrator",
-        Nivel: 1,
-        Ordem: 0,
-        Componente: "administrator",
-        Visao: "controlpanel",
+        Path: "administrator",
+        Level: 1,
+        Ordering: 0,
+        Component: "administrator",
+        View: "controlpanel",
         ParamsJson: "{}",
-        Padrao: false,
-        AbrirEm: "MesmaAba",
-        Estado: "Publicado"
+        Default: false,
+        Target: "SameTab",
+        Published: "Published"
       }
     },
-    MSEExtensoes: {
-      keyField: "Elemento",
+    MSEExtensions: {
+      keyField: "Element",
       values: {
         Title: "Administrator",
-        Tipo: "Componente",
-        Elemento: "administrator",
-        Habilitado: true,
-        Protegido: true
+        Type: "Component",
+        Element: "administrator",
+        Enabled: true,
+        Protected: true
       }
     }
   });
@@ -152,12 +167,12 @@ async function createIfMissing(client, list, keyField, values) {
  * Aplica `buildMseAdministratorRouteMigration()` contra o tenant real, só
  * atrás de `confirm(plan)` explícito (mesmo padrão de `migrateCamapHome`/
  * `migrateActivateTema01`). Idempotente: se o item de `MSEMenu` (por
- * `Alias`) e/ou o de `MSEExtensoes` (por `Elemento`) já existir, não propõe
+ * `Alias`) e/ou o de `MSEExtensions` (por `Element`) já existir, não propõe
  * duplicata — só cria o(s) que estiver(em) ausente(s).
  *
  * @param {{
  *   client: { getListItems: Function, createListItem: Function },
- *   listIds: { MSEMenu: {listId:string}|string, MSEExtensoes: {listId:string}|string },
+ *   listIds: { MSEMenu: {listId:string}|string, MSEExtensions: {listId:string}|string },
  *   confirm: (plan: object) => (boolean | Promise<boolean>)
  * }} options
  * @returns {Promise<{
@@ -170,9 +185,9 @@ export async function migrateMseAdministratorRoute({ client, listIds, confirm } 
   if (!client || typeof client.getListItems !== "function" || typeof client.createListItem !== "function") {
     throw new TypeError("client deve expor getListItems(list, options) e createListItem(list, values).");
   }
-  if (!listIds || !listIds.MSEMenu || !listIds.MSEExtensoes) {
+  if (!listIds || !listIds.MSEMenu || !listIds.MSEExtensions) {
     throw new TypeError(
-      "listIds deve informar MSEMenu e MSEExtensoes (listId ou título — ver core/rest.js#listApiPath)."
+      "listIds deve informar MSEMenu e MSEExtensions (listId ou título — ver core/rest.js#listApiPath)."
     );
   }
   if (typeof confirm !== "function") {
@@ -193,9 +208,9 @@ export async function migrateMseAdministratorRoute({ client, listIds, confirm } 
   const menu = await createIfMissing(client, listIds.MSEMenu, plan.MSEMenu.keyField, plan.MSEMenu.values);
   const extension = await createIfMissing(
     client,
-    listIds.MSEExtensoes,
-    plan.MSEExtensoes.keyField,
-    plan.MSEExtensoes.values
+    listIds.MSEExtensions,
+    plan.MSEExtensions.keyField,
+    plan.MSEExtensions.values
   );
 
   return Object.freeze({ status: "migrated", menu, extension });

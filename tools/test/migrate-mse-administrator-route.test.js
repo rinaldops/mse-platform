@@ -11,7 +11,7 @@ import {
  */
 const LIST_IDS = Object.freeze({
   MSEMenu: "30000000-0000-4000-8000-000000000001",
-  MSEExtensoes: "30000000-0000-4000-8000-000000000002"
+  MSEExtensions: "30000000-0000-4000-8000-000000000002"
 });
 
 function parseSimpleFilter(filter) {
@@ -55,20 +55,20 @@ function createFakeClient(initialItems = {}) {
 
 const LIST_REFS = Object.freeze({
   MSEMenu: { listId: LIST_IDS.MSEMenu },
-  MSEExtensoes: { listId: LIST_IDS.MSEExtensoes }
+  MSEExtensions: { listId: LIST_IDS.MSEExtensions }
 });
 
 // buildMseAdministratorRouteMigration() é pura, congelada, e aponta para as
-// chaves naturais exigidas (Alias/Elemento).
+// chaves naturais exigidas (Alias/Element).
 {
   const plan = buildMseAdministratorRouteMigration();
   assert.ok(Object.isFrozen(plan));
   assert.equal(plan.MSEMenu.keyField, "Alias");
   assert.equal(plan.MSEMenu.values.Alias, "administrator");
-  assert.equal(plan.MSEMenu.values.Componente, "administrator");
-  assert.equal(plan.MSEExtensoes.keyField, "Elemento");
-  assert.equal(plan.MSEExtensoes.values.Elemento, "administrator");
-  assert.equal(plan.MSEExtensoes.values.Tipo, "Componente");
+  assert.equal(plan.MSEMenu.values.Component, "administrator");
+  assert.equal(plan.MSEExtensions.keyField, "Element");
+  assert.equal(plan.MSEExtensions.values.Element, "administrator");
+  assert.equal(plan.MSEExtensions.values.Type, "Component");
 
   console.log("migrate-mse-administrator-route.test.js: plano puro e congelado ok.");
 }
@@ -94,14 +94,14 @@ const LIST_REFS = Object.freeze({
 
 // (a) ambos ausentes -> ambos propostos para criação.
 {
-  const { client, creates } = createFakeClient({ MSEMenu: [], MSEExtensoes: [] });
+  const { client, creates } = createFakeClient({ MSEMenu: [], MSEExtensions: [] });
   const result = await migrateMseAdministratorRoute({ client, listIds: LIST_REFS, confirm: () => true });
 
   assert.equal(result.status, "migrated");
   assert.equal(result.menu.action, "created");
   assert.equal(result.extension.action, "created");
   assert.equal(creates.length, 2);
-  assert.deepEqual(creates.map((c) => c.list).sort(), ["MSEExtensoes", "MSEMenu"]);
+  assert.deepEqual(creates.map((c) => c.list).sort(), ["MSEExtensions", "MSEMenu"]);
 
   console.log("migrate-mse-administrator-route.test.js: (a) ambos ausentes -> ambos criados ok.");
 }
@@ -110,7 +110,7 @@ const LIST_REFS = Object.freeze({
 {
   const { client, creates } = createFakeClient({
     MSEMenu: [{ Id: 1, Alias: "administrator", Title: "Administrator" }],
-    MSEExtensoes: [{ Id: 2, Elemento: "administrator", Title: "Administrator" }]
+    MSEExtensions: [{ Id: 2, Element: "administrator", Title: "Administrator" }]
   });
   const result = await migrateMseAdministratorRoute({ client, listIds: LIST_REFS, confirm: () => true });
 
@@ -128,22 +128,22 @@ const LIST_REFS = Object.freeze({
 {
   const { client, creates } = createFakeClient({
     MSEMenu: [{ Id: 1, Alias: "administrator", Title: "Administrator" }],
-    MSEExtensoes: []
+    MSEExtensions: []
   });
   const result = await migrateMseAdministratorRoute({ client, listIds: LIST_REFS, confirm: () => true });
 
   assert.equal(result.menu.action, "skipped");
   assert.equal(result.extension.action, "created");
   assert.equal(creates.length, 1);
-  assert.equal(creates[0].list, "MSEExtensoes");
+  assert.equal(creates[0].list, "MSEExtensions");
 
-  console.log("migrate-mse-administrator-route.test.js: (c) só MSEMenu existente -> só MSEExtensoes criado ok.");
+  console.log("migrate-mse-administrator-route.test.js: (c) só MSEMenu existente -> só MSEExtensions criado ok.");
 }
 
 {
   const { client, creates } = createFakeClient({
     MSEMenu: [],
-    MSEExtensoes: [{ Id: 2, Elemento: "administrator", Title: "Administrator" }]
+    MSEExtensions: [{ Id: 2, Element: "administrator", Title: "Administrator" }]
   });
   const result = await migrateMseAdministratorRoute({ client, listIds: LIST_REFS, confirm: () => true });
 
@@ -152,7 +152,7 @@ const LIST_REFS = Object.freeze({
   assert.equal(creates.length, 1);
   assert.equal(creates[0].list, "MSEMenu");
 
-  console.log("migrate-mse-administrator-route.test.js: (c) só MSEExtensoes existente -> só MSEMenu criado ok.");
+  console.log("migrate-mse-administrator-route.test.js: (c) só MSEExtensions existente -> só MSEMenu criado ok.");
 }
 
 console.log("migrate-mse-administrator-route.test.js: verificações concluídas com sucesso.");

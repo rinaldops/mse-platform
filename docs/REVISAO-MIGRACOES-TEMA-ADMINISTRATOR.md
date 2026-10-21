@@ -3,6 +3,15 @@
 **Data:** 18/10/2026
 **Escopo:** revisão estática e testes locais; nenhuma alteração foi aplicada ao tenant.
 
+> **Nota (21/10/2026):** a seção 2.2 abaixo descrevia
+> `tools/migrate-mse-administrator-route.js` com os nomes de lista/campo em
+> português antigos (`MSEExtensoes`, `Componente`, `Visao`, `Estado`, etc.),
+> anteriores à normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`).
+> O script foi corrigido para gravar nos nomes normalizados
+> (`MSEExtensions`, `Component`, `View`, `Published`) — a versão anterior
+> teria criado uma rota que o kernel nunca reconheceria, falhando
+> silenciosamente. O texto abaixo já reflete os nomes corrigidos.
+
 ## 1. Arquivos revisados
 
 - `tools/migrate-camap-activate-tema-01.js`
@@ -32,12 +41,13 @@ O script está adequado para aplicação controlada:
 O script também está adequado para aplicação controlada:
 
 - plano puro e congelado (`buildMseAdministratorRouteMigration()`);
-- usa as chaves naturais `MSEMenu.Alias` e `MSEExtensoes.Elemento`;
+- usa as chaves naturais `MSEMenu.Alias` e `MSEExtensions.Element`;
 - cria somente registros ausentes;
 - não duplica a rota ou a extensão em execuções repetidas;
 - exige confirmação explícita;
-- mantém `Protegido: true` para o registro administrativo;
-- cria o item de menu como `administrator`, visão `controlpanel`, estado `Publicado`;
+- mantém `Protected: true` para o registro administrativo;
+- cria o item de menu como `administrator`, visão `controlpanel`, estado
+  `Published`;
 - não contém chamada de rede no construtor do plano.
 
 ### 2.3 Limites identificados

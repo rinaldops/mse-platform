@@ -37,7 +37,7 @@ npm test
 ### Rodar somente os testes do Publicador
 
 ```powershell
-node administrator/test/publisher.test.js
+node components/com_content/test/publisher.test.js
 ```
 
 ### Outras suítes relacionadas (opcional)
@@ -45,7 +45,7 @@ node administrator/test/publisher.test.js
 ```powershell
 node kernel/test/admin-data.test.js
 node kernel/test/admin-form.test.js
-node administrator/test/administrator-css.test.js
+node components/com_cpanel/test/administrator-css.test.js
 node host-adapters/modern-script-editor/test/site-boot.test.js
 ```
 
