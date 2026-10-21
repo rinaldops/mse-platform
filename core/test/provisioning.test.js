@@ -165,8 +165,8 @@ function createFakeSharePoint({
   return { fetchImpl, state };
 }
 
-assert.equal(CONFIGURATION_LIST_SCHEMA.version, 2);
-assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 11);
+assert.equal(CONFIGURATION_LIST_SCHEMA.version, 3);
+assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 12);
 
 const cancelledServer = createFakeSharePoint();
 let cancelledPlan;
@@ -180,7 +180,7 @@ const cancelled = await provisionConfigurationList({
 });
 assert.equal(cancelled.status, "cancelled");
 assert.equal(cancelledPlan.createList, true);
-assert.equal(cancelledPlan.fieldsToCreate.length, 11);
+assert.equal(cancelledPlan.fieldsToCreate.length, 12);
 assert.equal(cancelledServer.state.writes.length, 0);
 
 await assert.rejects(
@@ -207,7 +207,7 @@ assert.equal(confirmedPlans.length, 1);
 assert.equal(server.state.exists, true);
 assert.equal(server.state.versioning, true);
 assert.equal(server.state.globalExists, true);
-assert.equal(server.state.fields.length, 12);
+assert.equal(server.state.fields.length, 13);
 assert.equal(
   server.state.fields.find((field) => field.InternalName === "Title").EnforceUniqueValues,
   true

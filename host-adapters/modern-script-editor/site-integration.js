@@ -5,16 +5,16 @@ import { resolveListSources } from "../../core/list-provisioning.js";
 import { diagnoseModuleInstallation } from "../../core/module-diagnostics.js";
 import { renderRichText, sanitizeRichText } from "../../core/rich-text.js";
 import { provisionConfigurationList } from "../../core/provisioning.js";
-import { FORUM_MANIFEST } from "../../modules/forum/manifest.js";
-import { createForumReadService } from "../../modules/forum/forum-data.js";
-import { FORUM_LIST_SCHEMAS } from "../../modules/forum/forum-schema.js";
-import { RECURSOS_MANIFEST } from "../../modules/recursos/manifest.js";
-import { createRecursosReadService } from "../../modules/recursos/recursos-data.js";
-import { RECURSOS_LIST_SCHEMAS } from "../../modules/recursos/recursos-schema.js";
-import { VIDEOTECA_MANIFEST } from "../../modules/videoteca/manifest.js";
-import { createVideotecaReadService } from "../../modules/videoteca/videoteca-data.js";
-import { VIDEOTECA_LIST_SCHEMAS } from "../../modules/videoteca/videoteca-schema.js";
-import { HOME_MANIFEST } from "../../modules/home/manifest.js";
+import { FORUM_MANIFEST } from "../../modules/mod_forum/manifest.js";
+import { createForumReadService } from "../../modules/mod_forum/forum-data.js";
+import { FORUM_LIST_SCHEMAS } from "../../modules/mod_forum/forum-schema.js";
+import { RECURSOS_MANIFEST } from "../../modules/mod_recursos/manifest.js";
+import { createRecursosReadService } from "../../modules/mod_recursos/recursos-data.js";
+import { RECURSOS_LIST_SCHEMAS } from "../../modules/mod_recursos/recursos-schema.js";
+import { VIDEOTECA_MANIFEST } from "../../modules/mod_videoteca/manifest.js";
+import { createVideotecaReadService } from "../../modules/mod_videoteca/videoteca-data.js";
+import { VIDEOTECA_LIST_SCHEMAS } from "../../modules/mod_videoteca/videoteca-schema.js";
+import { HOME_MANIFEST } from "../../modules/mod_home/manifest.js";
 import ADMIN_MANIFEST from "../../admin/manifest.js";
 import { createModuleInstaller } from "../../admin/installer.js";
 
@@ -100,7 +100,7 @@ export async function createSiteIntegration({
       const version = versions[moduleId];
       if (!version) throw new TypeError(`Manifesto não registrado: ${moduleId}.`);
       if (moduleId === "mse-admin") return `${releaseBase}/admin/manifest.js`;
-      const folder = moduleId === "explore-mais" ? "recursos" : moduleId;
+      const folder = moduleId === "explore-mais" ? "mod_recursos" : `mod_${moduleId}`;
       return `${releaseBase}/modules/${folder}/manifest.js`;
     },
     diagnose

@@ -28,13 +28,18 @@ Os identificadores técnicos existentes (`forum`, `explore-mais`, `view: "summar
 
 ## 3. Restrições e compatibilidade
 
-- **Escopo imposto:** sem Templates e sem ACL. Posições são declaradas pelo site;
-  o visual é CSS do site. Permissões continuam nativas do SharePoint.
-- **TD intocado.** O projeto TD consome releases já publicadas do
-  mse-platform em `SiteAssets/mse-platform/releases/<versão>/`; essas pastas
-  nunca são alteradas ou sobrescritas por este trabalho. Toda mudança é **aditiva**: o caminho atual (1 MSE por
-  módulo, `runner.js`, `mountMseModule`, `MSEConfiguracoes` v2) permanece
-  funcionando e testado. Nenhuma pasta de release já publicada é alterada.
+- **Escopo imposto:** Templates em escopo mínimo (1 template ativo por site,
+  trocável via `MSEConfiguracoes.Tema` — sem atribuição por item de menu, sem
+  overrides de view/layout) e sem ACL. Posições continuam declaradas pelo
+  site; o visual é CSS do template ativo (ou do layout neutro de
+  `kernel/layout.js` quando nenhum template está configurado). Permissões
+  continuam nativas do SharePoint.
+- **Rompimento com o TD nesta versão.** O Mini Joomla! não tem como requisito
+  manter compatibilidade com a arquitetura, snippets, releases ou pastas do
+  projeto TD. O TD não é alterado nem migrado nesta etapa, mas também não é
+  critério de aceite do novo produto. Depois que o CAMAP-AGP estiver funcional,
+  o TD será um consumidor futuro do Mini Joomla!, com template próprio e uma
+  adaptação planejada em separado.
 - **Neutralidade:** o kernel não conhece CAMAP-AGP. Nomes, posições e itens de
   menu vêm de dados/configuração do site.
 - **Produção:** não há DEV/homologação declarados. Qualquer publicação exige
@@ -51,14 +56,14 @@ mse-platform/
     dispatcher.js                 resolve Componente + visão + parâmetros; import lazy
     positions.js                  módulos por posição/vigência/atribuição ao menu
     layout.js                     esqueleto DOM + posições declaradas (sem template)
-    events.js                     eventos mínimos: afterRoute, beforeRender, afterRender
+    events.js                     eventos mínimos: onAfterRoute, onBeforeRender, onAfterRender
     extension-registry.js         extensões habilitadas; manifesto v2
     content-services.js           artigos, categorias, tags, filtros compostos, estados
     site-config.js                configuração global (escopo global/extensão)
   host-adapters/modern-script-editor/
     site-runner.js                NOVO: único script do snippet de site
     site-snippet.html             NOVO: <div data-mse-site> + site-runner.js
-    runner.js, bootstrap.js       mantidos (legado e TD)
+    runner.js, bootstrap.js       legado isolado; não são contrato do Mini Joomla!
   admin/                          EVOLUÍDO — vira o Administrator (carregado lazy)
 ```
 
@@ -80,6 +85,22 @@ mse-platform/
   memória por sessão, fallback para último estado válido se uma lista falhar.
 - **Isolamento:** falha de um Módulo mostra estado de erro local sem derrubar a página
   (já é princípio do plano de plataformização; passa a ser testado).
+- **Vocabulário `type`/`Tipo`:** o manifesto v2 (`type: "component"|"module"|"plugin"`,
+  inglês/minúsculo) e a lista `MSEExtensoes` (`Tipo: "Componente"|"Modulo"|"Plugin"`,
+  português/capitalizado, sem acento em "Modulo") são camadas intencionalmente distintas —
+  manifesto JS é contrato de autor, lista SharePoint é dado editável pelo gestor. Qualquer
+  tradução entre as duas passa pelo mapeamento único em `kernel/extension-registry.js`
+  (`extensionTypeFromManifestType`/`manifestTypeFromExtensionType`); nenhum outro consumidor
+  (`dispatcher.js`/`positions.js` da Fase 2 incluídos) deve reimplementar esse `if/else`.
+- **Altura de abstração dos dados:** `kernel/menu.js` e `kernel/extension-registry.js`
+  operam diretamente sobre o item de lista SharePoint cru (PascalCase: `Alias`, `Estado`,
+  `Habilitado`, `Elemento`...). `kernel/content-services.js` já pressupõe uma camada de
+  normalização anterior e opera sobre um shape de domínio em português
+  minúsculo/camelCase (`estado`, `categoriaId`, `destaque`...). Isso é proposital — os dois
+  grupos de função atendem necessidades diferentes —, mas a camada de normalização
+  REST→domínio para artigos ainda não existe (fica para o adaptador da Fase 2/3, junto do
+  Publicador); quem a escrever deve manter essa convenção (cru para menu/extensões,
+  normalizado para conteúdo) em vez de uniformizar os dois lados.
 
 ## 5. Joomla! → kernel (escopo)
 
@@ -97,7 +118,7 @@ mse-platform/
 | com_installer | `admin/installer.js` (inspect/apply/verify) | melhorar |
 | Plugins/eventos | `events.js` mínimo agora; plugins depois | criar (mínimo) |
 | Histórico de versões | versionamento nativo da lista + restaurar | melhorar |
-| **Templates** | — | **fora de escopo** |
+| **Templates** | `kernel/application.js#resolveLayout` + `MSEConfiguracoes.Tema` | mínimo: 1 template ativo por site, trocável (sem atribuição por menu, sem overrides) |
 | **ACL** | — | **fora de escopo** |
 | Campos personalizados, workflow, multilíngue, busca, banners, redirecionamentos | — | adiado (não descartado) |
 
@@ -138,6 +159,102 @@ Cada fase fecha com `npm test` (suíte atual **inalterada e verde**) mais testes
 do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
 (carregamento do script, hashchange, desmontagem) sem recarregar a página.
 
+**Fase 1 — status (15/10/2026):** a linha "Contratos" está **concluída** em código
+(sem publicação nem tenant real): manifesto v2 aditivo (`type: component|module|plugin`
+em `core/module-contract.js`), roteamento hash SEF (`kernel/router.js`, wrapper sobre
+`core/navigation.js`), schema v3 de `MSEConfiguracoes` (escopos `Global`/`Instancia`/
+`Extensao`, `core/provisioning.js` + `core/configuration-store.js`) e as listas novas
+`MSEMenuTipos`/`MSEMenu` (`kernel/menu.js`) e `MSEExtensoes`
+(`kernel/extension-registry.js`), além de `kernel/content-services.js`,
+`kernel/events.js` e `kernel/site-config.js` como infraestrutura de apoio — todos
+funções puras, testadas com fixtures em memória, sem I/O de rede. `npm test` da raiz
+está 100% verde, incluindo a suíte nova `kernel/test/*.js` plugada no `package.json`.
+A linha **"spike: 1 MSE com hash-routing no tenant" permanece pendente**: exige
+publicação em ambiente real (FIORI-AUTO/navegador), fora do alcance desta rodada —
+só avança com o usuário presente para confirmar destino e autorização de produção.
+
+**Fase 2 — status (15/10/2026): concluída em código** (sem publicação nem tenant
+real). As 3 peças de resolução que faltavam do kernel mínimo foram entregues por
+agentes em paralelo, cada um em arquivos exclusivos: `kernel/layout.js`
+(esqueleto DOM de posições + Componente, sem template), `kernel/positions.js` +
+`kernel/schemas/mse-modulos.js` (resolução de módulos por posição/vigência/
+atribuição de menu, schemas `MSEModulos`/`MSEModulosMenu`) e `kernel/dispatcher.js`
+(resolve Componente+view+params a partir da rota, sem nunca importar manifesto/
+entrypoint — fronteira documentada no próprio arquivo). A integração de ponta a
+ponta — deliberadamente não delegada a agentes, por exigir decisão unificada
+entre peças construídas de forma independente — foi fechada depois:
+`kernel/application.js` (boot, `import()` lazy de Componente/Módulo, ciclo
+router→dispatcher→render, isolamento de falha por instância, `dispose()`) e,
+no host, `host-adapters/modern-script-editor/site-boot.js` (tradução das 4
+listas MSE* + config global para REST via `core/rest.js`/`core/configuration-store.js`,
+e `createManifestResolver` para a convenção de pasta `modules/<elemento>/manifest.js`),
+`site-runner.js` (único `<script>` do snippet de site, mesmo padrão de
+`runner.js` para o host atual) e `site-snippet.html` (`<div data-mse-site>` +
+o `<script>`, com `data-positions`/`data-component-position`/`data-default-view`/
+`data-manifest-path-overrides` como os únicos pontos de configuração estática
+por site). Todas as 10 peças do kernel (router, menu, extension-registry,
+content-services, events, site-config, layout, positions, dispatcher,
+application) e a camada de host (`site-boot.js`) têm testes próprios 100%
+verdes e integrados em `npm test` da raiz (`kernel/test/*.js` + `core/test/site-boot.test.js`).
+O exemplo com 2 Componentes e 3 Módulos em posições (critério de aceite da
+Fase 2) está cumprido pelos próprios testes de `kernel/test/application.test.js`
+(Componentes "blog"/"quebrado" + módulo "sd" em posição). Pendência real da
+Fase 2, fora do alcance local: validar `site-runner.js`/`site-snippet.html`
+num MSE real (mesma pendência do spike da Fase 1, exige tenant/FIORI-AUTO e
+autorização de produção).
+
+**Fase 3 — status (16/10/2026): concluída em código** (sem provisionamento
+nem tenant real). Três frentes independentes, entregues por agentes em
+paralelo em arquivos exclusivos e integradas depois: (1) os 3 schemas do
+kernel (`kernel/schemas/mse-menu.js`, `mse-extensoes.js`, `mse-modulos.js`)
+migraram do formato manual (`schemaXml` por campo) para `defineListSchema`
+de `core/list-provisioning.js` — mesmo padrão já usado por `forum`/
+`recursos`/`videoteca`, sem nenhuma mudança de comportamento visível a
+quem consome os dados; (2) `core/rest.js` ganhou `batchGet` (requisição
+`$batch` OData real, multipart/mixed, parse de sub-respostas por ordem de
+envio, falha parcial isolada por chave) e `host-adapters/modern-script-editor/
+site-boot.js` passou a carregar as 4 listas MSE* numa única chamada `$batch`
+memoizada, preservando integralmente o contrato de `kernel/application.js`
+(`loadMenu`/`loadExtensions`/`loadModulos`/`loadModulosMenu` continuam 4
+funções independentes `() => Promise<Array>`, e o fallback por lista já
+testado continua isolado por chave); (3) `kernel/installer.js`
+(`createKernelInstaller`) expõe `inspect/apply/verify` sobre o conjunto fixo
+das 5 listas MSE* via `inspectLists/provisionLists/verifyLists` já testados
+— deliberadamente separado de `admin/installer.js` (que é indexado por
+`moduleId`, catálogo variável de módulos) — e `kernel/seed.js`
+(`buildKernelSeed`/`seedKernelLists`) grava um seed mínimo e genérico
+("principal"/"inicio"/"exemplo", nenhum dado do CAMAP-AGP) só depois de
+`verify()` confirmar as listas prontas e só atrás de `confirm` explícito,
+nunca disparado automaticamente dentro de `apply()`. O objetivo central da
+fase — **o runtime nunca escreve, nunca inspeciona, nunca decide schema; só
+lê um snapshot já validado** — está cumprido: `kernel/application.js` não
+foi tocado por nenhuma das 3 frentes. `npm test` da raiz está 100% verde,
+incluindo `kernel/test/installer.test.js`, `kernel/test/seed.test.js` e os
+ajustes em `core/test/rest.test.js`/`core/test/site-boot.test.js`. Pendências
+reais, fora do alcance local: nenhum provisionamento foi executado contra
+tenant real (exige FIORI-AUTO/autorização de produção); a migração de
+`CAMAPModulosConfiguracoes` → MSE* (instâncias do consumidor) fica
+para a Fase 4, por depender de dados reais do tenant.
+
+**Templates (mecanismo mínimo) e Administrator — implementação local:**
+
+- Provisionar `MSEConfiguracoes` por
+  `core/provisioning.js#provisionConfigurationList`; a ativação de tema exige
+  um único item Global, confirmação explícita e atualização com ETag.
+- A migração `tools/migrate-mse-administrator-route.js` cria a rota
+  `#/administrator` por chaves naturais, sem duplicar registros existentes.
+- `site-runner.js` lê `data-template-path-overrides` e repassa
+  `templatePathByName` a `boot.bootSiteKernel(...)`. A cobertura está em
+  `host-adapters/modern-script-editor/test/site-runner.test.js`.
+- Templates fora de `releaseBase` podem usar overrides absolutos ou
+  server-relative configurados pelo consumidor; nenhum endereço real deve
+  ser registrado aqui.
+- Ao diagnosticar assets desatualizados, distinguir cache do navegador,
+  Service Worker e conteúdo servido antes de alterar o kernel.
+
+Publicação, configuração e evidências de produção pertencem ao registro
+privado do consumidor. Este documento não comprova aceite em tenant.
+
 ## 9. Riscos
 
 | Risco | Mitigação |
@@ -145,7 +262,7 @@ do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
 | Todo o site depende de **um** MSE/script: falha = site fora | Cache do último estado válido; `Default.aspx` mantém conteúdo mínimo estático (`noscript`/aviso); rollback trocando só a URL do snippet |
 | Peso do boot (muitas chamadas REST) | `$batch`, cache, import lazy do Componente e do Administrator |
 | Renderização só no cliente (SEO/busca do SharePoint) | Aceito: intranet; registrar como limitação |
-| Quebrar o TD | Mudanças aditivas; o caminho de publicação novo é distinto de `releases/<versão>/` e nunca o sobrescreve; testes de regressão do caminho legado |
+| Acoplamento acidental ao TD | Separar o contrato, o caminho de publicação e os critérios de aceite do Mini Joomla!; validar que nenhum import, lista ou template do TD é necessário |
 | Sem pastas versionadas, não há rollback por pasta | Rollback por Git (tag + manifesto de SHA-256) e reenvio; ver seção 11 |
 | Hash-routing e MSE/SharePoint modernos (navegação, `_spPageContextInfo`) | Spike da Fase 1 antes de qualquer outra coisa |
 
@@ -154,8 +271,8 @@ do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
 | # | Decisão | Recomendação |
 | --- | --- | --- |
 | D1 | Roteamento por hash (`#/`) em vez de query string | Hash: não recarrega o aspx e preserva o MSE |
-| D2 | Pasta `kernel/` nova, sem mover `core/` | Sim; evita risco ao TD |
-| D3 | Listas novas `MSE*` em vez de reaproveitar `CAMAPModulosConfiguracoes` | Novas, com migração das 9 instâncias e `verify`; lista antiga mantida até o aceite |
+| D2 | Pasta `kernel/` nova, sem mover `core/` | Sim; separa a implementação Mini Joomla! do legado enquanto os contratos são consolidados |
+| D3 | Listas novas `MSE*` em vez de reaproveitar `CAMAPModulosConfiguracoes` | Novas, com migração das instâncias e `verify`; lista antiga mantida até o aceite |
 | D4 | Páginas institucionais (Quem somos, Estrutura, Serviços, Docs, Contatos): artigos do BLOG, ou Componente próprio | Artigos/categorias do BLOG (como no Joomla!); Contatos como visão do BLOG até haver necessidade de `com_contact` |
 | D5 | Detecção de permissão para exibir o Administrator | `EffectiveBasePermissions` das listas; sem tabela de permissões |
 | D6 (revista) | **Sem versionamento por pastas**, no mse-platform e nos sites, nesta fase | Aprovado: pasta fixa única; ver seção 11 |
@@ -167,8 +284,9 @@ do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
 
 - **Uma pasta fixa** para o produto, nova e distinta do legado: `SiteAssets/mse-platform/current/`
   (nome a confirmar na Fase 1). Arquivos são substituídos no lugar. O padrão
-  `releases/<versão>/` deixa de ser usado para trabalho novo, mas as pastas já publicadas
-  (TD) permanecem intactas.
+  `releases/<versão>` deixa de ser usado para trabalho novo. Pastas antigas podem
+  ser preservadas como histórico técnico, mas não integram nem condicionam o
+  Mini Joomla!; o futuro template do TD será tratado como consumidor separado.
 - **Versão continua existindo dentro dos arquivos**: SemVer nos manifestos
   (`version`, `coreCompatibility`) e `package.json`. O kernel continua recusando combinações
   incompatíveis; apenas deixa de haver uma pasta por versão.
@@ -178,10 +296,12 @@ do kernel. A fase 1 só avança se o spike provar que o MSE aceita o ciclo
   reenviar a tag anterior para a pasta fixa. O `verify` confere hashes remotos após o envio.
 - **Contrapartida aceita:** substituir arquivos em uso afeta o site imediatamente; por isso
   qualquer envio exige confirmar o destino de produção e a autorização aplicável, e o primeiro
-  teste usa uma página paralela (`Preview.aspx`) antes do cutover.
+  teste usa o `Default.aspx` (canônico), com cache-busting e recarga completa antes do cutover.
 - **Implicação para docs e ferramentas:** `INSTALACAO-MSE.md`, `COMPATIBILIDADE-E-VERSIONAMENTO.md`,
   `core/README.md` e `tools/build-release.js` / `verify-release.js` serão adaptados na Fase 1
-  (modo “pasta fixa”), sem remover o modo antigo enquanto o TD depender dele.
+  (modo “pasta fixa”). O modo antigo pode permanecer arquivado durante a
+  transição operacional, mas não será mantido como requisito de compatibilidade
+  do Mini Joomla! com o TD.
 
 ## 12. Divisão de responsabilidades: produto × site (decisão 15/10/2026)
 

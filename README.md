@@ -7,14 +7,16 @@ permissões da sessão do usuário.
 
 > **Em planejamento:** [Site Kernel](docs/PLANO-SITE-KERNEL-MSE.md) — um único MSE renderiza o site inteiro (Componentes, Módulos, menu e posições, no modelo do Joomla!). O funcionamento atual descrito aqui permanece suportado.
 
+> **Convenções Joomla!:** a auditoria estrutural e o plano de migração estão em [JOOMLA-CONVENCOES-E-MIGRACAO.md](docs/JOOMLA-CONVENCOES-E-MIGRACAO.md).
+
 ## Funcionalidades
 
 | Módulo | Finalidade | Visualizações |
 | --- | --- | --- |
-| [Fórum](modules/forum/README.md) | Tópicos, respostas, reações, soluções e notificações | Completa e resumo |
-| [Videoteca](modules/videoteca/README.md) | Catálogo de gravações com categorias, tags e busca | Completa e resumo |
-| [Explore Mais](modules/recursos/README.md) | Links e materiais organizados por categoria | Completa e resumo |
-| [Home](modules/home/README.md) | Apresentação do portal, ações e indicadores | Completa |
+| [Fórum](modules/mod_forum/README.md) | Tópicos, respostas, reações, soluções e notificações | Completa e resumo |
+| [Videoteca](modules/mod_videoteca/README.md) | Catálogo de gravações com categorias, tags e busca | Completa e resumo |
+| [Explore Mais](modules/mod_recursos/README.md) | Links e materiais organizados por categoria | Completa e resumo |
+| [Home](modules/mod_home/README.md) | Apresentação do portal, ações e indicadores | Completa |
 | Administração | Instalação de estruturas e gestão de instâncias | Completa |
 
 O Centro de Administração cria instâncias, edita formulários, salva rascunhos,
@@ -36,23 +38,26 @@ antigos permanecem para compatibilidade, não como guia de novas instalações.
 ## Estrutura e desenvolvimento
 
 - `core/`: REST, configuração, contratos, provisionamento e texto rico.
-- `admin/`: catálogo, formulários, instalação e geração de snippets.
+- `admin/`: catálogo, formulários, instalação e geração de snippets. **Painel administrativo histórico (pré-Site-Kernel, "um MSE por módulo"), congelado deliberadamente desde a normalização Joomla! — não é movido nem renomeado** (ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`); não confundir com o Administrator do Site Kernel, em `components/com_cpanel/` e demais `components/com_xxx/`.
+- `components/`: Administrator do Site Kernel, um componente físico por `option=com_xxx` (convenção Joomla!, ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`) — `com_cpanel` (painel inicial + roteador comum), `com_content` (Publicador), `com_extensions`, `com_menus`, `com_modules`, `com_diagnostics`, e as pastas reservadas/fora de escopo `com_config`, `com_installer`, `com_categories`, `com_tags`, `com_media`. `components/_shared/` não é um componente Joomla! — é infraestrutura interna comum.
 - `host-adapters/`: integração com o Modern Script Editor.
-- `modules/`: módulos e componentes UI reutilizáveis.
+- `modules/`: módulos `mod_<nome>` (convenção Joomla!, ex. `modules/mod_forum/`, `modules/mod_home/`, `modules/mod_recursos/`, `modules/mod_videoteca/`).
+- `libraries/`: infraestrutura visual compartilhada entre módulos, não é um módulo Joomla! (`libraries/ui/`: accordion/carousel).
+- `plugins/`: reservada, convenção `plugins/<grupo>/<nome>/` para uso futuro — nenhum plugin real ainda.
 - `themes/`: tema-base.
 - `examples/`: módulo de exemplo e hosts locais.
 - `tools/`: empacotamento e verificação de releases.
 - `dist/`: cópias históricas de pacotes; sua documentação corresponde à versão arquivada.
 
 Consulte os [contratos](docs/CONTRATOS-DE-MODULO.md), o [Core](core/README.md),
-a [UI](modules/ui/README.md) e os [editores](docs/EDITORES-RICOS.md).
+a [UI](libraries/ui/README.md) e os [editores](docs/EDITORES-RICOS.md).
 
 ```powershell
 npm test
-npm --prefix modules/home test
-npm --prefix modules/forum test
-npm --prefix modules/recursos test
-npm --prefix modules/videoteca test
+npm --prefix modules/mod_home test
+npm --prefix modules/mod_forum test
+npm --prefix modules/mod_recursos test
+npm --prefix modules/mod_videoteca test
 ```
 
 Sirva a raiz por HTTP para usar `examples/local-host/` e `examples/admin-host/`.

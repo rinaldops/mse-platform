@@ -7,7 +7,7 @@ const snippet = generateMseSnippet({
   view: "summary",
   releaseBase: "/sites/demo/SiteAssets/mse-platform/releases/0.8.1"
 });
-assert.match(snippet, /modules\/recursos\/manifest\.js/);
+assert.match(snippet, /modules\/mod_recursos\/manifest\.js/);
 assert.match(snippet, /data-mse-view="summary"/);
 assert.match(snippet, /runner\.js/);
 assert.match(snippet, /runner\.js\?mseInstance=explore-home/);

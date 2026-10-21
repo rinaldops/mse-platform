@@ -5,6 +5,7 @@ const SETTING_TYPES = new Set([
 ]);
 const PERMISSIONS = new Set(["read", "write", "manage-lists", "send-mail"]);
 const DATA_SOURCE_TYPES = new Set(["list", "library"]);
+const MODULE_TYPES = new Set(["component", "module", "plugin"]);
 
 function freeze(value) {
   if (value && typeof value === "object" && !Object.isFrozen(value)) {
@@ -68,6 +69,43 @@ export function defineModuleManifest(value) {
   });
   const locales = [...new Set((value.locales ?? ["pt-BR"]).map((locale) => text(locale, `${id}.locales`)))];
   const styles = [...new Set((value.styles ?? []).map((style) => text(style, `${id}.styles`)))];
+
+  const type = value.type ?? "component";
+  if (typeof type !== "string" || !MODULE_TYPES.has(type)) {
+    throw new TypeError(`${id}.type deve ser "component", "module" ou "plugin".`);
+  }
+
+  const extra = { type };
+  if (type === "component") {
+    if (value.views !== undefined) {
+      if (!value.views || typeof value.views !== "object" || Array.isArray(value.views)) {
+        throw new TypeError(`${id}.views deve ser um objeto.`);
+      }
+      const views = Object.fromEntries(Object.entries(value.views).filter(([, enabled]) => Boolean(enabled)));
+      if (!Object.keys(views).length) throw new TypeError(`${id}.views deve possuir ao menos uma visão habilitada.`);
+      extra.views = views;
+    } else {
+      extra.views = { full: true };
+    }
+    if (value.routeParams !== undefined) {
+      if (!Array.isArray(value.routeParams)) throw new TypeError(`${id}.routeParams deve ser um array.`);
+      extra.routeParams = [...new Set(value.routeParams.map((param) => text(param, `${id}.routeParams`)))];
+    }
+  } else if (type === "module") {
+    if (!Array.isArray(value.positions) || !value.positions.length) {
+      throw new TypeError(`${id}.positions deve ser um array não vazio de posições.`);
+    }
+    extra.positions = [...new Set(value.positions.map((position) => identifier(position, `${id}.positions`)))];
+    if (value.params !== undefined) {
+      extra.params = defineSettingsSchema(value.params);
+    }
+  } else if (type === "plugin") {
+    if (!Array.isArray(value.events) || !value.events.length) {
+      throw new TypeError(`${id}.events deve ser um array não vazio de eventos.`);
+    }
+    extra.events = [...new Set(value.events.map((event) => text(event, `${id}.events`)))];
+  }
+
   return freeze({
     id,
     displayName: text(value.displayName, `${id}.displayName`),
@@ -81,7 +119,8 @@ export function defineModuleManifest(value) {
     locales,
     styles,
     capabilities,
-    entrypoints
+    entrypoints,
+    ...extra
   });
 }
 

@@ -5,7 +5,7 @@ const modules = ["home", "forum", "videoteca", "recursos"];
 const summaryModules = ["forum", "videoteca", "explore-mais"];
 
 for (const moduleName of modules) {
-  const cssUrl = new URL(`../../modules/${moduleName}/${moduleName}.css`, import.meta.url);
+  const cssUrl = new URL(`../../modules/mod_${moduleName}/${moduleName}.css`, import.meta.url);
   const css = await readFile(cssUrl, "utf8");
   const selector = `[data-mse-module="${moduleName}"][data-mse-module="${moduleName}"]`;
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -21,7 +21,7 @@ for (const moduleName of modules) {
 
 for (const moduleName of summaryModules) {
   const cssName = moduleName === "explore-mais" ? "recursos" : moduleName;
-  const cssUrl = new URL(`../../modules/${cssName}/${cssName}.css`, import.meta.url);
+  const cssUrl = new URL(`../../modules/mod_${cssName}/${cssName}.css`, import.meta.url);
   const css = await readFile(cssUrl, "utf8");
   assert.ok(
     css.includes(`[data-mse-module="${moduleName}"][data-mse-view="summary"]`),
@@ -29,7 +29,7 @@ for (const moduleName of summaryModules) {
   );
 }
 
-const homeCss = await readFile(new URL("../../modules/home/home.css", import.meta.url), "utf8");
+const homeCss = await readFile(new URL("../../modules/mod_home/home.css", import.meta.url), "utf8");
 assert.match(homeCss, /\[data-mse-module="home"\][^{]+\{[\s\S]*?background:\s*transparent;/);
 assert.match(homeCss, /\.mse-home\s*\{[\s\S]*?background:/);
 

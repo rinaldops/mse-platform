@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import {
   SharePointRestError,
-  createSharePointRestClient
+  createSharePointRestClient,
+  batchGet
 } from "../rest.js";
 
 function response(status, data = null, headers = {}) {
@@ -173,6 +174,13 @@ assert.equal(writes[0].options.headers["X-RequestDigest"], "digest-1");
 assert.equal(writes[0].options.body, JSON.stringify({ Title: "Atualizado" }));
 assert.equal(writes[1].options.headers["X-RequestDigest"], "digest-1");
 
+// client.getDigest() é exposto publicamente (consumido por
+// host-adapters/modern-script-editor/site-boot.js#createKernelListLoaders
+// para repassar X-RequestDigest ao $batch) e reaproveita o mesmo cache —
+// não dispara uma nova chamada /_api/contextinfo enquanto válido.
+assert.equal(await writingClient.getDigest(), "digest-1");
+assert.equal(digestCalls, 1);
+
 const crudCalls = [];
 const crudClient = createSharePointRestClient({
   webUrl: "/teams/core-test",
@@ -299,5 +307,182 @@ for (const [status, code] of [
       && error.path === `/teams/core-test/_api/error-${status}`
   );
 }
+
+// --- batchGet: $batch REST (multipart/mixed, OData v3) ---------------------
+
+function batchResponseBody(boundary, parts) {
+  const lines = [];
+  for (const part of parts) {
+    const statusText = part.status === 200 ? "OK" : part.status === 404 ? "Not Found" : "Error";
+    lines.push(`--${boundary}`);
+    lines.push("Content-Type: application/http");
+    lines.push("Content-Transfer-Encoding: binary");
+    lines.push("");
+    lines.push(`HTTP/1.1 ${part.status} ${statusText}`);
+    lines.push("Content-Type: application/json;odata=nometadata");
+    lines.push("");
+    if (part.body !== undefined) lines.push(JSON.stringify(part.body));
+    lines.push("");
+  }
+  lines.push(`--${boundary}--`);
+  lines.push("");
+  return lines.join("\r\n");
+}
+
+function batchResponse(boundary, parts) {
+  return {
+    ok: true,
+    status: 200,
+    headers: {
+      get: (name) => name.toLowerCase() === "content-type" ? `multipart/mixed; boundary=${boundary}` : null
+    },
+    async text() { return batchResponseBody(boundary, parts); }
+  };
+}
+
+// Montagem correta do corpo multipart da requisição: uma única chamada POST
+// para "$batch", com o boundary do header refletido no corpo, e uma
+// sub-requisição GET por item de `requests`.
+{
+  let batchCalls = 0;
+  let capturedUrl;
+  let capturedOptions;
+  const result = await batchGet(
+    [
+      { key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id&$top=10" },
+      { key: "extensoes", path: "/_api/web/lists/getbytitle('MSEExtensoes')/items?$select=Id&$top=10" }
+    ],
+    {
+      webUrl: "/teams/core-test",
+      boundaryImpl: () => "batch_fixo",
+      fetchImpl: async (url, options) => {
+        batchCalls += 1;
+        capturedUrl = url;
+        capturedOptions = options;
+        return batchResponse("batchresponse_fixo", [
+          { status: 200, body: { value: [{ Id: 1 }] } },
+          { status: 200, body: { value: [{ Id: 2 }] } }
+        ]);
+      }
+    }
+  );
+  assert.equal(batchCalls, 1);
+  assert.equal(capturedUrl, "/teams/core-test/_api/$batch");
+  assert.equal(capturedOptions.method, "POST");
+  assert.equal(capturedOptions.headers["Content-Type"], "multipart/mixed; boundary=batch_fixo");
+  assert.match(capturedOptions.body, /--batch_fixo\r\n/);
+  assert.match(capturedOptions.body, /GET \/teams\/core-test\/_api\/web\/lists\/getbytitle\('MSEMenu'\)\/items\?\$select=Id&\$top=10 HTTP\/1\.1/);
+  assert.match(capturedOptions.body, /GET \/teams\/core-test\/_api\/web\/lists\/getbytitle\('MSEExtensoes'\)\/items\?\$select=Id&\$top=10 HTTP\/1\.1/);
+  assert.match(capturedOptions.body, /--batch_fixo--/);
+  assert.deepEqual(result.menu, { data: { value: [{ Id: 1 }] }, status: 200 });
+  assert.deepEqual(result.extensoes, { data: { value: [{ Id: 2 }] }, status: 200 });
+
+  console.log("rest.test.js: batchGet monta o corpo multipart da requisição ok.");
+}
+
+// digest: quando informado, vai no header X-RequestDigest da chamada
+// externa POST .../_api/$batch — confirmado contra tenant real que, sem
+// esse header, o SharePoint responde HTTP 403 "security validation...
+// invalid" mesmo para um $batch "flat" só de GETs (ver nota no cabeçalho
+// de batchGet). Quando omitido, o comportamento de antes é preservado
+// (nenhum X-RequestDigest é enviado).
+{
+  let capturedOptionsWithDigest;
+  await batchGet(
+    [{ key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" }],
+    {
+      webUrl: "/teams/core-test",
+      boundaryImpl: () => "batch_digest",
+      digest: "digest-123",
+      fetchImpl: async (url, options) => {
+        capturedOptionsWithDigest = options;
+        return batchResponse("batchresponse_digest", [{ status: 200, body: { value: [] } }]);
+      }
+    }
+  );
+  assert.equal(capturedOptionsWithDigest.headers["X-RequestDigest"], "digest-123");
+
+  let capturedOptionsWithoutDigest;
+  await batchGet(
+    [{ key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" }],
+    {
+      webUrl: "/teams/core-test",
+      boundaryImpl: () => "batch_sem_digest",
+      fetchImpl: async (url, options) => {
+        capturedOptionsWithoutDigest = options;
+        return batchResponse("batchresponse_sem_digest", [{ status: 200, body: { value: [] } }]);
+      }
+    }
+  );
+  assert.equal("X-RequestDigest" in capturedOptionsWithoutDigest.headers, false);
+
+  await assert.rejects(
+    batchGet(
+      [{ key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" }],
+      { webUrl: "/teams/core-test", digest: "", fetchImpl: async () => batchResponse("b", [{ status: 200 }]) }
+    ),
+    (error) => error instanceof TypeError
+  );
+
+  console.log("rest.test.js: batchGet repassa digest opcional como X-RequestDigest ok.");
+}
+
+// Falha parcial: uma sub-requisição com status 404 não aborta o parse das
+// demais — cada entrada do mapa de retorno carrega seu próprio status.
+{
+  const result = await batchGet(
+    [
+      { key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" },
+      { key: "modulos", path: "/_api/web/lists/getbytitle('MSEModulos')/items?$select=Id" },
+      { key: "modulosMenu", path: "/_api/web/lists/getbytitle('MSEModulosMenu')/items?$select=Id" }
+    ],
+    {
+      webUrl: "/teams/core-test",
+      fetchImpl: async () => batchResponse("resp_boundary", [
+        { status: 404 },
+        { status: 200, body: { value: [{ Id: 10 }] } },
+        { status: 200, body: { value: [{ Id: 11 }] } }
+      ])
+    }
+  );
+  assert.equal(result.menu.status, 404);
+  assert.equal(result.modulos.status, 200);
+  assert.deepEqual(result.modulos.data, { value: [{ Id: 10 }] });
+  assert.equal(result.modulosMenu.status, 200);
+  assert.deepEqual(result.modulosMenu.data, { value: [{ Id: 11 }] });
+
+  console.log("rest.test.js: batchGet mapeia falha parcial sem abortar as demais ok.");
+}
+
+// Falha total do $batch (erro de rede): propaga SharePointRestError
+// "batch-failed", sem tentar parsear nada.
+await assert.rejects(
+  batchGet(
+    [{ key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" }],
+    {
+      webUrl: "/teams/core-test",
+      fetchImpl: async () => { throw new Error("falha de rede simulada."); }
+    }
+  ),
+  (error) => error instanceof SharePointRestError && error.code === "batch-failed"
+);
+
+// Falha total do $batch (resposta HTTP de nível superior não-200/207):
+// também propaga "batch-failed".
+await assert.rejects(
+  batchGet(
+    [{ key: "menu", path: "/_api/web/lists/getbytitle('MSEMenu')/items?$select=Id" }],
+    {
+      webUrl: "/teams/core-test",
+      fetchImpl: async () => ({
+        ok: false,
+        status: 500,
+        headers: { get: () => null },
+        async text() { return ""; }
+      })
+    }
+  ),
+  (error) => error instanceof SharePointRestError && error.code === "batch-failed" && error.status === 500
+);
 
 console.log("rest.test.js: verificações concluídas com sucesso.");

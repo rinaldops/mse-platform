@@ -18,16 +18,16 @@ const platformVersion = await packageVersion("package.json");
 if (version !== platformVersion) throw new Error(`A release deve usar a versão ${platformVersion} do package.json.`);
 const packages = {
   core: await packageVersion("core/package.json"),
-  ui: await packageVersion("modules/ui/package.json"),
-  forum: await packageVersion("modules/forum/package.json"),
-  "explore-mais": await packageVersion("modules/recursos/package.json"),
-  videoteca: await packageVersion("modules/videoteca/package.json"),
-  home: await packageVersion("modules/home/package.json"),
+  ui: await packageVersion("libraries/ui/package.json"),
+  forum: await packageVersion("modules/mod_forum/package.json"),
+  "explore-mais": await packageVersion("modules/mod_recursos/package.json"),
+  videoteca: await packageVersion("modules/mod_videoteca/package.json"),
+  home: await packageVersion("modules/mod_home/package.json"),
   admin: await packageVersion("admin/package.json"),
   "host-modern-script-editor": await packageVersion("host-adapters/modern-script-editor/package.json")
 };
 
-const roots = ["admin", "core", "host-adapters", "modules", "themes"];
+const roots = ["admin", "core", "host-adapters", "modules", "libraries", "themes"];
 const excludedDirectories = new Set(["demo", "snippets", "test", "tests", "node_modules"]);
 const excludedFiles = new Set(["core/core.js", "core/core.css", "core/theme-adapter.js"]);
 const allowedExtensions = new Set([".css", ".html", ".js", ".json"]);

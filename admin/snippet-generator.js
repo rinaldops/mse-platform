@@ -1,8 +1,8 @@
 const MODULE_PATHS = Object.freeze({
-  forum: "modules/forum/manifest.js",
-  videoteca: "modules/videoteca/manifest.js",
-  "explore-mais": "modules/recursos/manifest.js",
-  home: "modules/home/manifest.js",
+  forum: "modules/mod_forum/manifest.js",
+  videoteca: "modules/mod_videoteca/manifest.js",
+  "explore-mais": "modules/mod_recursos/manifest.js",
+  home: "modules/mod_home/manifest.js",
   "mse-admin": "admin/manifest.js"
 });
 

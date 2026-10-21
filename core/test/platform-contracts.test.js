@@ -13,10 +13,10 @@ import {
 } from "../../host-adapters/modern-script-editor/bootstrap.js";
 import sampleManifest from "../../examples/sample-module/manifest.js";
 import sampleSettings from "../../examples/sample-module/settings-schema.js";
-import forumManifestDefault, { FORUM_MANIFEST } from "../../modules/forum/manifest.js";
-import homeManifestDefault, { HOME_MANIFEST } from "../../modules/home/manifest.js";
-import recursosManifestDefault, { RECURSOS_MANIFEST } from "../../modules/recursos/manifest.js";
-import videotecaManifestDefault, { VIDEOTECA_MANIFEST } from "../../modules/videoteca/manifest.js";
+import forumManifestDefault, { FORUM_MANIFEST } from "../../modules/mod_forum/manifest.js";
+import homeManifestDefault, { HOME_MANIFEST } from "../../modules/mod_home/manifest.js";
+import recursosManifestDefault, { RECURSOS_MANIFEST } from "../../modules/mod_recursos/manifest.js";
+import videotecaManifestDefault, { VIDEOTECA_MANIFEST } from "../../modules/mod_videoteca/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });

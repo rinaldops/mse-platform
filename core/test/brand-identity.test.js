@@ -5,20 +5,20 @@ const cssFiles = [
   "../core.css",
   "../editor-quill.css",
   "../editor-summernote.css",
-  "../../modules/home/home.css",
-  "../../modules/forum/forum.css",
-  "../../modules/recursos/recursos.css",
-  "../../modules/videoteca/videoteca.css",
-  "../../modules/ui/accordion/accordion.css",
-  "../../modules/ui/carousel/carousel.css"
+  "../../modules/mod_home/home.css",
+  "../../modules/mod_forum/forum.css",
+  "../../modules/mod_recursos/recursos.css",
+  "../../modules/mod_videoteca/videoteca.css",
+  "../../libraries/ui/accordion/accordion.css",
+  "../../libraries/ui/carousel/carousel.css"
 ];
 const scriptFiles = [
   "../core.js",
   "../theme-adapter.js",
-  "../../modules/home/home-view.js",
-  "../../modules/forum/forum-data.js",
-  "../../modules/forum/forum-view.js",
-  "../../modules/videoteca/videoteca-view.js"
+  "../../modules/mod_home/home-view.js",
+  "../../modules/mod_forum/forum-data.js",
+  "../../modules/mod_forum/forum-view.js",
+  "../../modules/mod_videoteca/videoteca-view.js"
 ];
 const approvedColors = new Set([
   "#008542", "#FDC82F", "#FFFFFF", "#00B2A9", "#C4D600",

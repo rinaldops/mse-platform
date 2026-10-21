@@ -1,5 +1,6 @@
 # Local tool/runtime state
 .tmp/
+tmp/
 .vscode/
 node_modules/
 graphify-out/

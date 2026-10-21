@@ -12,10 +12,10 @@ Na raiz do repositório, com Node.js e npm disponíveis:
 
 ```powershell
 npm test
-npm --prefix modules/home test
-npm --prefix modules/forum test
-npm --prefix modules/recursos test
-npm --prefix modules/videoteca test
+npm --prefix modules/mod_home test
+npm --prefix modules/mod_forum test
+npm --prefix modules/mod_recursos test
+npm --prefix modules/mod_videoteca test
 $releaseVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
 $releaseOutput = Join-Path $env:TEMP ("mse-release-" + [guid]::NewGuid().ToString())
 node tools/build-release.js $releaseVersion $releaseOutput
@@ -69,9 +69,9 @@ A gravação usa ETag para recusar sobrescrita de edição concorrente.
 
 ## Conteúdo, dependências e validação
 
-Siga os guias de [Fórum](../modules/forum/USAGE.md),
-[Videoteca](../modules/videoteca/USAGE.md), [Explore Mais](../modules/recursos/USAGE.md)
-e [Home](../modules/home/USAGE.md). A Home gerada habilita os três módulos de
+Siga os guias de [Fórum](../modules/mod_forum/USAGE.md),
+[Videoteca](../modules/mod_videoteca/USAGE.md), [Explore Mais](../modules/mod_recursos/USAGE.md)
+e [Home](../modules/mod_home/USAGE.md). A Home gerada habilita os três módulos de
 conteúdo para métricas: prepare suas estruturas antes de abri-la.
 
 Valide MIME, CSP, imports, permissões, teclado, zoom e múltiplas instâncias.

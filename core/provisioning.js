@@ -1,14 +1,14 @@
 const DEFAULT_LIST_TITLE = "MSEConfiguracoes";
 const ADD_TO_ALL_CONTENT_TYPES_WITH_INTERNAL_NAME_HINT = 12;
-const CONFIGURATION_FIELDS = "Id,Title,Escopo,Modulo,TipoInstancia,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,Estado,Ativo";
+const CONFIGURATION_FIELDS = "Id,Title,Escopo,Modulo,TipoInstancia,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,Estado,Ativo,ExtensaoElemento";
 const CONFIGURATION_KEYS = new Set([
   "key", "scope", "module", "view", "layout", "theme", "configuration", "settingsVersion",
-  "moduleVersion", "state", "active"
+  "moduleVersion", "state", "active", "extensaoElemento"
 ]);
 const FORBIDDEN_JSON_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
-  version: 2,
+  version: 3,
   title: Object.freeze({
     internalName: "Title",
     displayName: "Chave",
@@ -23,8 +23,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Escopo",
       type: "Choice",
       required: true,
-      choices: Object.freeze(["Global", "Instancia"]),
-      schemaXml: "<Field Type='Choice' DisplayName='Escopo' Name='Escopo' StaticName='Escopo' Required='TRUE' Format='Dropdown'><CHOICES><CHOICE>Global</CHOICE><CHOICE>Instancia</CHOICE></CHOICES></Field>"
+      choices: Object.freeze(["Global", "Instancia", "Extensao"]),
+      schemaXml: "<Field Type='Choice' DisplayName='Escopo' Name='Escopo' StaticName='Escopo' Required='TRUE' Format='Dropdown'><CHOICES><CHOICE>Global</CHOICE><CHOICE>Instancia</CHOICE><CHOICE>Extensao</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
       internalName: "Modulo",
@@ -100,6 +100,18 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       required: true,
       indexed: true,
       schemaXml: "<Field Type='Boolean' DisplayName='Ativo' Name='Ativo' StaticName='Ativo' Required='TRUE' Indexed='TRUE'><Default>1</Default></Field>"
+    }),
+    Object.freeze({
+      internalName: "ExtensaoElemento",
+      displayName: "Elemento da extensão",
+      type: "Text",
+      required: false,
+      indexed: true,
+      // Identificador técnico da extensão (ex.: "forum"), preenchido apenas
+      // quando Escopo === "Extensao"; vazio/nulo nos demais escopos. Segue a
+      // mesma convenção de `MSE_EXTENSOES_SCHEMA.Elemento`
+      // (kernel/schemas/mse-extensoes.js).
+      schemaXml: "<Field Type='Text' DisplayName='Elemento da extensão' Name='ExtensaoElemento' StaticName='ExtensaoElemento' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
     })
   ])
 });
@@ -557,8 +569,8 @@ function validateEditableItem(item) {
     state: String(item.state || "Publicado")
   };
 
-  if (!new Set(["Global", "Instancia"]).has(normalized.scope)) {
-    throw provisioningError("invalid-item", "Escopo deve ser Global ou Instancia.");
+  if (!new Set(["Global", "Instancia", "Extensao"]).has(normalized.scope)) {
+    throw provisioningError("invalid-item", "Escopo deve ser Global, Instancia ou Extensao.");
   }
   if (!new Set(["Herdar", "Contained", "FullBleed"]).has(normalized.layout)) {
     throw provisioningError("invalid-item", "Layout deve ser Herdar, Contained ou FullBleed.");
@@ -584,11 +596,19 @@ function validateEditableItem(item) {
       throw provisioningError("invalid-item", "O registro Global deve usar a chave global.");
     }
     normalized.module = null;
+    normalized.extensaoElemento = null;
+  } else if (normalized.scope === "Extensao") {
+    if (normalized.key.toLowerCase() === "global") {
+      throw provisioningError("invalid-item", "A chave global é reservada.");
+    }
+    normalized.module = null;
+    normalized.extensaoElemento = validateName(normalized.extensaoElemento, "Elemento da extensão");
   } else {
     if (normalized.key.toLowerCase() === "global") {
       throw provisioningError("invalid-item", "A chave global é reservada.");
     }
     normalized.module = validateName(normalized.module, "Módulo");
+    normalized.extensaoElemento = null;
   }
   return normalized;
 }
@@ -634,6 +654,7 @@ async function readConfigurationItem({ webUrl, listTitle, itemId, fetchImpl }) {
     key: value.Title,
     scope: value.Escopo,
     module: value.Modulo || null,
+    extensaoElemento: value.ExtensaoElemento || null,
     view: value.TipoInstancia || "Full",
     layout: value.Layout,
     theme: value.Tema || null,
@@ -700,6 +721,7 @@ export async function listConfigurationItems({
     key: item.Title,
     scope: item.Escopo,
     module: item.Modulo || null,
+    extensaoElemento: item.ExtensaoElemento || null,
     view: item.TipoInstancia || "Full",
     layout: item.Layout,
     theme: item.Tema || null,
@@ -745,6 +767,7 @@ export async function createConfigurationItem({
       Title: normalized.key,
       Escopo: normalized.scope,
       Modulo: normalized.module,
+      ExtensaoElemento: normalized.extensaoElemento,
       TipoInstancia: normalized.view,
       Layout: normalized.layout,
       Tema: normalized.theme,
@@ -821,6 +844,7 @@ export async function updateConfigurationItem({
       Title: updated.key,
       Escopo: updated.scope,
       Modulo: updated.module,
+      ExtensaoElemento: updated.extensaoElemento,
       TipoInstancia: updated.view,
       Layout: updated.layout,
       Tema: updated.theme,
