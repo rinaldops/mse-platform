@@ -27,7 +27,7 @@ const packages = {
   "host-modern-script-editor": await packageVersion("host-adapters/modern-script-editor/package.json")
 };
 
-const roots = ["admin", "core", "host-adapters", "modules", "libraries", "themes"];
+const roots = ["admin", "core", "host-adapters", "modules", "libraries", "themes", "templates"];
 const excludedDirectories = new Set(["demo", "snippets", "test", "tests", "node_modules"]);
 const excludedFiles = new Set(["core/core.js", "core/core.css", "core/theme-adapter.js"]);
 const allowedExtensions = new Set([".css", ".html", ".js", ".json"]);

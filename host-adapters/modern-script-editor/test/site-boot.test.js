@@ -182,46 +182,49 @@ import {
   console.log("site-boot.test.js: createTemplateLayoutResolver adapta regions/component do template para positionElements/componentElement ok.");
 }
 
-// --- createTemplateLayoutResolver: theme.name ausente/vazio rejeita (não
-// decide o fallback para o layout neutro — isso é responsabilidade de
-// kernel/application.js, conforme o contrato definido para resolveLayout) --
+// --- createTemplateLayoutResolver: sem tema usa o template system padrão ---
 
 {
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const fallbackTemplate = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
   const resolveLayout = createTemplateLayoutResolver({
     releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
-    importModule: async () => { throw new Error("importModule não deveria ser chamado sem theme.name."); }
+    importModule: async (url) => { calls.push(url); return fallbackTemplate; }
   });
-
-  await assert.rejects(
-    resolveLayout({ root: {}, positions: [], componentPosition: "conteudo-principal", theme: undefined })
-  );
-  await assert.rejects(
-    resolveLayout({ root: {}, positions: [], componentPosition: "conteudo-principal", theme: {} })
-  );
-  await assert.rejects(
-    resolveLayout({ root: {}, positions: [], componentPosition: "conteudo-principal", theme: { name: "" } })
-  );
-
-  console.log("site-boot.test.js: createTemplateLayoutResolver rejeita quando theme.name está ausente/vazio (sem decidir fallback) ok.");
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: undefined });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/system/index.js"]);
+  console.log("site-boot.test.js: ausência de tema usa o template system padrão ok.");
 }
 
-// --- createTemplateLayoutResolver: módulo importado sem createTemplate()
-// rejeita com mensagem clara (isolado por kernel/application.js, que cai
-// para o layout neutro — não testado aqui, já coberto por
-// kernel/test/application.test.js) -----------------------------------------
+// --- template instalado inválido: tenta o template system como fallback ---
 
 {
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const fallbackTemplate = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
   const resolveLayout = createTemplateLayoutResolver({
     releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
-    importModule: async () => ({ /* sem createTemplate */ })
+    importModule: async (url) => {
+      calls.push(url);
+      if (url.endsWith("/tema-quebrado/index.js")) return {};
+      return fallbackTemplate;
+    }
   });
-
-  await assert.rejects(
-    resolveLayout({ root: {}, positions: [], componentPosition: "conteudo-principal", theme: { name: "tema-quebrado" } }),
-    /createTemplate/
-  );
-
-  console.log("site-boot.test.js: createTemplateLayoutResolver rejeita quando o pacote não exporta createTemplate() ok.");
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "tema-quebrado" } });
+  assert.deepEqual(calls, [
+    "/sites/demo/SiteAssets/mse-platform/current/templates/tema-quebrado/index.js",
+    "/sites/demo/SiteAssets/mse-platform/current/templates/system/index.js"
+  ]);
+  console.log("site-boot.test.js: template instalado inválido cai para o template system padrão ok.");
 }
 
 console.log("site-boot.test.js (host-adapters): verificações concluídas com sucesso.");

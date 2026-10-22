@@ -351,20 +351,30 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
  * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any> }} args
  * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string } }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }>}
  */
-export function createTemplateLayoutResolver({ releaseBase, templatePathByName = {}, importModule }) {
+export function createTemplateLayoutResolver({ releaseBase, templatePathByName = {}, importModule, defaultTemplateName = "system" }) {
   const resolveTemplateUrl = createTemplateResolver(releaseBase, templatePathByName);
   return async function resolveLayout({ root, positions, componentPosition, theme }) {
-    const nome = theme?.name;
-    if (typeof nome !== "string" || nome.trim() === "") {
-      throw new Error("Nenhum Template configurado (MSEConfiguracoes.Tema vazio) â€” caindo para o layout neutro.");
+    const requestedName = typeof theme?.name === "string" && theme.name.trim()
+      ? theme.name.trim()
+      : defaultTemplateName;
+    const candidates = requestedName === defaultTemplateName
+      ? [defaultTemplateName]
+      : [requestedName, defaultTemplateName];
+    let lastError;
+    for (const name of candidates) {
+      try {
+        const templateUrl = resolveTemplateUrl(name);
+        const templateModule = await importModule(templateUrl);
+        if (typeof templateModule.createTemplate !== "function") {
+          throw new TypeError(`Pacote de Template "${name}" (${templateUrl}) não exporta createTemplate().`);
+        }
+        const template = await templateModule.createTemplate({ root, positions, componentPosition });
+        return adaptTemplateToLayout(template, componentPosition);
+      } catch (error) {
+        lastError = error;
+      }
     }
-    const templateUrl = resolveTemplateUrl(nome);
-    const templateModule = await importModule(templateUrl);
-    if (typeof templateModule.createTemplate !== "function") {
-      throw new TypeError(`Pacote de Template "${nome}" (${templateUrl}) nÃ£o exporta createTemplate().`);
-    }
-    const template = await templateModule.createTemplate({ root, positions, componentPosition });
-    return adaptTemplateToLayout(template, componentPosition);
+    throw new Error(`Nenhum Template disponível; fallback neutro aplicado pelo kernel. Causa: ${lastError?.message ?? "desconhecida"}`);
   };
 }
 
