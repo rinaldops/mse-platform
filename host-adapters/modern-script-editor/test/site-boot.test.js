@@ -182,7 +182,8 @@ import {
   console.log("site-boot.test.js: createTemplateLayoutResolver adapta regions/component do template para positionElements/componentElement ok.");
 }
 
-// --- createTemplateLayoutResolver: sem tema usa o template system padrão ---
+// --- createTemplateLayoutResolver: sem tema configurado usa mse-default
+// (2º nível do fallback de 3 níveis) antes de system (3º nível) -----------
 
 {
   const calls = [];
@@ -197,16 +198,17 @@ import {
     importModule: async (url) => { calls.push(url); return fallbackTemplate; }
   });
   await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: undefined });
-  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/system/index.js"]);
-  console.log("site-boot.test.js: ausência de tema usa o template system padrão ok.");
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/mse-default/index.js"]);
+  console.log("site-boot.test.js: ausência de tema usa mse-default (2º nível) antes de system ok.");
 }
 
-// --- template instalado inválido: tenta o template system como fallback ---
+// --- createTemplateLayoutResolver: template do site falha -> cai em
+// mse-default; mse-default também falha -> cai em system (3 níveis) -------
 
 {
   const calls = [];
   const fallbackRoot = { id: "fallback-root" };
-  const fallbackTemplate = {
+  const systemTemplate = {
     async createTemplate({ root: receivedRoot }) {
       return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
     }
@@ -216,15 +218,139 @@ import {
     importModule: async (url) => {
       calls.push(url);
       if (url.endsWith("/tema-quebrado/index.js")) return {};
-      return fallbackTemplate;
+      if (url.endsWith("/mse-default/index.js")) throw new Error("mse-default indisponível neste teste");
+      return systemTemplate;
     }
   });
   await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "tema-quebrado" } });
   assert.deepEqual(calls, [
     "/sites/demo/SiteAssets/mse-platform/current/templates/tema-quebrado/index.js",
+    "/sites/demo/SiteAssets/mse-platform/current/templates/mse-default/index.js",
     "/sites/demo/SiteAssets/mse-platform/current/templates/system/index.js"
   ]);
-  console.log("site-boot.test.js: template instalado inválido cai para o template system padrão ok.");
+  console.log("site-boot.test.js: template do site inválido cai em mse-default, e esse também falhando cai em system ok.");
+}
+
+// --- createTemplateLayoutResolver: template do site falha mas mse-default
+// monta com sucesso -> system nem é tentado ---------------------------------
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const mseDefaultTemplate = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async (url) => {
+      calls.push(url);
+      if (url.endsWith("/tema-quebrado/index.js")) return {};
+      return mseDefaultTemplate;
+    }
+  });
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "tema-quebrado" } });
+  assert.deepEqual(calls, [
+    "/sites/demo/SiteAssets/mse-platform/current/templates/tema-quebrado/index.js",
+    "/sites/demo/SiteAssets/mse-platform/current/templates/mse-default/index.js"
+  ]);
+  console.log("site-boot.test.js: mse-default montando com sucesso evita tentar system ok.");
+}
+
+// --- createTemplateResolver: platformTemplateBase resolve mse-default/system
+// contra a base do mse-platform, mesmo com releaseBase diferente (pacote do
+// site consumidor) — ver createTemplateLayoutResolver#platformTemplateNames -
+
+{
+  const resolve = createTemplateResolver(
+    "/sites/demo/SiteAssets/camap-agp-modules/0.1.0",
+    {},
+    {
+      platformTemplateBase: "/sites/demo/SiteAssets/mse-platform/current",
+      platformTemplateNames: ["mse-default", "system"]
+    }
+  );
+  assert.equal(
+    resolve("camap-tema-01"),
+    "/sites/demo/SiteAssets/camap-agp-modules/0.1.0/templates/camap-tema-01/index.js"
+  );
+  assert.equal(
+    resolve("mse-default"),
+    "/sites/demo/SiteAssets/mse-platform/current/templates/mse-default/index.js"
+  );
+  assert.equal(
+    resolve("system"),
+    "/sites/demo/SiteAssets/mse-platform/current/templates/system/index.js"
+  );
+  console.log("site-boot.test.js: createTemplateResolver com platformTemplateBase resolve mse-default/system contra a base da plataforma ok.");
+}
+
+// --- createTemplateLayoutResolver: template do site resolve contra
+// releaseBase, mse-default/system resolvem contra platformTemplateBase -----
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const template = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/camap-agp-modules/0.1.0",
+    platformTemplateBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async (url) => { calls.push(url); return template; }
+  });
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "camap-tema-01" } });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/camap-agp-modules/0.1.0/templates/camap-tema-01/index.js"]);
+  console.log("site-boot.test.js: template do site com platformTemplateBase informado resolve contra releaseBase ok.");
+}
+
+// --- createTemplateLayoutResolver: loadTemplateStyles (MSETemplateStyles,
+// ClientId="Site", Home=true) tem precedência sobre theme.name (fallback de
+// compatibilidade, MSEConfiguracoes.Tema) --------------------------------
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const template = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async (url) => { calls.push(url); return template; },
+    loadTemplateStyles: async () => [
+      { Template: "camap-tema-01", ClientId: "Site", Home: true },
+      { Template: "admin-formal", ClientId: "Administrator", Home: true }
+    ]
+  });
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "tema-legado-ignorado" } });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
+  console.log("site-boot.test.js: loadTemplateStyles (MSETemplateStyles) tem precedência sobre theme.name ok.");
+}
+
+// --- createTemplateLayoutResolver: loadTemplateStyles sem linha Home=true
+// (ou ausente/rejeitando) cai no fallback de compatibilidade theme.name ----
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const template = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async (url) => { calls.push(url); return template; },
+    loadTemplateStyles: async () => { throw new Error("MSETemplateStyles ainda não provisionada neste site"); }
+  });
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "camap-tema-01" } });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
+  console.log("site-boot.test.js: loadTemplateStyles indisponível cai no fallback de compatibilidade theme.name ok.");
 }
 
 console.log("site-boot.test.js (host-adapters): verificações concluídas com sucesso.");

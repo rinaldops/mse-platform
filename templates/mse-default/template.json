@@ -1,0 +1,15 @@
+{
+  "name": "mse-default",
+  "version": "0.1.0",
+  "title": "Mini Joomla! — Template padrão",
+  "description": "Template padrão/fallback de 2º nível do Site Kernel, shipped pela plataforma (mse-platform), layout genérico inspirado no template padrão do Joomla! original.",
+  "type": "site-template",
+  "entrypoint": "./index.js",
+  "styles": ["./css/template.css"],
+  "positions": ["topo", "menu-principal", "breadcrumbs", "lateral", "rodape"],
+  "componentPosition": "conteudo-principal",
+  "language": "pt-BR",
+  "status": "active",
+  "scope": "platform",
+  "runtime": { "router": "kernel", "data": "sharepoint", "acl": "sharepoint", "templates": "platform-default" }
+}

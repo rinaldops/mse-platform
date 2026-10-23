@@ -103,12 +103,25 @@ const FILES = [
   "kernel/schemas/mse-modules.js",
   "kernel/schemas/mse-menu-types.js",
   "kernel/schemas/mse-modules-menu.js",
+  "kernel/schemas/mse-template-styles.js",
   "kernel/installer.js",
+  "kernel/template-registry.js",
   "core/list-provisioning.js",
+  // Templates shipped pela PLATAFORMA (fallback de 2º/3º nível — ver
+  // site-boot.js#createTemplateLayoutResolver): carregados em runtime pelo
+  // navegador via import() dinâmico, mesmo mecanismo de qualquer Template
+  // real, então precisam ser publicados aqui (pacote do mse-platform), não
+  // no pacote de nenhum site consumidor.
+  "templates/mse-default/index.js",
+  "templates/mse-default/template.json",
+  "templates/mse-default/css/template.css",
+  "templates/system/index.js",
+  "templates/system/template.css",
   "components/com_cpanel/manifest.js",
   "components/com_cpanel/component.js",
   "components/com_cpanel/router.js",
   "components/com_cpanel/administrator.css",
+  "components/com_cpanel/administrator-shell.js",
   "components/com_cpanel/control-panel.js",
   "components/com_extensions/extensions-screen.js",
   "components/com_extensions/extensions-editor.js",
@@ -119,8 +132,13 @@ const FILES = [
   "components/com_config/config-screen.js",
   "components/com_config/config-editor.js",
   "components/com_installer/installer-screen.js",
+  "components/com_templates/templates-screen.js",
+  "components/com_templates/templates-editor.js",
   "components/com_content/publisher.js",
   "components/com_content/publisher-filters.js",
+  "components/com_diagnostics/diagnostics.js",
+  "kernel/administrator-diagnostics.js",
+  "kernel/administrator-permissions.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

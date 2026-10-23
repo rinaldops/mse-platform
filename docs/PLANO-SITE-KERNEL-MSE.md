@@ -28,12 +28,25 @@ Os identificadores técnicos existentes (`forum`, `explore-mais`, `view: "summar
 
 ## 3. Restrições e compatibilidade
 
-- **Escopo imposto:** Templates em escopo mínimo (1 template ativo por site,
-  trocável via `MSEConfiguracoes.Tema` — sem atribuição por item de menu, sem
-  overrides de view/layout) e sem ACL. Posições continuam declaradas pelo
+- **Escopo de Templates (revisto 22/10/2026):** deixou de ser "1 template
+  ativo por site, trocável só via `MSEConfiguracoes.Tema`". Agora existe um
+  registro de templates instalados análogo ao Joomla! (`MSEExtensions`
+  `Type=Template` + `MSETemplateStyles` ≈ `#__template_styles`), um
+  fallback de 3 níveis (template do site configurado em `MSETemplateStyles`
+  → `mse-default`, template padrão **da plataforma**, layout genérico
+  inspirado no template padrão do Joomla! → `system`, fallback técnico
+  mínimo) e uma tela do Administrator (`com_templates`) para trocar o
+  template padrão por `ClientId` sem editar texto cru. `MSEConfiguracoes.Tema`
+  continua existindo só como fallback de compatibilidade enquanto
+  `MSETemplateStyles` não tiver uma linha `Home=true` para o site. O que
+  continua fora de escopo: atribuição de template por item de menu e
+  overrides de view/layout (`templates/<t>/html/<view>`). Um único template
+  formal de Administrator existe (`components/com_cpanel/
+  administrator-shell.js`, análogo ao `atum`) — não é um sistema de
+  múltiplos temas de admin instaláveis. Posições continuam declaradas pelo
   site; o visual é CSS do template ativo (ou do layout neutro de
-  `kernel/layout.js` quando nenhum template está configurado). Permissões
-  continuam nativas do SharePoint.
+  `kernel/layout.js` se os 3 níveis de fallback falharem). ACL próprio
+  continua fora de escopo. Permissões continuam nativas do SharePoint.
 - **Rompimento com o TD nesta versão.** O Mini Joomla! não tem como requisito
   manter compatibilidade com a arquitetura, snippets, releases ou pastas do
   projeto TD. O TD não é alterado nem migrado nesta etapa, mas também não é
@@ -118,7 +131,7 @@ mse-platform/
 | com_installer | `admin/installer.js` (inspect/apply/verify) | melhorar |
 | Plugins/eventos | `events.js` mínimo agora; plugins depois | criar (mínimo) |
 | Histórico de versões | versionamento nativo da lista + restaurar | melhorar |
-| **Templates** | `kernel/application.js#resolveLayout` + `MSEConfiguracoes.Tema` | mínimo: 1 template ativo por site, trocável (sem atribuição por menu, sem overrides) |
+| **Templates** | `kernel/application.js#resolveLayout` + `MSETemplateStyles`/`MSEExtensions` + `com_templates` | registro de templates instalados + fallback de 3 níveis (site → `mse-default` → `system`), 22/10/2026 (sem atribuição por item de menu, sem overrides de view) |
 | **ACL** | — | **fora de escopo** |
 | Campos personalizados, workflow, multilíngue, busca, banners, redirecionamentos | — | adiado (não descartado) |
 
@@ -251,6 +264,57 @@ para a Fase 4, por depender de dados reais do tenant.
   ser registrado aqui.
 - Ao diagnosticar assets desatualizados, distinguir cache do navegador,
   Service Worker e conteúdo servido antes de alterar o kernel.
+
+Publicação, configuração e evidências de produção pertencem ao registro
+privado do consumidor. Este documento não comprova aceite em tenant.
+
+**Sistema de Templates (registro + fallback de 3 níveis) e template formal
+do Administrator — implementação local (22/10/2026):**
+
+- `kernel/schemas/mse-template-styles.js` (`MSE_TEMPLATE_STYLES_SCHEMA`) ≈
+  `#__template_styles`; `kernel/schemas/mse-extensions.js#Type` ganhou o
+  valor `"Template"`; `kernel/installer.js#KERNEL_LIST_SCHEMAS` passou a
+  gerir 6 listas. `kernel/template-registry.js` (puro, sem rede) resolve o
+  template ativo por `ClientId`/`Home=true` a partir de um snapshot já
+  carregado.
+- `host-adapters/modern-script-editor/site-boot.js#createTemplateLayoutResolver`
+  monta, por navegação, até 3 candidatos em ordem — o nome do site (se
+  resolvido via `MSETemplateStyles`, senão via `MSEConfiguracoes.Tema`),
+  depois `"mse-default"`, depois `"system"` — e tenta cada um; o primeiro
+  que montar com sucesso vira o layout; `kernel/application.js` continua
+  com seu próprio fallback final para o layout neutro, intacto, só
+  acionado se os 3 níveis falharem. `createTemplateResolver` resolve
+  `mse-default`/`system` contra uma base própria da PLATAFORMA
+  (`platformTemplateBase`), nunca contra o `releaseBase` do site
+  consumidor.
+- `templates/mse-default/` (novo pacote do mse-platform) — layout genérico
+  inspirado no template padrão do Joomla! (header/nav, breadcrumbs, grade
+  de posições, rodapé), sem identidade visual de nenhum consumidor; mesmo
+  contrato `createTemplate({root, positions, componentPosition})` de
+  `camap-tema-01`/`system`.
+- `components/com_templates/` (`templates-screen.js` + `templates-editor.js`)
+  — tela do Administrator para listar templates instalados e marcar qual é
+  o padrão (`Home=true`) por `ClientId`; grava o novo `Home=true` antes de
+  limpar os antigos, nunca deixando uma janela sem nenhum padrão marcado.
+- `components/com_cpanel/administrator-shell.js` — template formal único
+  do Administrator (cabeçalho + navegação lateral persistente + slot de
+  conteúdo), análogo ao `atum` do Joomla! real; `component.js#mount` monta
+  o shell uma vez por navegação e injeta a tela ativa em
+  `shell.contentElement`, substituindo o `<section class="mse-administrator__panel">`
+  que cada `*-screen.js` desenhava isolado.
+- `tools/migrate-create-template-styles.js` — migração idempotente (mesmo
+  padrão `buildX()`/`migrateX({client, listIds, confirm})`, nunca grava sem
+  `confirm`) que semeia `MSETemplateStyles`/`MSEExtensions Type=Template`
+  para os templates já conhecidos (`camap-tema-01` como `Home=true`,
+  `mse-default`/`system` como `Home=false`), preservando o Tema 1 como
+  template ativo real — nenhuma mudança visual na Home de nenhum site.
+- `tools/prepare-site-kernel.js#FILES` publica todas as peças novas
+  (schemas, `template-registry.js`, `templates/mse-default/*`,
+  `templates/system/*`, `components/com_templates/*`,
+  `components/com_cpanel/administrator-shell.js`) junto do pacote do
+  mse-platform.
+- Ver `CONVENCAO-JOOMLA.md` seções 1 e 4 para a tabela de equivalência
+  completa (`MSETemplateStyles` ≈ `#__template_styles`).
 
 Publicação, configuração e evidências de produção pertencem ao registro
 privado do consumidor. Este documento não comprova aceite em tenant.

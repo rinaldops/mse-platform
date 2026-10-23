@@ -9,6 +9,20 @@
    a preservar (o nome antigo nunca foi aplicado por nenhum outro CSS do
    kernel). */
 .mse-administrator { color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
+
+/* Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
+   análogo ao template de backend `atum` do Joomla! real): cabeçalho +
+   navegação lateral persistente + slot de conteúdo. */
+.mse-administrator-shell__header { display: flex; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--camap-line, #75787B); background: var(--camap-ocean, #006298); }
+.mse-administrator-shell__brand { color: var(--camap-white, #FFFFFF); font-size: 1.1rem; }
+.mse-administrator-shell__body { display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr); gap: 0; align-items: start; }
+.mse-administrator-shell__nav { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-right: 1px solid var(--camap-line, #75787B); }
+.mse-administrator-shell__nav a { display: block; padding: 10px 12px; border: 1px solid transparent; color: var(--camap-ocean, #006298); text-decoration: none; }
+.mse-administrator-shell__nav a[aria-current="page"] { border-color: var(--camap-line, #75787B); font-weight: 700; }
+.mse-administrator-shell__nav a:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator-shell__content { min-width: 0; }
+@media (max-width: 700px) { .mse-administrator-shell__body { grid-template-columns: 1fr; } .mse-administrator-shell__nav { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--camap-line, #75787B); } }
+
 .mse-administrator__panel { width: min(100% - 48px, 1200px); margin-inline: auto; padding: 32px 0; }
 .mse-administrator__panel h1 { color: var(--camap-ocean, #006298); }
 .mse-administrator__panel nav { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }

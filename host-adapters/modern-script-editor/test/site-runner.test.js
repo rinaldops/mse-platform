@@ -137,4 +137,32 @@ async function runWithAttributes(attributes) {
   console.log("site-runner.test.js: data-template-path-overrides malformado degrada para {} sem lançar ok.");
 }
 
+// (4) data-platform-template-base (22/10/2026, fallback de 3 níveis) chega
+// intacto a bootSiteKernel; ausente -> platformTemplateBase === undefined
+// (comportamento prévio preservado, sem regressão).
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/camap-agp-modules/0.1.0",
+    "data-positions": "hero,rodape",
+    "data-platform-template-base": "https://example.invalid/SiteAssets/mse-platform/current"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.equal(
+    captured.bootOptions.platformTemplateBase,
+    "https://example.invalid/SiteAssets/mse-platform/current",
+    "data-platform-template-base deve chegar intacto em bootSiteKernel({ platformTemplateBase })"
+  );
+  console.log("site-runner.test.js: data-platform-template-base chega a bootSiteKernel({ platformTemplateBase }) ok.");
+}
+
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/mse-platform/current",
+    "data-positions": "hero,rodape"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.equal(captured.bootOptions.platformTemplateBase, undefined, "sem o atributo, platformTemplateBase deve ser undefined");
+  console.log("site-runner.test.js: sem data-platform-template-base, platformTemplateBase é undefined (sem regressão) ok.");
+}
+
 console.log("site-runner.test.js: verificações concluídas com sucesso.");
