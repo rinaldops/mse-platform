@@ -8,13 +8,68 @@
 // Regressão 22/10/2026: este `<nav>` tinha sido removido daqui ao
 // introduzir o shell, com a suposição incorreta de que a navegação lateral
 // já cobria esse papel — restaurado.
-import { ADMINISTRATOR_NAV_LINKS } from "./administrator-shell.js";
+//
+// Redesenho visual (ver docs/PROMPT-REDESIGN-VISUAL-ADMINISTRATOR.md):
+// cada card ganhou um ícone (reaproveita exatamente os mesmos SVGs inline
+// de administrator-shell.js, pela mesma opção) e uma frase curta de
+// descrição — só marcação/apresentação nova, nenhum link adicionado além
+// dos 8 que já existiam (todas as opções de ADMINISTRATOR_NAV_LINKS exceto
+// com_cpanel, exatamente como antes).
+import { ADMINISTRATOR_NAV_LINKS, ADMINISTRATOR_NAV_ICON_PATHS } from "./administrator-shell.js";
+
+const CARD_DESCRIPTIONS = Object.freeze({
+  com_config: "Ajustes globais de layout, tema e comportamento do site.",
+  com_diagnostics: "Verifica a saúde estrutural do site e permissões efetivas.",
+  com_content: "Cria, edita e publica artigos do site.",
+  com_extensions: "Gerencia componentes, módulos, plugins e templates instalados.",
+  com_menus: "Organiza os itens de menu e a navegação do site.",
+  com_modules: "Posiciona e configura instâncias de módulo nas páginas.",
+  com_templates: "Escolhe o template ativo do site.",
+  com_installer: "Inspeciona, verifica e aplica o provisionamento das listas do kernel."
+});
+
+function cardIcon(document, option) {
+  const paths = ADMINISTRATOR_NAV_ICON_PATHS[option];
+  if (!paths) return null;
+  const span = document.createElement("span");
+  span.className = "mse-administrator__card-icon";
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+  return span;
+}
 
 export function renderControlPanel({ root } = {}) {
-  const document = root.ownerDocument; const panel = document.createElement("section"); panel.className = "mse-administrator__panel";
-  const title = document.createElement("h1"); title.textContent = "Administrator";
-  const intro = document.createElement("p"); intro.textContent = "Painel de administração do Mini Joomla!";
-  const nav = document.createElement("nav"); nav.setAttribute("aria-label", "Administração");
-  ADMINISTRATOR_NAV_LINKS.filter(([option]) => option !== "com_cpanel").forEach(([option, label]) => { const a=document.createElement("a"); a.href=`#/administrator?option=${option}`; a.textContent=label; nav.append(a); });
-  panel.append(title, intro, nav); root.append(panel); return { dispose() { panel.remove(); } };
+  const document = root.ownerDocument;
+  const panel = document.createElement("section");
+  panel.className = "mse-administrator__panel";
+  const title = document.createElement("h1");
+  title.textContent = "Administrator";
+  const intro = document.createElement("p");
+  intro.className = "mse-administrator__hint";
+  intro.textContent = "Painel de administração do Mini Joomla!";
+  const nav = document.createElement("nav");
+  nav.className = "mse-administrator__cards";
+  nav.setAttribute("aria-label", "Administração");
+  ADMINISTRATOR_NAV_LINKS.filter(([option]) => option !== "com_cpanel").forEach(([option, label]) => {
+    const a = document.createElement("a");
+    a.className = "mse-administrator__card";
+    a.href = `#/administrator?option=${option}`;
+    const icon = cardIcon(document, option);
+    if (icon) a.append(icon);
+    const heading = document.createElement("strong");
+    heading.className = "mse-administrator__card-title";
+    heading.textContent = label;
+    a.append(heading);
+    const description = CARD_DESCRIPTIONS[option];
+    if (description) {
+      const descriptionNode = document.createElement("span");
+      descriptionNode.className = "mse-administrator__card-description";
+      descriptionNode.textContent = description;
+      a.append(descriptionNode);
+    }
+    nav.append(a);
+  });
+  panel.append(title, intro, nav);
+  root.append(panel);
+  return { dispose() { panel.remove(); } };
 }

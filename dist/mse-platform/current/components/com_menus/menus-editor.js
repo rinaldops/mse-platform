@@ -76,9 +76,16 @@ export function renderMenusEditor({ root, services = {} } = {}) {
     table.append(head);
     for (const item of items) {
       const row = document.createElement("tr");
-      for (const value of [item.Title, item.Alias, item.MenuType, item.ParentId, item.Path, item.Level, item.Ordering, item.Component, item.View, item.ParamsJson, item.Default ? "Sim" : "Não", item.Target, item.Published]) {
+      for (const value of [item.Title, item.Alias, item.MenuType, item.ParentId, item.Path, item.Level, item.Ordering, item.Component, item.View, item.ParamsJson]) {
         row.append(text(document, "td", String(value ?? "")));
       }
+      const defaultCell = text(document, "td", item.Default ? "Sim" : "Não");
+      defaultCell.className = `mse-administrator__status-cell ${item.Default ? "mse-administrator__status-cell--ok" : "mse-administrator__status-cell--muted"}`;
+      row.append(defaultCell);
+      row.append(text(document, "td", String(item.Target ?? "")));
+      const publishedCell = text(document, "td", String(item.Published ?? ""));
+      publishedCell.className = `mse-administrator__status-cell ${item.Published === "Published" ? "mse-administrator__status-cell--ok" : item.Published === "Trashed" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`;
+      row.append(publishedCell);
       const actions = document.createElement("td");
       const edit = text(document, "button", "Editar");
       bindClick(edit, () => { currentId = item.Id; form(item); });

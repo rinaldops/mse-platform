@@ -12,6 +12,7 @@ export function renderDiagnosticsScreen({ root, services = {} } = {}) {
   panel.append(text(document, "h1", "Diagnóstico estrutural"));
   const summary = text(document, "p", "Carregando diagnóstico...");
   const list = document.createElement("ul");
+  list.className = "mse-administrator__issues";
   panel.append(summary, list);
   const permissionHost = document.createElement("div");
   permissionHost.className = "mse-administrator__permissions";
@@ -26,6 +27,7 @@ export function renderDiagnosticsScreen({ root, services = {} } = {}) {
     if (list.replaceChildren) list.replaceChildren(); else list.children.length = 0;
     for (const issue of result.issues) {
       const item = text(document, "li", `[${issue.severity}] ${issue.message}`);
+      item.className = `mse-administrator__issue mse-administrator__issue--${issue.severity === "error" ? "error" : "warning"}`;
       item.dataset.code = issue.code;
       list.append(item);
     }

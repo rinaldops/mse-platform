@@ -91,7 +91,9 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
       const row = document.createElement("tr");
       row.append(node(document, "td", String(style.Title ?? "")));
       row.append(node(document, "td", String(style.Template ?? "")));
-      row.append(node(document, "td", style.Home ? "Sim" : "Não"));
+      const homeCell = node(document, "td", style.Home ? "Sim" : "Não");
+      homeCell.className = `mse-administrator__status-cell ${style.Home ? "mse-administrator__status-cell--ok" : "mse-administrator__status-cell--muted"}`;
+      row.append(homeCell);
       const actions = document.createElement("td");
       const makeDefaultButton = node(document, "button", "Tornar padrão");
       makeDefaultButton.disabled = Boolean(style.Home);

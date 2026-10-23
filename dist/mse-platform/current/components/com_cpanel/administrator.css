@@ -7,47 +7,172 @@
    diferente das cores, não há `--camap-font-family` em
    CAMAP-AGP/theme/tokens.css para herdar, então aqui não há regressão visual
    a preservar (o nome antigo nunca foi aplicado por nenhum outro CSS do
-   kernel). */
-.mse-administrator { color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
+   kernel).
 
-/* Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
+   Redesenho visual (ver docs/PROMPT-REDESIGN-VISUAL-ADMINISTRATOR.md):
+   escopo 100% apresentação — nenhuma classe/seletor exigido pelos testes
+   automatizados (ver cada `components/com_*/test/*.test.js`) foi removido
+   ou renomeado, só expandido com seletores NOVOS (ex. `__status-cell`,
+   `__cards`, shell `__nav-icon`). SÓ os 8 nomes de token já existentes em
+   CAMAP-AGP/theme/tokens.css são usados (--camap-ocean/green/teal/sun/white/
+   line/grey-light/hover) — nenhum nome novo foi inventado, porque
+   `administrator-css.test.js` (3) falha se um nome usado aqui não existir
+   lá. Cantos retos em toda superfície estrutural/controle (cards, tabelas,
+   botões, campos) — nenhuma borda arredondada em lugar nenhum deste
+   arquivo, conforme o guia de identidade visual corporativo em vigor
+   ("Seções estruturais, cards, tabelas, boxes, botões e campos são
+   retangulares e têm cantos retos") — nenhuma exceção documentada foi
+   aberta para esta tarefa. Sombras/brilhos evitados (mesmo documento: "Evitar
+   sombras, reflexos, brilhos e efeitos decorativos exagerados") — hierarquia
+   visual vem de espaço, borda e cor sólida, não de `box-shadow`. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.mse-administrator { color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); font-family: -apple-system, "Segoe UI", Arial, sans-serif; line-height: 1.5; }
+
+/* --- Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
    análogo ao template de backend `atum` do Joomla! real): cabeçalho +
-   navegação lateral persistente + slot de conteúdo. */
-.mse-administrator-shell__header { display: flex; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--camap-line, #75787B); background: var(--camap-ocean, #006298); }
-.mse-administrator-shell__brand { color: var(--camap-white, #FFFFFF); font-size: 1.1rem; }
-.mse-administrator-shell__body { display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr); gap: 0; align-items: start; }
-.mse-administrator-shell__nav { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-right: 1px solid var(--camap-line, #75787B); }
-.mse-administrator-shell__nav a { display: block; padding: 10px 12px; border: 1px solid transparent; color: var(--camap-ocean, #006298); text-decoration: none; }
-.mse-administrator-shell__nav a[aria-current="page"] { border-color: var(--camap-line, #75787B); font-weight: 700; }
-.mse-administrator-shell__nav a:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+   navegação lateral persistente + slot de conteúdo. ----------------------- */
+
+.mse-administrator-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 4px solid var(--camap-sun, #FDC82F);
+  background: var(--camap-ocean, #006298);
+}
+.mse-administrator-shell__brand { display: flex; align-items: center; gap: 10px; color: var(--camap-white, #FFFFFF); font-size: 1.15rem; }
+.mse-administrator-shell__brand-icon { display: inline-flex; width: 26px; height: 26px; color: var(--camap-sun, #FDC82F); }
+.mse-administrator-shell__brand-icon svg { width: 100%; height: 100%; }
+.mse-administrator-shell__brand-label { font-weight: 700; letter-spacing: .02em; }
+.mse-administrator-shell__tagline { color: var(--camap-white, #FFFFFF); font-size: .8rem; opacity: .85; }
+
+.mse-administrator-shell__body { display: grid; grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); gap: 0; align-items: start; }
+
+.mse-administrator-shell__nav { display: flex; flex-direction: column; gap: 2px; padding: 16px 12px; border-right: 1px solid var(--camap-grey-light, #E3E9ED); background: var(--camap-white, #FFFFFF); }
+.mse-administrator-shell__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-left: 4px solid transparent;
+  color: var(--camap-ocean, #006298);
+  font-weight: 600;
+  text-decoration: none;
+}
+.mse-administrator-shell__nav-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; }
+.mse-administrator-shell__nav-icon svg { width: 100%; height: 100%; }
+.mse-administrator-shell__nav-label { min-width: 0; }
+.mse-administrator-shell__nav-link:hover { background: var(--camap-hover, #F2F7FA); }
+.mse-administrator-shell__nav-link[aria-current="page"] { background: var(--camap-hover, #F2F7FA); border-color: var(--camap-grey-light, #E3E9ED); border-left-color: var(--camap-sun, #FDC82F); font-weight: 700; }
+.mse-administrator-shell__nav-link:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+
 .mse-administrator-shell__content { min-width: 0; }
-@media (max-width: 700px) { .mse-administrator-shell__body { grid-template-columns: 1fr; } .mse-administrator-shell__nav { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--camap-line, #75787B); } }
+
+@media (max-width: 700px) {
+  .mse-administrator-shell__body { grid-template-columns: 1fr; }
+  .mse-administrator-shell__nav { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--camap-grey-light, #E3E9ED); }
+  .mse-administrator-shell__tagline { display: none; }
+}
+
+/* --- Painel genérico (section.mse-administrator__panel), título ---------- */
 
 .mse-administrator__panel { width: min(100% - 48px, 1200px); margin-inline: auto; padding: 32px 0; }
-.mse-administrator__panel h1 { color: var(--camap-ocean, #006298); }
-.mse-administrator__panel nav { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.mse-administrator__panel nav a { display: block; padding: 16px; border: 1px solid var(--camap-line, #75787B); color: var(--camap-ocean, #006298); background: var(--camap-white, #FFFFFF); text-decoration: none; }
-.mse-administrator__panel nav a:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator__panel h1 { color: var(--camap-ocean, #006298); padding-bottom: 12px; margin-bottom: 8px; border-bottom: 2px solid var(--camap-grey-light, #E3E9ED); }
+.mse-administrator__panel h2 { color: var(--camap-ocean, #006298); margin-top: 28px; }
+.mse-administrator__hint { color: var(--camap-line, #75787B); margin-top: 0; }
 
-.mse-administrator__table { width:100%; border-collapse:collapse; margin-top:20px; background:var(--camap-white,#FFFFFF); }
-.mse-administrator__table th, .mse-administrator__table td { border:1px solid var(--camap-line,#75787B); padding:10px 12px; text-align:left; vertical-align:top; }
-.mse-administrator__table th { background:var(--camap-ocean,#006298); color:var(--camap-white,#FFFFFF); }
-.mse-administrator__table button, .mse-administrator__toolbar button, .mse-administrator__actions button { min-height:36px; margin:3px; padding:7px 12px; border:1px solid var(--camap-green,#008542); background:var(--camap-green,#008542); color:var(--camap-white,#FFFFFF); cursor:pointer; }
-.mse-administrator__publisher-list { overflow-x:auto; }
-.mse-administrator__toolbar { display:flex; gap:8px; margin:16px 0; }
-.mse-administrator__publisher-form { border-top:3px solid var(--camap-green,#008542); margin-top:24px; padding-top:20px; }
-.mse-administrator__form { display:grid; gap:14px; max-width:860px; }
-.mse-administrator__field { display:grid; gap:6px; }
-.mse-administrator__field label { color:var(--camap-ocean,#006298); font-weight:700; }
-.mse-administrator__field input, .mse-administrator__field textarea, .mse-administrator__field select { width:100%; min-height:38px; border:1px solid var(--camap-line,#75787B); background:var(--camap-white,#FFFFFF); color:var(--camap-ocean,#006298); padding:8px; font:inherit; }
-.mse-administrator__field textarea { min-height:120px; resize:vertical; }
-.mse-administrator__error { color:var(--camap-ocean,#006298); border-left:4px solid var(--camap-sun,#FDC82F); padding:10px 12px; background:var(--camap-white,#FFFFFF); }
-.mse-administrator__hint { color:var(--camap-ocean,#006298); }
-.mse-administrator__actions { display:flex; gap:8px; }
-.mse-administrator__actions button:last-child { background:var(--camap-white,#FFFFFF); color:var(--camap-ocean,#006298); border-color:var(--camap-line,#75787B); }
-@media (max-width:700px) { .mse-administrator__panel { width:min(100% - 32px,1200px); } .mse-administrator__table { font-size:.85rem; } .mse-administrator__toolbar, .mse-administrator__actions { flex-wrap:wrap; } }
+/* --- Painel inicial (com_cpanel/control-panel.js): grid de cards, cada um
+   com ícone + título + descrição curta — equivalente aos "ícones rápidos"
+   (`cpanel-modules`) do painel inicial do Joomla! real. ------------------- */
 
-.mse-administrator__publisher-filters { display:flex; flex-wrap:wrap; gap:8px; flex:1; }
-.mse-administrator__publisher-filters input, .mse-administrator__publisher-filters select { min-height:36px; border:1px solid var(--camap-line,#75787B); background:var(--camap-white,#FFFFFF); color:var(--camap-ocean,#006298); padding:7px 10px; font:inherit; }
-.mse-administrator__success { color:var(--camap-green,#008542); border-left:4px solid var(--camap-green,#008542); padding:10px 12px; background:var(--camap-white,#FFFFFF); }
-.mse-administrator__permissions { border-top:3px solid var(--camap-ocean,#006298); margin-top:24px; padding-top:16px; }
+.mse-administrator__cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 24px; }
+.mse-administrator__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--camap-grey-light, #E3E9ED);
+  border-top: 4px solid var(--camap-ocean, #006298);
+  background: var(--camap-white, #FFFFFF);
+  color: var(--camap-ocean, #006298);
+  text-decoration: none;
+}
+.mse-administrator__card:hover, .mse-administrator__card:focus-visible { border-color: var(--camap-ocean, #006298); background: var(--camap-hover, #F2F7FA); }
+.mse-administrator__card:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator__card-icon { display: inline-flex; width: 28px; height: 28px; color: var(--camap-ocean, #006298); }
+.mse-administrator__card-icon svg { width: 100%; height: 100%; }
+.mse-administrator__card-title { font-size: 1rem; font-weight: 700; }
+.mse-administrator__card-description { color: var(--camap-line, #75787B); font-size: .88rem; }
+
+/* --- Tabelas de coleção (com_extensions/com_menus/com_modules/com_config/
+   com_templates/publisher): cabeçalho destacado, zebra, hover, badges de
+   status nas colunas booleanas/estado. ------------------------------------ */
+
+.mse-administrator__table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--camap-white, #FFFFFF); }
+.mse-administrator__table th, .mse-administrator__table td { border: 1px solid var(--camap-line, #75787B); padding: 10px 12px; text-align: left; vertical-align: top; }
+.mse-administrator__table th { background: var(--camap-ocean, #006298); color: var(--camap-white, #FFFFFF); position: sticky; top: 0; }
+.mse-administrator__table tbody tr:nth-child(even) { background: var(--camap-hover, #F2F7FA); }
+.mse-administrator__table tbody tr:hover { background: var(--camap-grey-light, #E3E9ED); }
+
+/* Badge de status: mesma semântica de cores já usada por
+   `.mse-administrator__success`/`.mse-administrator__error` (verde = ok,
+   cinza = neutro/despublicado, ocean+borda sun = requer atenção), aplicada
+   como classe adicional na própria célula <td> (nenhum elemento novo
+   dentro da célula, nenhuma mudança de `textContent` — só `className` —
+   para não quebrar os testes que comparam `td.textContent` com o valor
+   literal de domínio). */
+.mse-administrator__status-cell { font-weight: 700; }
+.mse-administrator__status-cell--ok { color: var(--camap-green, #008542); border-left: 4px solid var(--camap-green, #008542); }
+.mse-administrator__status-cell--muted { color: var(--camap-line, #75787B); border-left: 4px solid var(--camap-line, #75787B); }
+.mse-administrator__status-cell--attn { color: var(--camap-ocean, #006298); border-left: 4px solid var(--camap-sun, #FDC82F); }
+
+.mse-administrator__table button, .mse-administrator__toolbar button, .mse-administrator__actions button { min-height: 36px; margin: 3px; padding: 7px 14px; border: 1px solid var(--camap-green, #008542); background: var(--camap-green, #008542); color: var(--camap-white, #FFFFFF); font-weight: 600; cursor: pointer; }
+.mse-administrator__table button:hover, .mse-administrator__toolbar button:hover, .mse-administrator__actions button:hover { background: var(--camap-ocean, #006298); border-color: var(--camap-ocean, #006298); }
+.mse-administrator__table button:focus-visible, .mse-administrator__toolbar button:focus-visible, .mse-administrator__actions button:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator__table button:disabled, .mse-administrator__toolbar button:disabled, .mse-administrator__actions button:disabled { background: var(--camap-white, #FFFFFF); color: var(--camap-line, #75787B); border-color: var(--camap-grey-light, #E3E9ED); cursor: not-allowed; }
+
+.mse-administrator__publisher-list { overflow-x: auto; }
+.mse-administrator__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0; }
+.mse-administrator__publisher-form { border-top: 3px solid var(--camap-green, #008542); margin-top: 24px; padding-top: 20px; }
+
+/* --- Formulários (editores CRUD): 2 colunas em telas largas para campos
+   curtos, textarea/select sempre em linha única. -------------------------- */
+
+.mse-administrator__form { display: grid; gap: 14px; max-width: 860px; }
+.mse-administrator__field { display: grid; gap: 6px; }
+.mse-administrator__field label { color: var(--camap-ocean, #006298); font-weight: 700; }
+.mse-administrator__field input, .mse-administrator__field textarea, .mse-administrator__field select { width: 100%; min-height: 38px; border: 1px solid var(--camap-line, #75787B); background: var(--camap-white, #FFFFFF); color: var(--camap-ocean, #006298); padding: 8px; font: inherit; }
+.mse-administrator__field textarea { min-height: 120px; resize: vertical; }
+.mse-administrator__field input:focus-visible, .mse-administrator__field textarea:focus-visible, .mse-administrator__field select:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 1px; }
+.mse-administrator__error { color: var(--camap-ocean, #006298); border-left: 4px solid var(--camap-sun, #FDC82F); padding: 10px 12px; background: var(--camap-white, #FFFFFF); }
+.mse-administrator__success { color: var(--camap-green, #008542); border-left: 4px solid var(--camap-green, #008542); padding: 10px 12px; background: var(--camap-white, #FFFFFF); }
+.mse-administrator__actions { display: flex; gap: 8px; }
+.mse-administrator__actions button:last-child { background: var(--camap-white, #FFFFFF); color: var(--camap-ocean, #006298); border-color: var(--camap-line, #75787B); }
+
+.mse-administrator__publisher-filters { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.mse-administrator__publisher-filters input, .mse-administrator__publisher-filters select { min-height: 36px; border: 1px solid var(--camap-line, #75787B); background: var(--camap-white, #FFFFFF); color: var(--camap-ocean, #006298); padding: 7px 10px; font: inherit; }
+.mse-administrator__permissions { border-top: 3px solid var(--camap-ocean, #006298); margin-top: 24px; padding-top: 16px; }
+
+/* --- Diagnóstico estrutural (com_diagnostics/diagnostics.js): cada item da
+   lista de pendências ganha uma faixa lateral colorida por severidade,
+   mesma semântica de cor de `__status-cell--ok/--attn` acima. ------------ */
+
+.mse-administrator__issues { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 8px; }
+.mse-administrator__issue { border: 1px solid var(--camap-grey-light, #E3E9ED); border-left: 4px solid var(--camap-line, #75787B); padding: 10px 12px; background: var(--camap-white, #FFFFFF); }
+.mse-administrator__issue--error { border-left-color: var(--camap-sun, #FDC82F); color: var(--camap-ocean, #006298); }
+.mse-administrator__issue--warning { border-left-color: var(--camap-teal, #00B2A9); color: var(--camap-ocean, #006298); }
+
+@media (min-width: 701px) {
+  .mse-administrator__form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+  .mse-administrator__field:has(textarea) { grid-column: 1 / -1; }
+}
+
+@media (max-width: 700px) {
+  .mse-administrator__panel { width: min(100% - 32px, 1200px); }
+  .mse-administrator__table { font-size: .85rem; }
+  .mse-administrator__toolbar, .mse-administrator__actions { flex-wrap: wrap; }
+}

@@ -323,11 +323,13 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
 
     for (const item of items) {
       const tr = el(document, "tr");
+      const estadoCell = el(document, "td", { text: safeString(item?.EstadoEditorial) });
+      estadoCell.className = `mse-administrator__status-cell ${item?.EstadoEditorial === "Publicado" ? "mse-administrator__status-cell--ok" : item?.EstadoEditorial === "Lixeira" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`;
       tr.append(
         el(document, "td", { text: safeString(item?.Id) }),
         el(document, "td", { text: safeString(item?.Title) }),
         el(document, "td", { text: safeString(item?.Slug) }),
-        el(document, "td", { text: safeString(item?.EstadoEditorial) }),
+        estadoCell,
         el(document, "td", { text: item?.Destaque ? "Sim" : "" }),
         el(document, "td", { text: safeString(item?.CategoriaTexto) })
       );
