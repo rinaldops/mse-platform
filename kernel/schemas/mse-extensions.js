@@ -23,8 +23,13 @@ export const MSE_EXTENSIONS_SCHEMA = defineListSchema({
       type: "Choice",
       required: true,
       indexed: false,
-      choices: ["Component", "Module", "Plugin"]
-      // ≈ Tipo (Componente/Modulo/Plugin).
+      choices: ["Component", "Module", "Plugin", "Template"]
+      // ≈ Tipo (Componente/Modulo/Plugin/Template). "Template" adicionado
+      // junto com o mecanismo de Templates instaláveis/fallback (ver
+      // kernel/schemas/mse-template-styles.js) — no Joomla! real,
+      // #__extensions.type já inclui "template" desde sempre; esta lista
+      // só alinhava com Component/Module/Plugin porque Templates nunca
+      // tinham sido tratados como uma extensão registrada.
     },
     {
       internalName: "Element",
@@ -34,6 +39,24 @@ export const MSE_EXTENSIONS_SCHEMA = defineListSchema({
       indexed: true,
       maxLength: 128
       // ≈ Elemento. Identificador técnico (ex.: "forum", "blog").
+    },
+    {
+      internalName: "ClientId",
+      displayName: "Client",
+      type: "Choice",
+      required: true,
+      indexed: true,
+      choices: ["Site", "Administrator"],
+      defaultValue: "Site"
+      // ≈ #__extensions.client_id (0=site/1=administrator). Mesmo shape de
+      // kernel/schemas/mse-template-styles.js#ClientId (texto em vez do
+      // inteiro 0/1 original, mesma convenção de Choice field legível pelo
+      // gestor). Acrescentado junto com a auditoria de 22/10/2026
+      // (docs/AUDITORIA-JOOMLA-PENTE-FINO.md) — antes, toda extensão era
+      // implicitamente "Site", mesmo a única hoje claramente de
+      // Administrator (Element: "administrator", ver
+      // tools/migrate-mse-administrator-route.js). Backfill de produção em
+      // tools/migrate-extensions-client-id.js.
     },
     {
       internalName: "Version",

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { MSE_EXTENSIONS_SCHEMA } from "../schemas/mse-extensions.js";
-import { isEnabled, resolveExtension, sortPlugins, listByType } from "../extension-registry.js";
+import { isEnabled, resolveExtension, sortPlugins, listByType, listByClientId } from "../extension-registry.js";
 
 // --- MSE_EXTENSIONS_SCHEMA ------------------------------------------------
 
@@ -11,12 +11,13 @@ assert.equal(MSE_EXTENSIONS_SCHEMA.internalName, "MSEExtensions");
 
 const fieldNames = MSE_EXTENSIONS_SCHEMA.fields.map((field) => field.internalName);
 assert.deepEqual(fieldNames, [
-  "Type", "Element", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
+  "Type", "Element", "ClientId", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
 ]);
-// Title + 7 campos declarados em `fields[]` = 8 campos no total, como
-// descrito na tarefa (Title, Type, Element, Version, Enabled, Protected,
-// Ordering, ParamsJson).
-assert.equal(fieldNames.length + 1, 8);
+// Title + 8 campos declarados em `fields[]` = 9 campos no total (Title,
+// Type, Element, ClientId, Version, Enabled, Protected, Ordering,
+// ParamsJson) — ClientId acrescentado na auditoria de 22/10/2026
+// (docs/AUDITORIA-JOOMLA-PENTE-FINO.md).
+assert.equal(fieldNames.length + 1, 9);
 
 for (const field of MSE_EXTENSIONS_SCHEMA.fields) {
   assert.ok(Object.isFrozen(field));
@@ -26,7 +27,11 @@ for (const field of MSE_EXTENSIONS_SCHEMA.fields) {
 }
 
 const tipo = MSE_EXTENSIONS_SCHEMA.fields.find((f) => f.internalName === "Type");
-assert.deepEqual([...tipo.choices], ["Component", "Module", "Plugin"]);
+assert.deepEqual([...tipo.choices], ["Component", "Module", "Plugin", "Template"]);
+
+const clientId = MSE_EXTENSIONS_SCHEMA.fields.find((f) => f.internalName === "ClientId");
+assert.deepEqual([...clientId.choices], ["Site", "Administrator"]);
+assert.equal(clientId.defaultValue, "Site");
 
 console.log("extension-registry.test.js: MSE_EXTENSIONS_SCHEMA verificado.");
 
@@ -34,14 +39,15 @@ console.log("extension-registry.test.js: MSE_EXTENSIONS_SCHEMA verificado.");
 
 function fixtureItems() {
   return [
-    { Title: "Fórum", Type: "Component", Element: "forum", Version: "1.0.0", Enabled: true, Protected: false, Ordering: undefined, ParamsJson: null },
-    { Title: "Explore Mais", Type: "Module", Element: "explore-mais", Version: "1.0.0", Enabled: false, Protected: false, Ordering: undefined, ParamsJson: null },
-    { Title: "Breadcrumbs", Type: "Module", Element: "breadcrumbs", Version: "1.0.0", Enabled: true, Protected: true, Ordering: undefined, ParamsJson: null },
-    { Title: "Auditoria", Type: "Plugin", Element: "auditoria", Version: "1.0.0", Enabled: true, Protected: true, Ordering: 2, ParamsJson: null },
-    { Title: "Cache", Type: "Plugin", Element: "cache", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: null },
-    { Title: "Legado", Type: "Plugin", Element: "legado", Version: "0.9.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering
-    { Title: "Beta", Type: "Plugin", Element: "beta", Version: "0.1.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering, após Legado
-    { Title: "Desligado", Type: "Plugin", Element: "desligado", Version: "1.0.0", Enabled: false, Protected: false, Ordering: 0, ParamsJson: null }
+    { Title: "Fórum", Type: "Component", Element: "forum", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: false, Ordering: undefined, ParamsJson: null },
+    { Title: "Explore Mais", Type: "Module", Element: "explore-mais", ClientId: "Site", Version: "1.0.0", Enabled: false, Protected: false, Ordering: undefined, ParamsJson: null },
+    { Title: "Breadcrumbs", Type: "Module", Element: "breadcrumbs", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: true, Ordering: undefined, ParamsJson: null },
+    { Title: "Auditoria", Type: "Plugin", Element: "auditoria", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: true, Ordering: 2, ParamsJson: null },
+    { Title: "Cache", Type: "Plugin", Element: "cache", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: null },
+    { Title: "Legado", Type: "Plugin", Element: "legado", ClientId: "Site", Version: "0.9.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering
+    { Title: "Beta", Type: "Plugin", Element: "beta", ClientId: "Site", Version: "0.1.0", Enabled: true, Protected: false, ParamsJson: null }, // sem Ordering, após Legado
+    { Title: "Desligado", Type: "Plugin", Element: "desligado", ClientId: "Site", Version: "1.0.0", Enabled: false, Protected: false, Ordering: 0, ParamsJson: null },
+    { Title: "Administrator", Type: "Component", Element: "administrator", ClientId: "Administrator", Version: "1.0.0", Enabled: true, Protected: true, ParamsJson: null }
   ];
 }
 
@@ -129,6 +135,25 @@ function fixtureItems() {
   assert.deepEqual(listByType(items, "Inexistente"), []);
 
   console.log("extension-registry.test.js: listByType ok.");
+}
+
+// --- listByClientId ---------------------------------------------------------
+
+{
+  const items = fixtureItems();
+
+  const siteItems = listByClientId(items, "Site");
+  assert.equal(siteItems.length, 8);
+  assert.ok(siteItems.every((item) => item.ClientId === "Site"));
+
+  const administratorItems = listByClientId(items, "Administrator");
+  assert.deepEqual(administratorItems.map((item) => item.Element), ["administrator"]);
+
+  assert.deepEqual(listByClientId([], "Site"), []);
+  assert.deepEqual(listByClientId(undefined, "Site"), []);
+  assert.deepEqual(listByClientId(items, "Inexistente"), []);
+
+  console.log("extension-registry.test.js: listByClientId ok.");
 }
 
 console.log("extension-registry.test.js: verificações concluídas com sucesso.");

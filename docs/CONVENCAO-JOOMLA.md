@@ -12,11 +12,13 @@ um desenvolvedor familiarizado com Joomla!.
 | Joomla! | mse-platform | Observação |
 | --- | --- | --- |
 | `administrator/components/com_<nome>/` | `components/com_<nome>/` | um componente físico por `option=com_xxx`; `com_cpanel` acumula o painel inicial + o roteador comum do Administrator |
+| `administrator/templates/atum/` | `components/com_cpanel/administrator-shell.js` | template formal único do Administrator (cabeçalho + navegação lateral persistente + slot de conteúdo), 22/10/2026 — substitui o `<section class="mse-administrator__panel">` que cada tela desenhava isolada |
 | `components/_shared/` | — | não é um componente Joomla!; infraestrutura interna comum (render de tabela, paginação) compartilhada entre `com_extensions`/`com_menus`/`com_modules` |
 | `modules/mod_<nome>/` | `modules/mod_<nome>/` | `mod_forum`, `mod_home`, `mod_recursos`, `mod_videoteca` |
 | `libraries/` | `libraries/ui/` | facade JS opcional (accordion/carousel compartilhados entre módulos); **não** é `mod_*` |
 | `plugins/<grupo>/<nome>/` | `plugins/` | reservada, convenção pronta; nenhum plugin real ainda |
-| `templates/<nome>/` | `themes/` | tema-base inicial; Templates completos (override por view) fora de escopo |
+| `templates/<nome>/` | `templates/<nome>/` | agora um sistema real de Templates instaláveis (`templates/mse-default/`, `templates/system/`; sites consumidores publicam os seus próprios, ex.: `camap-tema-01`) — ver seção 4 (`MSETemplateStyles`) e `com_templates` abaixo; `themes/` (tema-base antigo) foi substituído por este mecanismo |
+| — | `components/com_templates/` | análogo a `administrator/components/com_templates/`: lista os Templates instalados e define qual é o padrão (`Home=true`) por `ClientId` |
 | — | `admin/` | painel administrativo histórico, pré-Site-Kernel ("um MSE por módulo"); **congelado deliberadamente**, não migra |
 | — | `core/`, `kernel/`, `host-adapters/` | infraestrutura própria do Site Kernel, sem equivalente 1:1 no Joomla! PHP |
 
@@ -26,7 +28,9 @@ um desenvolvedor familiarizado com Joomla!.
 `components/com_categories/`, `components/com_tags/`,
 `components/com_media/` existem como pastas com `README.md`
 "reservada/fora de escopo" — enumeração honesta do conjunto Joomla!-completo,
-sem prometer funcionalidade.
+sem prometer funcionalidade. `components/com_templates/` **deixou de ser
+reservado** (22/10/2026): tem implementação real (lista de templates
+instalados + "Tornar padrão" por `ClientId`), ver seção 4.
 
 ## 2. Estrutura de pastas (CAMAP-AGP, site consumidor)
 
@@ -64,6 +68,7 @@ Antes da Fase 2 estes eram `"afterRoute"`/`"beforeRender"`/`"afterRender"`
 | `#__modules_menu` | `MSEModulesMenu` | `MSEModulosMenu` (idem) |
 | `#__menu_types` | `MSEMenuTypes` | `MSEMenuTipos` (idem) |
 | `#__menu` | `MSEMenu` (mesmo nome PT/EN) | — (campos PT e EN coexistem na mesma lista, ver seção 5) |
+| `#__template_styles` | `MSETemplateStyles` (sem lista PT; criada já em inglês, 22/10/2026) | — |
 | `#__users`/ACL | — | fora de escopo; SharePoint é a autoridade de permissão |
 
 As listas PT (`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/`MSEMenuTipos`)
@@ -93,8 +98,9 @@ decomissionamento delas é uma limpeza futura, fora desta normalização.
 
 | Joomla! | Campo em inglês | Campo PT equivalente (lista antiga `MSEExtensoes`) |
 | --- | --- | --- |
-| `type` | `Type` (`Component`/`Module`/`Plugin`) | `Tipo` (`Componente`/`Modulo`/`Plugin`) |
+| `type` | `Type` (`Component`/`Module`/`Plugin`/`Template`) | `Tipo` (`Componente`/`Modulo`/`Plugin`) |
 | `element` | `Element` | `Elemento` |
+| `client_id` | `ClientId` (`Site`/`Administrator`) | — (campo novo, 22/10/2026, sem equivalente PT — ver `MSETemplateStyles.ClientId` abaixo, mesmo shape) |
 | — | `Version` | `Versao` |
 | `enabled` | `Enabled` | `Habilitado` |
 | `protected` | `Protected` | `Protegido` |
@@ -107,7 +113,24 @@ não existe lá uma camada de tradução dedicada entre "tipo do manifesto" e
 a Fase 4) nenhuma função de mapeamento `type`↔`Tipo`; a única diferença
 real entre o `type` do manifesto JS (`"component"`, minúsculo) e `Type` da
 lista (`"Component"`, capitalizado) é cosmética e resolvida inline, no
-ponto de uso, quando necessário.
+ponto de uso, quando necessário. `"Template"` foi acrescentado a `Type`
+(22/10/2026) só na lista em inglês — a lista PT `MSEExtensoes` está
+congelada desde a Fase 4 (não recebe `choices` novas) e nenhum Template é
+representado nela.
+
+### `MSETemplateStyles` (≈ `#__template_styles`, nova 22/10/2026)
+
+| Joomla! | Campo em inglês | Observação |
+| --- | --- | --- |
+| `template` | `Template` | nome do pacote (`camap-tema-01`, `mse-default`, `system`...) |
+| `client_id` | `ClientId` (`Site`/`Administrator`) | Joomla! usa `0`/`1`; aqui texto, mesma convenção PascalCase do restante |
+| `home` | `Home` (Boolean) | no máximo 1 `true` por `ClientId` — invariante mantida pela UI (`com_templates`), não pelo schema. Joomla! usa `char(7)` (dual: `'0'`/`'1'` OU código de idioma, para templates por idioma); aqui `Boolean` puro — sem suporte a multi-idioma no `mse-platform` hoje, ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3 |
+| `title` | `Title` (campo nativo do SharePoint) | — |
+| `params` | `ParamsJson` | reservado, sem leitor ainda |
+
+Sem lista PT irmã — criada depois da Fase 4, já nasce só em inglês, ao
+contrário de `MSEModules`/`MSEExtensions`/etc. (que tiveram que migrar de
+uma lista PT pré-existente).
 
 ### `MSEModulesMenu` (≈ `#__modules_menu`)
 
@@ -146,16 +169,33 @@ vez de expor os 21 campos (12 PT + 9 EN) ao gestor.
 
 Já seguiam o vocabulário Joomla! desde antes desta normalização —
 `option=com_xxx&view=yyy&layout=zzz&task=www&id=N`
-(`components/com_cpanel/router.js`); sem mudança nesta rodada.
+(`components/com_cpanel/router.js`). `task` segue a convenção
+`controller.task` (ex. `templates.setdefault`) só em `com_templates`
+(prova de conceito, 22/10/2026 — ver
+`components/com_templates/templates-editor.js`); demais telas ainda
+disparam a ação só por clique direto, sem ler `route.task` — ver
+`docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3.
 
 ## 7. O que permanece deliberadamente fora de escopo
 
 - **ACL próprio** — SharePoint é a autoridade de permissão.
-- **Templates completos** (override por view/componente) — mecanismo
-  mínimo (1 template ativo por site, trocável) já existe; overrides por
-  item de menu não.
+- **Templates — atribuição por item de menu e overrides `templates/<t>/html/<view>`**
+  continuam fora de escopo. O mecanismo de instalação/fallback/padrão
+  (`MSETemplateStyles`, fallback de 3 níveis, `com_templates`) já existe
+  desde 22/10/2026 — ver seção 4 e `PLANO-SITE-KERNEL-MSE.md` seção 3.
+- **`MSETemplateStyles.Home` Boolean vs. `#__template_styles.home char(7)`**
+  — Joomla! real usa esse campo também para templates específicos de
+  idioma; o `mse-platform` não tem conceito de multi-idioma por site hoje,
+  então ficou só `Boolean` (ver nota na tabela da seção 5 e
+  `kernel/schemas/mse-template-styles.js#Home`). Documentado, não corrigido.
+- **`controller.task` só em `com_templates`** — ver seção 6. Reescrever o
+  padrão CRUD-lite de clique-direto para `task`-orientado nas demais telas
+  (`com_extensions`, `com_menus`, `com_modules`, `com_config`) é um
+  redesenho maior, fora desta rodada.
 - **`admin/`** — painel pré-Site-Kernel, congelado, sem prazo de migração.
 - **`MSEConfiguracoes`** — fora desta rodada de normalização de campos;
-  fica para uma Fase 3b dedicada futura.
+  fica para uma Fase 3b dedicada futura. `MSEConfiguracoes.Tema` continua
+  existindo como fallback de compatibilidade enquanto `MSETemplateStyles`
+  não tiver uma linha `Home=true` para o site.
 - **Decomissionamento das listas/campos PT** — vivos em produção, não lidos
   pelo código desde a Fase 4; remoção real é limpeza futura.

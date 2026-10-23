@@ -109,8 +109,8 @@ function textOf(elements) {
 {
   const root = createRoot();
   const items = [
-    { Id: 1, Title: "Blog", Type: "Component", Element: "blog", Version: "1.0.0", Enabled: true, Protected: false, Ordering: null, ParamsJson: null },
-    { Id: 2, Title: "SD", Type: "Module", Element: "sd", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: "{}" }
+    { Id: 1, Title: "Blog", Type: "Component", Element: "blog", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: false, Ordering: null, ParamsJson: null },
+    { Id: 2, Title: "SD", Type: "Module", Element: "sd", ClientId: "Site", Version: "1.0.0", Enabled: true, Protected: false, Ordering: 1, ParamsJson: "{}" }
   ];
   const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
   const view = renderExtensionsScreen({ root, services });
@@ -120,7 +120,7 @@ function textOf(elements) {
   assert.equal(h1.textContent, "Extensões");
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", "Tipo", "Elemento", "Versão", "Habilitada", "Protegida", "Ações"];
+  const expectedLabels = ["Título", "Tipo", "Elemento", "Client", "Versão", "Habilitada", "Protegida", "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1); // pula o cabeçalho

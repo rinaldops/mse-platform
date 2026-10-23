@@ -118,7 +118,7 @@ function byName(descriptors, name) {
   assert.equal(descriptors.length, MSE_EXTENSIONS_SCHEMA.fields.length);
 
   assert.equal(byName(descriptors, "Type").inputType, "select");
-  assert.deepEqual(byName(descriptors, "Type").options, ["Component", "Module", "Plugin"]);
+  assert.deepEqual(byName(descriptors, "Type").options, ["Component", "Module", "Plugin", "Template"]);
   assert.equal(byName(descriptors, "Element").inputType, "text");
   assert.equal(byName(descriptors, "Element").maxLength, 128);
   assert.equal(byName(descriptors, "Enabled").inputType, "boolean");
