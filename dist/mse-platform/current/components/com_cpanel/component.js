@@ -1,4 +1,5 @@
 import { parseAdministratorRoute, resolveAdministratorScreen } from "./router.js";
+import { createAdministratorShell } from "./administrator-shell.js";
 import { renderControlPanel } from "./control-panel.js";
 import { renderPublisherScreen } from "../com_content/publisher.js";
 import { renderDiagnosticsScreen } from "../com_diagnostics/diagnostics.js";
@@ -7,6 +8,7 @@ import { renderMenusScreen } from "../com_menus/menus-screen.js";
 import { renderModulesScreen } from "../com_modules/modules-screen.js";
 import { renderConfigScreen } from "../com_config/config-screen.js";
 import { renderInstallerScreen } from "../com_installer/installer-screen.js";
+import { renderTemplatesScreen } from "../com_templates/templates-screen.js";
 
 const SCREEN_RENDERERS = {
   controlpanel: ({ root }) => renderControlPanel({ root }),
@@ -16,15 +18,28 @@ const SCREEN_RENDERERS = {
   menus: ({ root, services }) => renderMenusScreen({ root, services }),
   modules: ({ root, services }) => renderModulesScreen({ root, services }),
   config: ({ root, services }) => renderConfigScreen({ root, services }),
-  installer: ({ root, services }) => renderInstallerScreen({ root, services })
+  installer: ({ root, services }) => renderInstallerScreen({ root, services }),
+  templates: ({ root, route, services }) => renderTemplatesScreen({ root, route, services })
 };
 
+// Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
+// análogo ao template de backend `atum` do Joomla! real): montado uma vez
+// por navegação, substituindo o `<section class="mse-administrator__panel">`
+// que cada tela desenhava "nua" — a tela ativa é injetada dentro de
+// `shell.contentElement`, mantendo cabeçalho+navegação persistentes.
 export function mount({ root, context = {}, services = {} } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
   const route = parseAdministratorRoute(context.params || context.route?.query || {});
-  root.replaceChildren(); root.className = "mse-administrator";
+  root.className = "mse-administrator";
   const screen = resolveAdministratorScreen(route);
+  const shell = createAdministratorShell({ root, activeOption: route.option });
   const render = SCREEN_RENDERERS[screen] || SCREEN_RENDERERS.controlpanel;
-  const view = render({ root, route, services });
-  return { dispose() { view?.dispose?.(); root.replaceChildren(); root.className = ""; } };
+  const view = render({ root: shell.contentElement, route, services });
+  return {
+    dispose() {
+      view?.dispose?.();
+      shell.dispose();
+      root.className = "";
+    }
+  };
 }

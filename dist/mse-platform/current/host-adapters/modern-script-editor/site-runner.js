@@ -78,6 +78,14 @@
     // `bootSiteKernel`, e um Template publicado fora da convenção padrão
     // `${releaseBase}/templates/<nome>/index.js` nunca seria encontrado.
     var templatePathByName = parseJsonAttr(s, "data-template-path-overrides");
+    // Fallback de 3 níveis (22/10/2026): os templates shipped PELA
+    // PLATAFORMA (`mse-default`, `system`) vivem no pacote do mse-platform
+    // (ex. "SiteAssets/mse-platform/current"), não no `releaseBase` do site
+    // consumidor (ex. "SiteAssets/camap-agp-modules/0.1.0") — ver
+    // `site-boot.js#createTemplateLayoutResolver`/`platformTemplateBase`.
+    // Opcional: sites antigos/testes que não informam este atributo caem no
+    // comportamento anterior (tudo resolvido contra `releaseBase`).
+    var platformTemplateBase = getAttr(s, "data-platform-template-base", undefined);
 
     if (!releaseBase) {
       throw new Error("site-runner.js: data-release-base é obrigatório.");
@@ -99,6 +107,7 @@
       defaultView: defaultView,
       manifestPathByElemento: manifestPathByElemento,
       templatePathByName: templatePathByName,
+      platformTemplateBase: platformTemplateBase,
       onLoadError: function (error, chave) {
         console.error("mse-platform site kernel: falha ao carregar \"" + chave + "\", mantendo último estado válido.", error);
       },

@@ -1,0 +1,4 @@
+.mse-system-template { min-height: 100%; background: #fff; color: #242424; font-family: Arial, sans-serif; }
+.mse-system-template__shell { display: grid; gap: 1rem; width: 100%; }
+.mse-system-template__region { min-width: 0; }
+.mse-system-template__region--conteudo-principal { order: 0; }

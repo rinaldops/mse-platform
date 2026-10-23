@@ -1,0 +1,62 @@
+/* templates/mse-default/css/template.css
+ * Template padrão/fallback de 2º nível do Site Kernel — layout genérico,
+ * sem identidade visual de nenhum tenant específico (cores neutras,
+ * tipografia de sistema). Inspirado na disposição do template padrão do
+ * Joomla! original: cabeçalho com marca, navegação, trilha, grade de
+ * conteúdo, barra lateral opcional, rodapé.
+ */
+.mse-default-template {
+  min-height: 100%;
+  background: #ffffff;
+  color: #1f2328;
+  font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+  line-height: 1.5;
+}
+.mse-default-template__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #d7dade;
+  background: #f5f6f7;
+}
+.mse-default-template__brand-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2328;
+  text-decoration: none;
+  font-weight: 700;
+}
+.mse-default-template__brand-mark { color: #3b6ea5; }
+.mse-default-template__shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100% - 48px, 1200px);
+  margin-inline: auto;
+  padding-block: 24px;
+}
+.mse-default-template__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.mse-default-template__body:has(.mse-default-template__region--sidebar) {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+}
+.mse-default-template__region { min-width: 0; }
+.mse-default-template__region--breadcrumbs { color: #5b6066; font-size: 0.875rem; }
+.mse-default-template__region--footer {
+  border-top: 1px solid #d7dade;
+  padding: 24px;
+  color: #5b6066;
+  background: #f5f6f7;
+}
+[data-mse-position]:empty { display: none; }
+@media (max-width: 767px) {
+  .mse-default-template__body:has(.mse-default-template__region--sidebar) {
+    grid-template-columns: 1fr;
+  }
+}

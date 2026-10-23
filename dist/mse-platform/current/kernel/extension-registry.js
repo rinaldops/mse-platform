@@ -117,3 +117,21 @@ export function listByType(items, tipo) {
   }
   return items.filter((item) => item && item.Type === tipo);
 }
+
+/**
+ * Retorna um array com todos os itens de `ClientId === clientId` ("Site" ou
+ * "Administrator" — ver `kernel/schemas/mse-extensions.js#ClientId`,
+ * ≈ `#__extensions.client_id`). A filtragem por `Enabled`/`Type` é
+ * responsabilidade de quem chama, mesmo princípio de `listByType`.
+ * Tolerante a `items` vazio/undefined — nunca lança.
+ *
+ * @param {Array<object>|null|undefined} items
+ * @param {"Site"|"Administrator"} clientId
+ * @returns {Array<object>}
+ */
+export function listByClientId(items, clientId) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+  return items.filter((item) => item && item.ClientId === clientId);
+}

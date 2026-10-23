@@ -36,13 +36,18 @@ import { MSE_MENU_TYPES_SCHEMA } from "./schemas/mse-menu-types.js";
 import { MSE_EXTENSIONS_SCHEMA } from "./schemas/mse-extensions.js";
 import { MSE_MODULES_SCHEMA } from "./schemas/mse-modules.js";
 import { MSE_MODULES_MENU_SCHEMA } from "./schemas/mse-modules-menu.js";
+import { MSE_TEMPLATE_STYLES_SCHEMA } from "./schemas/mse-template-styles.js";
 
+// MSETemplateStyles (≈ #__template_styles) acrescentada ao conjunto fixo
+// junto com o mecanismo de Templates instaláveis/fallback — ver
+// kernel/schemas/mse-template-styles.js e kernel/template-registry.js.
 export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_MENU_TYPES_SCHEMA,
   MSE_MENU_SCHEMA,
   MSE_EXTENSIONS_SCHEMA,
   MSE_MODULES_SCHEMA,
-  MSE_MODULES_MENU_SCHEMA
+  MSE_MODULES_MENU_SCHEMA,
+  MSE_TEMPLATE_STYLES_SCHEMA
 ]);
 
 /**

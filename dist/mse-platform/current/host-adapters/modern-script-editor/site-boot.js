@@ -37,13 +37,16 @@ import { createSiteApplication } from "../../kernel/application.js";
 import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet } from "../../core/rest.js";
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
 import { createKernelInstaller } from "../../kernel/installer.js";
+import { resolveActiveTemplateName } from "../../kernel/template-registry.js";
+
+const TEMPLATE_STYLES_FIELDS = Object.freeze(["Id", "Title", "Template", "ClientId", "Home"]);
 
 const MENU_FIELDS = Object.freeze([
   "Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering",
   "Component", "View", "ParamsJson", "Default", "Target", "Published"
 ]);
 const EXTENSIONS_FIELDS = Object.freeze([
-  "Id", "Title", "Type", "Element", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
+  "Id", "Title", "Type", "Element", "ClientId", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
 ]);
 const MODULES_FIELDS = Object.freeze([
   "Id", "Title", "Module", "Position", "Ordering", "Published", "PublishUp", "PublishDown",
@@ -66,7 +69,15 @@ const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensions", "M
 // components/com_config/config-editor.js), sem mudar como
 // core/configuration-store.js é lido (ele resolve seu próprio listId por
 // Title, de forma independente).
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes"]);
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes", "MSETemplateStyles"]);
+// MSETemplateStyles (22/10/2026, ampliação de escopo — Templates
+// instaláveis/registro ≈ #__template_styles) entra na lista OPCIONAL por
+// propósito: sites que ainda não rodaram a migração
+// `tools/migrate-create-template-styles.js` simplesmente não têm esta
+// lista, e isso não pode quebrar o boot — ver `resolveActiveSiteTemplateName`
+// abaixo, que trata ausência/erro como "nenhum estilo resolvido", caindo no
+// fallback de compatibilidade (`MSEConfiguracoes.Tema`, via
+// `core/configuration-store.js`).
 
 /**
  * Resolve o `listId` (GUID) real de cada lista MSE* a partir do catÃ¡logo de
@@ -226,34 +237,47 @@ export function createManifestResolver(releaseBase, manifestPathByElemento = {})
  * `createManifestResolver` acima (mesma validaÃ§Ã£o de `releaseBase`, mesmo
  * tratamento de override absoluto `https?://`, mesmo fallback de
  * convenÃ§Ã£o), aplicado ao outro eixo de extensibilidade do kernel trazido
- * ao escopo depois do kernel original: Templates (ver
- * `docs/PLANO-SITE-KERNEL-MSE.md`, modelo mÃ­nimo â€” 1 template ativo por
- * site, trocÃ¡vel pelo gestor via `MSEConfiguracoes.Tema`, escopo Global,
- * SEM atribuiÃ§Ã£o por item de menu e SEM overrides de view/layout por
- * template). `templatePathByName` existe pela mesma razÃ£o de
- * `manifestPathByElemento`: poucos casos em que o nome do Template
- * publicado em `Tema` nÃ£o Ã© tambÃ©m o nome exato da pasta do pacote.
+ * ao escopo depois do kernel original: Templates. `templatePathByName`
+ * existe pela mesma razÃ£o de `manifestPathByElemento`: poucos casos em que
+ * o nome do Template nÃ£o Ã© tambÃ©m o nome exato da pasta do pacote.
+ *
+ * `platformTemplateBase`/`platformTemplateNames` (ampliação do mecanismo
+ * mínimo original — ver `createTemplateLayoutResolver` abaixo, fallback de
+ * 3 níveis): templates "da plataforma" (`mse-default`, `system`) não vivem
+ * sob `releaseBase` do SITE consumidor — são shipped pelo próprio
+ * `mse-platform` (`SiteAssets/mse-platform/current/templates/<nome>/`).
+ * Qualquer nome presente em `platformTemplateNames` resolve contra
+ * `platformTemplateBase` em vez de `releaseBase` (ainda sujeito a
+ * `templatePathByName`/override absoluto, mesma precedência de sempre). Se
+ * `platformTemplateBase` não for informado (compatibilidade com chamadores
+ * antigos/testes), cai no comportamento anterior — tudo contra `releaseBase`.
  *
  * @param {string} releaseBase
  * @param {Record<string, string>} [templatePathByName] Mapa opcional
- *   `nome -> caminho relativo a releaseBase` (ex.:
+ *   `nome -> caminho relativo Ã  base correspondente` (ex.:
  *   `{ "tema-1": "templates/camap-tema-01/index.js" }`), ou URL absoluta
- *   (`https?://`) para pacotes publicados fora do `releaseBase`.
+ *   (`https?://`) para pacotes publicados fora de qualquer base conhecida.
+ * @param {{ platformTemplateBase?: string, platformTemplateNames?: string[] }} [platform]
  * @returns {(nome: string) => string}
  */
-export function createTemplateResolver(releaseBase, templatePathByName = {}) {
+export function createTemplateResolver(releaseBase, templatePathByName = {}, platform = {}) {
   if (typeof releaseBase !== "string" || releaseBase.trim() === "") {
     throw new TypeError("releaseBase Ã© obrigatÃ³rio.");
   }
   const base = releaseBase.replace(/\/+$/, "");
+  const platformBase = typeof platform?.platformTemplateBase === "string" && platform.platformTemplateBase.trim()
+    ? platform.platformTemplateBase.replace(/\/+$/, "")
+    : null;
+  const platformNames = new Set(Array.isArray(platform?.platformTemplateNames) ? platform.platformTemplateNames : []);
   return function resolveTemplateUrl(nome) {
     const override = templatePathByName[nome];
+    const effectiveBase = platformBase && platformNames.has(nome) ? platformBase : base;
     if (typeof override === "string" && override.trim() !== "") {
       const value = override.trim();
       if (/^https?:\/\//i.test(value)) return value;
-      return `${base}/${value.replace(/^\/+/, "")}`;
+      return `${effectiveBase}/${value.replace(/^\/+/, "")}`;
     }
-    return `${base}/templates/${nome}/index.js`;
+    return `${effectiveBase}/templates/${nome}/index.js`;
   };
 }
 
@@ -329,42 +353,93 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
  * Monta o `resolveLayout` esperado por `kernel/application.js` (ver JSDoc
  * daquela funÃ§Ã£o: `({root, positions, componentPosition, theme}) =>
  * LayoutLike|Promise<LayoutLike>`), ligando o Template configurado
- * (`theme.name`, vindo de `MSEConfiguracoes.Tema` â€” escopo Global) ao pacote
- * real via `createTemplateResolver` + `importModule` (reaproveitado, nÃ£o
- * `import()` direto, para manter testÃ¡vel â€” mesmo princÃ­pio de injeÃ§Ã£o de
- * `resolveManifestUrl`/`importModule` jÃ¡ usado pelo resto deste arquivo).
+ * (`theme.name`, vindo de `MSETemplateStyles`/`MSEConfiguracoes.Tema` â€”
+ * escopo Global) ao pacote real via `createTemplateResolver` + `importModule`
+ * (reaproveitado, nÃ£o `import()` direto, para manter testÃ¡vel â€” mesmo
+ * princÃ­pio de injeÃ§Ã£o de `resolveManifestUrl`/`importModule` jÃ¡ usado pelo
+ * resto deste arquivo).
  *
  * Decisão de contrato (ver tarefa que introduziu Templates): esta função
  * NÃO decide o fallback para o layout neutro â€” isso é responsabilidade de
  * `kernel/application.js#createSiteApplication`, que já cai para
  * `createSiteLayout` quando `resolveLayout` lança/rejeita (mesmo princípio
- * de isolamento de falha de `loadSnapshot`). Por isso, quando `theme?.name`
- * estÃ¡ vazio/ausente (nenhum Template configurado), esta funÃ§Ã£o apenas
- * REJEITA â€” ela nunca monta `createSiteLayout` ela mesma, para nÃ£o duplicar
- * essa decisÃ£o em dois lugares.
+ * de isolamento de falha de `loadSnapshot`). Por isso, quando TODOS os
+ * níveis abaixo falham, esta função apenas REJEITA â€” ela nunca monta
+ * `createSiteLayout` ela mesma, para nÃ£o duplicar essa decisÃ£o em dois
+ * lugares.
+ *
+ * Fallback de 3 níveis (ver `templates/mse-default/`, shipped pelo
+ * `mse-platform` como 2º nível, e `templates/system/`, shipped como 3º
+ * nível técnico): `[requestedName (se configurado), "mse-default",
+ * "system"]`, deduplicado preservando ordem — cada nome é tentado via
+ * `importModule`/`createTemplate()` até o primeiro que montar com sucesso.
+ * `requestedName` resolve contra `releaseBase` (pacote do SITE consumidor,
+ * ex. `camap-agp-modules`); `"mse-default"`/`"system"` resolvem contra
+ * `platformTemplateBase` (pacote do `mse-platform`, ex.
+ * `SiteAssets/mse-platform/current/`) — ver `platform` em
+ * `createTemplateResolver`. Quando `platformTemplateBase` não é informado
+ * (compatibilidade com chamadores antigos/testes), os 3 níveis resolvem
+ * contra `releaseBase`, igual ao comportamento anterior a este mecanismo.
+ *
+ * `requestedName` em si (qual Template o SITE pediu, antes do fallback):
+ * resolvido via `loadTemplateStyles` (opcional, `() =>
+ * Promise<Array<object>|null|undefined>`, tipicamente lendo `MSETemplateStyles`
+ * ≈ `#__template_styles`) + `kernel/template-registry.js#resolveActiveTemplateName`
+ * (`ClientId="Site"`, `Home=true`). Se `loadTemplateStyles` não é informado,
+ * ou resolve para `null` (lista ainda vazia/sem linha `Home=true`, ou
+ * `MSETemplateStyles` ainda não provisionada), cai no `theme?.name`
+ * recebido de `resolveLayout` (hoje `globalConfig.theme`, vindo de
+ * `MSEConfiguracoes.Tema` — ver `kernel/application.js`) como fallback de
+ * compatibilidade — migração suave, nenhum site existente quebra.
  *
  * Exportada (embora `bootSiteKernel` seja o único chamador em produção)
  * para permitir um teste isolado da adaptação de shape (`adaptTemplateToLayout`,
  * interna) sem precisar simular toda a cadeia REST de `bootSiteKernel` —
  * basta um `importModule` fake devolvendo `{ createTemplate: fn }`.
  *
- * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any> }} args
+ * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any>, platformTemplateBase?: string, platformTemplateNames?: string[], loadTemplateStyles?: () => Promise<Array<object>|null|undefined> }} args
  * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string } }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }>}
  */
-export function createTemplateLayoutResolver({ releaseBase, templatePathByName = {}, importModule }) {
-  const resolveTemplateUrl = createTemplateResolver(releaseBase, templatePathByName);
+export function createTemplateLayoutResolver({
+  releaseBase,
+  templatePathByName = {},
+  importModule,
+  platformTemplateBase,
+  platformTemplateNames = ["mse-default", "system"],
+  loadTemplateStyles
+}) {
+  const resolveTemplateUrl = createTemplateResolver(releaseBase, templatePathByName, {
+    platformTemplateBase,
+    platformTemplateNames
+  });
   return async function resolveLayout({ root, positions, componentPosition, theme }) {
-    const nome = theme?.name;
-    if (typeof nome !== "string" || nome.trim() === "") {
-      throw new Error("Nenhum Template configurado (MSEConfiguracoes.Tema vazio) â€” caindo para o layout neutro.");
+    let styleName = null;
+    if (typeof loadTemplateStyles === "function") {
+      try {
+        const styles = await loadTemplateStyles();
+        styleName = resolveActiveTemplateName(styles, { clientId: "Site" });
+      } catch {
+        styleName = null;
+      }
     }
-    const templateUrl = resolveTemplateUrl(nome);
-    const templateModule = await importModule(templateUrl);
-    if (typeof templateModule.createTemplate !== "function") {
-      throw new TypeError(`Pacote de Template "${nome}" (${templateUrl}) nÃ£o exporta createTemplate().`);
+    const requestedName = styleName
+      || (typeof theme?.name === "string" && theme.name.trim() ? theme.name.trim() : null);
+    const candidates = [...new Set([...(requestedName ? [requestedName] : []), ...platformTemplateNames])];
+    let lastError;
+    for (const name of candidates) {
+      try {
+        const templateUrl = resolveTemplateUrl(name);
+        const templateModule = await importModule(templateUrl);
+        if (typeof templateModule.createTemplate !== "function") {
+          throw new TypeError(`Pacote de Template "${name}" (${templateUrl}) não exporta createTemplate().`);
+        }
+        const template = await templateModule.createTemplate({ root, positions, componentPosition });
+        return adaptTemplateToLayout(template, componentPosition);
+      } catch (error) {
+        lastError = error;
+      }
     }
-    const template = await templateModule.createTemplate({ root, positions, componentPosition });
-    return adaptTemplateToLayout(template, componentPosition);
+    throw new Error(`Nenhum Template disponível; fallback neutro aplicado pelo kernel. Causa: ${lastError?.message ?? "desconhecida"}`);
   };
 }
 
@@ -375,13 +450,14 @@ export function createTemplateLayoutResolver({ releaseBase, templatePathByName =
  * `kernel/application.js` espera receber por injeÃ§Ã£o (ele nunca faz `fetch`
  * por conta prÃ³pria, ver seu cabeÃ§alho).
  *
- * `templatePathByName`: habilita o Template configurado em
- * `MSEConfiguracoes.Tema` (escopo Global) a ser carregado via
- * `resolveLayout` (ver `createTemplateLayoutResolver` acima), com fallback
- * automÃ¡tico (dentro de `kernel/application.js`) para o layout neutro
- * (`kernel/layout.js`) quando nenhum Template estÃ¡ configurado ou quando o
- * pacote configurado falha ao carregar/montar â€” nenhuma mudanÃ§a de
- * comportamento para sites que nunca configuraram um Template.
+ * `templatePathByName`/`platformTemplateBase`: habilitam o Template
+ * configurado (via `MSEConfiguracoes.Tema` â€” escopo Global) a ser carregado
+ * via `resolveLayout` (ver `createTemplateLayoutResolver` acima), com
+ * fallback de 3 níveis (`[requestedName, "mse-default", "system"]`) e
+ * fallback automÃ¡tico (dentro de `kernel/application.js`) para o layout
+ * neutro (`kernel/layout.js`) quando TODOS os níveis falham ao carregar/
+ * montar â€” nenhuma mudanÃ§a de comportamento para sites que nunca
+ * configuraram um Template nem informaram `platformTemplateBase`.
  *
  * @param {{
  *   root: Element,
@@ -393,6 +469,7 @@ export function createTemplateLayoutResolver({ releaseBase, templatePathByName =
  *   defaultView?: string,
  *   manifestPathByElemento?: Record<string, string>,
  *   templatePathByName?: Record<string, string>,
+ *   platformTemplateBase?: string,
  *   fetchImpl?: typeof fetch,
  *   services?: Record<string, unknown>,
  *   onLoadError?: (error: Error, chave: string) => void,
@@ -411,6 +488,7 @@ export async function bootSiteKernel({
   defaultView,
   manifestPathByElemento = {},
   templatePathByName = {},
+  platformTemplateBase,
   fetchImpl = globalThis.fetch,
   services = {},
   onLoadError,
@@ -428,6 +506,15 @@ export async function bootSiteKernel({
   });
   const configurationStore = createSharePointConfigurationStore({ webUrl: client.webUrl, fetchImpl });
   const importModule = (url) => import(url);
+  // MSETemplateStyles é opcional (ver CONTENT_LIST_INTERNAL_NAMES acima):
+  // só é lido se a lista já existir no site (migração ainda não aplicada ->
+  // resolvedListIds.MSETemplateStyles undefined -> loadTemplateStyles nem
+  // chega a tentar rede, resolveActiveTemplateName cai em `null` e
+  // createTemplateLayoutResolver usa o fallback `theme?.name`).
+  const templateStylesListId = resolvedListIds.MSETemplateStyles;
+  const loadTemplateStyles = templateStylesListId
+    ? () => client.getListItems({ listId: templateStylesListId }, { select: TEMPLATE_STYLES_FIELDS, top: 50 })
+    : undefined;
 
   return createSiteApplication({
     root,
@@ -442,6 +529,6 @@ export async function bootSiteKernel({
     services: administratorServices,
     onLoadError,
     onModuleError,
-    resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule })
+    resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule, platformTemplateBase, loadTemplateStyles })
   });
 }

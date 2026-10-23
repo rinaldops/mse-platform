@@ -3,13 +3,13 @@
   "files": [
     {
       "path": "host-adapters/modern-script-editor/site-runner.js",
-      "bytes": 5177,
-      "sha256": "7e0067be97180368d1802ba5d7066b4e2aa7940e46153d47595009c7b9d29da6"
+      "bytes": 5826,
+      "sha256": "e0dff2314286e44f4232994b476ead041c3e85443521ee698b19ef97a2fef733"
     },
     {
       "path": "host-adapters/modern-script-editor/site-boot.js",
-      "bytes": 23259,
-      "sha256": "4256bbc007d6d0a530fc9f8b133c53d868a55b0abe44862c93fda2119840acf0"
+      "bytes": 28287,
+      "sha256": "196b6b053f20dee5a77df8bb5e712cd54e2782155b8f827c4a6c78855f30e0e6"
     },
     {
       "path": "kernel/application.js",
@@ -33,8 +33,8 @@
     },
     {
       "path": "kernel/extension-registry.js",
-      "bytes": 4456,
-      "sha256": "bbf8095127596251368414875eabf257c9ec27b60fef8c79c918e6d926452a93"
+      "bytes": 5104,
+      "sha256": "abbeb5ebe72d6563423c57d7b372bb47976f7a2ba4c07d39dfea361411fb32e4"
     },
     {
       "path": "kernel/positions.js",
@@ -98,8 +98,8 @@
     },
     {
       "path": "kernel/schemas/mse-extensions.js",
-      "bytes": 2160,
-      "sha256": "022f02a3c7e7980b8ac223cbfeb11230a646df3f40fe84e0ca0f3b2996fc789e"
+      "bytes": 3380,
+      "sha256": "dc647f0fe271a7c92ec870b1dd0a12a9596fdd7babf873b5d26cd4335ba47808"
     },
     {
       "path": "kernel/schemas/mse-menu.js",
@@ -122,9 +122,19 @@
       "sha256": "44c239e7b274ebbc6d15be64e4c98dc5e5ae3a64820b281a02b4d73aca4836e7"
     },
     {
+      "path": "kernel/schemas/mse-template-styles.js",
+      "bytes": 4480,
+      "sha256": "a69b37afe41f08860a53d8b39e0b4fc5f34729cafe3cbed1b3ec032e6da336a9"
+    },
+    {
       "path": "kernel/installer.js",
-      "bytes": 3044,
-      "sha256": "0029c6a53ef7f2bf7458eef41fe9009ac01b348e6a07282ecca71b7bc0e31b43"
+      "bytes": 3369,
+      "sha256": "ec2905dfb64f7ab84eae7b7e862b73cce4ec97f426b9cbecdc663b25431cf301"
+    },
+    {
+      "path": "kernel/template-registry.js",
+      "bytes": 2873,
+      "sha256": "62f6049f0dd7e76ee67933cc357750cda9914491b57d7f6224528a26ff1039ac"
     },
     {
       "path": "core/list-provisioning.js",
@@ -132,29 +142,59 @@
       "sha256": "c2f23e09a97b7e4b52e36215352f4b3b2827e20238aeb30d38c6e87bfff541a5"
     },
     {
+      "path": "templates/mse-default/index.js",
+      "bytes": 7279,
+      "sha256": "e5bb7a621def84b9a837c557b5489b5171d4abb18124e5536d447f982272bb25"
+    },
+    {
+      "path": "templates/mse-default/template.json",
+      "bytes": 680,
+      "sha256": "50de95a44e7e1d4ab2331e7a874493b23beec89ee0b1e3880e1c430e13917fae"
+    },
+    {
+      "path": "templates/mse-default/css/template.css",
+      "bytes": 1806,
+      "sha256": "c78aa55262de7cb2be0737ed0fa9a8854dcb08fce6803d778d4eb53f346c8854"
+    },
+    {
+      "path": "templates/system/index.js",
+      "bytes": 1996,
+      "sha256": "f72745dde1a4d3146a5fb662b09657a2bf83482ad73b9457fa209729fb666f47"
+    },
+    {
+      "path": "templates/system/template.css",
+      "bytes": 290,
+      "sha256": "ffd93d61c81f9ba813e01c47931c9ce22316704c3ea56e39bbc8ea8b47b10b0e"
+    },
+    {
       "path": "components/com_cpanel/manifest.js",
-      "bytes": 1290,
-      "sha256": "9343c381eb4cf4b8179b40e543ddbcd51081fab7de82e60cf5ab9c6c46988796"
+      "bytes": 1424,
+      "sha256": "d27132880cef80c9a2bf7c3ef1f34e8b2de18a10b55a17d3e227342f2270824c"
     },
     {
       "path": "components/com_cpanel/component.js",
-      "bytes": 1884,
-      "sha256": "69db11a34a616cfab53ddac8473c8de69b496e69e086f3732e0b24a20a2d87c1"
+      "bytes": 2605,
+      "sha256": "d070879c941f27e8a8576bcefd40eaa016e20226bbae40cbca095521b4c171fe"
     },
     {
       "path": "components/com_cpanel/router.js",
-      "bytes": 998,
-      "sha256": "163177de75e4078724aa4ed957f2af82c76653b010d281062b2a3cb0dcab1c3b"
+      "bytes": 1477,
+      "sha256": "dd962a617fe9c2ec14a22610cc22e8e278d008e0541182c6ea5ade1de42de02a"
     },
     {
       "path": "components/com_cpanel/administrator.css",
-      "bytes": 4284,
-      "sha256": "c035d5a173ee91a88b41f601dc61c30cc66e6fc55a72acf16c8ca9ef0d18d459"
+      "bytes": 5750,
+      "sha256": "41d34aecdaf2c1bfb828aa41c396f41ca3f90186561e1d42291ca0d3478b62a9"
+    },
+    {
+      "path": "components/com_cpanel/administrator-shell.js",
+      "bytes": 3491,
+      "sha256": "431ffb69b667cb29f713c4082052d966d2827d921eeede0877aecf3dc1b84f60"
     },
     {
       "path": "components/com_cpanel/control-panel.js",
-      "bytes": 957,
-      "sha256": "ac45636ae746c3dd210bf695c0b560b735383d2ff6b5332be0551e0c37465f2d"
+      "bytes": 1573,
+      "sha256": "82a6a8960f892962c95a88e573ec45dff120fb77398531d1d74ff54e222633c7"
     },
     {
       "path": "components/com_extensions/extensions-screen.js",
@@ -163,8 +203,8 @@
     },
     {
       "path": "components/com_extensions/extensions-editor.js",
-      "bytes": 7938,
-      "sha256": "4433b998936fc9859286a126352d56286922edd11f04e551352467310adaaa06"
+      "bytes": 8476,
+      "sha256": "7807cd62e01802deab0aa3ec3cbc0cc100843e2d2554d9a67551bd707c43ab1e"
     },
     {
       "path": "components/com_menus/menus-screen.js",
@@ -202,6 +242,16 @@
       "sha256": "18abec7d6d4f526ca2812c115c3543e7ca9412eca7d8e0dcfea3956909b97cb2"
     },
     {
+      "path": "components/com_templates/templates-screen.js",
+      "bytes": 1385,
+      "sha256": "fb0904ac9a68681d5415a3bccda36c5378c61c21c19ea768186d20dd46b48927"
+    },
+    {
+      "path": "components/com_templates/templates-editor.js",
+      "bytes": 6915,
+      "sha256": "8a97d74c6d87be5c3b3fdaaad1d2dc466e7658b7134eb7c1f5503822be0b7255"
+    },
+    {
       "path": "components/com_content/publisher.js",
       "bytes": 15830,
       "sha256": "3307b17e159bae8fdc5bd331a24a193970cc708da4988070727acda5d73746b1"
@@ -210,6 +260,21 @@
       "path": "components/com_content/publisher-filters.js",
       "bytes": 3277,
       "sha256": "904ef7c905f03578f3fc2a0597dc818b57d0bdc20cf6b3d9924b8873b35761bc"
+    },
+    {
+      "path": "components/com_diagnostics/diagnostics.js",
+      "bytes": 3086,
+      "sha256": "49c076cfcb6ecf514d3fad80c160b1758e8dbb9e2a1b2bc053a9414f3c19bfb9"
+    },
+    {
+      "path": "kernel/administrator-diagnostics.js",
+      "bytes": 2142,
+      "sha256": "97a3b4fc350faa4a20e89db1a17fc3762803ed94ac76b437afcd2297c89a33cf"
+    },
+    {
+      "path": "kernel/administrator-permissions.js",
+      "bytes": 1243,
+      "sha256": "33d708a64587e7018ab685b14cfc128c193e82dc70bbd08eba9226996c35c5a8"
     }
   ]
 }
