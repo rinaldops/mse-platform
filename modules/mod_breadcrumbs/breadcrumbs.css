@@ -1,0 +1,50 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="breadcrumbs"][data-mse-module="breadcrumbs"] {
+  --breadcrumbs-text: #000000;
+  --breadcrumbs-text-muted: #75787B;
+  --breadcrumbs-accent: #006298;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-breadcrumbs {
+  display: block;
+}
+
+.mse-module-breadcrumbs__status {
+  color: var(--breadcrumbs-text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.mse-module-breadcrumbs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.mse-module-breadcrumbs__item {
+  display: inline-flex;
+}
+
+.mse-module-breadcrumbs__link {
+  color: var(--breadcrumbs-accent);
+  text-decoration: none;
+}
+
+.mse-module-breadcrumbs__link:hover {
+  text-decoration: underline;
+}
+
+.mse-module-breadcrumbs__current {
+  color: var(--breadcrumbs-text-muted);
+}
+
+.mse-module-breadcrumbs__separator {
+  color: var(--breadcrumbs-text-muted);
+}
