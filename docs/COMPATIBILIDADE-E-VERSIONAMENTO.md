@@ -14,6 +14,7 @@ SharePoint nem substitui os testes de uma release.
 | Home | 0.5.0 | 0.7.0 |
 | Administração | 1.0.2 | 1.0.2 |
 | Adaptador MSE | 0.1.0 | — |
+| Busca (com_finder/mod_search) | 0.1.0 | 0.1.0 |
 
 Os manifestos dos módulos e administração declaram `>=0.8.0 <2.0.0` e
 estabilidade `preview`. Há divergências reais entre package.json e manifestos:

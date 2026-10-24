@@ -1,0 +1,60 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="search"][data-mse-module="search"] {
+  --search-text: #000000;
+  --search-text-muted: #75787B;
+  --search-accent: #006298;
+  --search-border: #C6C9CA;
+  --search-bg: #FFFFFF;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-search {
+  display: block;
+}
+
+.mse-module-search__form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mse-module-search__input {
+  flex: 1 1 auto;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--search-border);
+  border-radius: 4px;
+  background: var(--search-bg);
+  color: var(--search-text);
+  font-size: 0.9rem;
+}
+
+.mse-module-search__results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.mse-module-search__result {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--search-border);
+}
+
+.mse-module-search__result:last-child {
+  border-bottom: none;
+}
+
+.mse-module-search__result-link {
+  color: var(--search-accent);
+  text-decoration: none;
+}
+
+.mse-module-search__result-link:hover {
+  text-decoration: underline;
+}
+
+.mse-module-search__empty,
+.mse-module-search__status {
+  color: var(--search-text-muted);
+  margin: 0.5rem 0 0;
+}
