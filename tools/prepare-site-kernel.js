@@ -38,9 +38,11 @@
 //     (`kernel/schemas/mse-menu-types.js`, `mse-modules-menu.js` — os únicos
 //     dois schemas que ainda não estavam nesta lista; os outros 3 já vinham
 //     do Administrator, ver nota abaixo) precisam ser publicados.
-//   - NÃO inclui `kernel/content-services.js`: serviço opcional, não
-//     importado por `kernel/application.js` nesta configuração (nenhum
-//     módulo do CAMAP-AGP usa com_content ainda).
+//   - `kernel/content-services.js`/`kernel/article-mapper.js`/
+//     `kernel/categories.js`/`kernel/publisher-data.js` (Wave 2, módulos de
+//     posição `mod_articles_*`/`mod_tags_*`): deixaram de se qualificar
+//     para a exclusão original ("nenhum módulo usa com_content ainda") —
+//     ver nota abaixo, mesmo princípio de `kernel/installer.js` acima.
 //
 // Administrator (18/10/2026, ampliação de escopo — Templates/Administrator
 // trazidos para o escopo formal): o Administrator É carregado pelo
@@ -115,6 +117,14 @@ const FILES = [
   "kernel/installer.js",
   "kernel/template-registry.js",
   "core/list-provisioning.js",
+  // Wave 2 (módulos de posição mod_articles_*/mod_tags_*, com_categories
+  // já publicado acima): estes módulos leem artigos/categorias em memória
+  // via services.adminClient (mesmo contrato de mod_menu/mod_breadcrumbs),
+  // então as funções puras que consomem precisam estar no pacote publicado.
+  "kernel/content-services.js",
+  "kernel/article-mapper.js",
+  "kernel/categories.js",
+  "kernel/publisher-data.js",
   // Templates shipped pela PLATAFORMA (fallback de 2º/3º nível — ver
   // site-boot.js#createTemplateLayoutResolver): carregados em runtime pelo
   // navegador via import() dinâmico, mesmo mecanismo de qualquer Template

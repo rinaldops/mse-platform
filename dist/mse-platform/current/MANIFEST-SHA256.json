@@ -157,6 +157,26 @@
       "sha256": "c2f23e09a97b7e4b52e36215352f4b3b2827e20238aeb30d38c6e87bfff541a5"
     },
     {
+      "path": "kernel/content-services.js",
+      "bytes": 9139,
+      "sha256": "78ccfe82519efd8a418187b77bea7f24623afab01dbbfd66f225497dbf5df7b9"
+    },
+    {
+      "path": "kernel/article-mapper.js",
+      "bytes": 5256,
+      "sha256": "91dfcfeb68ea9402a16e8b3d2aac81872cc25d4262574b99ca201561e3ed7797"
+    },
+    {
+      "path": "kernel/categories.js",
+      "bytes": 4049,
+      "sha256": "cce0639010ba1fe94445b1c764df8b9aba0ad77e3d1ddbad2d82702ae501a41e"
+    },
+    {
+      "path": "kernel/publisher-data.js",
+      "bytes": 21558,
+      "sha256": "546349175dc39aef929aeee21b287925ef53ced3fc63dd3f45fd2f54136886bd"
+    },
+    {
       "path": "templates/mse-default/index.js",
       "bytes": 7279,
       "sha256": "e5bb7a621def84b9a837c557b5489b5171d4abb18124e5536d447f982272bb25"
