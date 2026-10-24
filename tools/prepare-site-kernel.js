@@ -115,6 +115,7 @@ const FILES = [
   "kernel/schemas/mse-categories.js",
   "kernel/schemas/mse-tags.js",
   "kernel/schemas/mse-media.js",
+  "kernel/schemas/mse-search-filters.js",
   "kernel/installer.js",
   "kernel/template-registry.js",
   "core/list-provisioning.js",
@@ -172,6 +173,10 @@ const FILES = [
   "components/com_tags/tags-editor.js",
   "components/com_media/media-screen.js",
   "components/com_media/media-editor.js",
+  // Mesmo motivo acima — com_finder (Wave 2): component.js importa
+  // finder-screen.js na raiz do módulo (SCREEN_RENDERERS).
+  "components/com_finder/finder-screen.js",
+  "components/com_finder/finder-editor.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

@@ -77,7 +77,7 @@ const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensions", "M
 // `components/com_categories/categories-editor.js` etc.), mas nunca
 // resolvidas aqui, então `listIds` chegava sempre `undefined` para essas 3
 // listas em produção (as telas quebravam com "lista não configurada").
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes", "MSETemplateStyles", "MSECategories", "MSETags", "MSEMedia"]);
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes", "MSETemplateStyles", "MSECategories", "MSETags", "MSEMedia", "MSESearchFilters"]);
 // MSETemplateStyles (22/10/2026, ampliação de escopo — Templates
 // instaláveis/registro ≈ #__template_styles) entra na lista OPCIONAL por
 // propósito: sites que ainda não rodaram a migração

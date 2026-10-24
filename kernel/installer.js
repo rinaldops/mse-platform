@@ -40,6 +40,7 @@ import { MSE_TEMPLATE_STYLES_SCHEMA } from "./schemas/mse-template-styles.js";
 import { MSE_CATEGORIES_SCHEMA } from "./schemas/mse-categories.js";
 import { MSE_TAGS_SCHEMA } from "./schemas/mse-tags.js";
 import { MSE_MEDIA_SCHEMA } from "./schemas/mse-media.js";
+import { MSE_SEARCH_FILTERS_SCHEMA } from "./schemas/mse-search-filters.js";
 
 // MSETemplateStyles (≈ #__template_styles) acrescentada ao conjunto fixo
 // junto com o mecanismo de Templates instaláveis/fallback — ver
@@ -49,7 +50,10 @@ import { MSE_MEDIA_SCHEMA } from "./schemas/mse-media.js";
 // kernel/schemas/mse-categories.js e kernel/schemas/mse-tags.js. MSEMedia
 // (biblioteca de documentos do component com_media) acrescentada junto
 // com o gerenciador de mídia do Administrator — ver
-// kernel/schemas/mse-media.js.
+// kernel/schemas/mse-media.js. MSESearchFilters (≈ #__finder_filters,
+// "filtros de busca salvos" — CRUD-lite, NÃO um motor de indexação real)
+// acrescentada junto com o componente com_finder — ver
+// kernel/schemas/mse-search-filters.js.
 export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_MENU_TYPES_SCHEMA,
   MSE_MENU_SCHEMA,
@@ -59,7 +63,8 @@ export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_TEMPLATE_STYLES_SCHEMA,
   MSE_CATEGORIES_SCHEMA,
   MSE_TAGS_SCHEMA,
-  MSE_MEDIA_SCHEMA
+  MSE_MEDIA_SCHEMA,
+  MSE_SEARCH_FILTERS_SCHEMA
 ]);
 
 /**
