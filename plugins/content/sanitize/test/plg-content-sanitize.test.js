@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createEventBus } from "../../../kernel/events.js";
+import { createEventBus } from "../../../../kernel/events.js";
 import plugin from "../plg-content-sanitize.js";
 
 function createContext(overrides = {}) {
