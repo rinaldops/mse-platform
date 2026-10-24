@@ -136,21 +136,22 @@ function createFakeClient() {
 // ser as listas novas em inglês. MSETemplateStyles (≈ #__template_styles)
 // acrescentada junto com o mecanismo de Templates instaláveis/fallback.
 // MSECategories (≈ #__categories) acrescentada junto com o componente
-// com_categories (components/com_categories).
-assert.equal(KERNEL_LIST_SCHEMAS.length, 7);
+// com_categories (components/com_categories). MSETags (≈ #__tags)
+// acrescentada junto com o componente com_tags.
+assert.equal(KERNEL_LIST_SCHEMAS.length, 8);
 assert.deepEqual(
   KERNEL_LIST_SCHEMAS.map((schema) => schema.internalName),
-  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles", "MSECategories"]
+  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles", "MSECategories", "MSETags"]
 );
 assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
 
-// inspect() detecta as 7 listas ausentes quando o site não tem nenhuma delas.
+// inspect() detecta as 8 listas ausentes quando o site não tem nenhuma delas.
 {
   const { client } = createFakeClient();
   const installer = createKernelInstaller({ client });
   const inspection = await installer.inspect();
   assert.equal(inspection.status, "changes-required");
-  assert.equal(inspection.plan.lists.length, 7);
+  assert.equal(inspection.plan.lists.length, 8);
   assert.equal(inspection.plan.lists.every((list) => list.createList), true);
 }
 
@@ -175,14 +176,14 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.writes.length, 0);
 }
 
-// apply(confirm) autorizado cria as 7 listas + campos; verify() confirma estado final.
+// apply(confirm) autorizado cria as 8 listas + campos; verify() confirma estado final.
 {
   const { client, state } = createFakeClient();
   const installer = createKernelInstaller({ client });
 
   const applied = await installer.apply(() => true);
   assert.equal(applied.status, "provisioned");
-  assert.equal(state.lists.size, 7);
+  assert.equal(state.lists.size, 8);
   assert.equal(state.lists.get("MSEMenuTypes").fields.some((field) => field.InternalName === "Key"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Alias"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Component"), true);
@@ -191,6 +192,7 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.lists.get("MSEModulesMenu").fields.some((field) => field.InternalName === "ModuleId"), true);
   assert.equal(state.lists.get("MSETemplateStyles").fields.some((field) => field.InternalName === "Template"), true);
   assert.equal(state.lists.get("MSECategories").fields.some((field) => field.InternalName === "Alias"), true);
+  assert.equal(state.lists.get("MSETags").fields.some((field) => field.InternalName === "Alias"), true);
 
   const verified = await installer.verify();
   assert.equal(verified.status, "ready");

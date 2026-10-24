@@ -23,5 +23,5 @@ export function parseAdministratorRoute(params = {}) {
 }
 export function resolveAdministratorScreen(route) {
   const key = route?.option || "com_cpanel";
-  return ({ com_cpanel: "controlpanel", com_installer: "installer", com_content: "publisher", com_publisher: "publisher", com_config: "config", com_diagnostics: "diagnostics", com_menus: "menus", com_modules: "modules", com_extensions: "extensions", com_templates: "templates", com_categories: "categories" })[key] || "controlpanel";
+  return ({ com_cpanel: "controlpanel", com_installer: "installer", com_content: "publisher", com_publisher: "publisher", com_config: "config", com_diagnostics: "diagnostics", com_menus: "menus", com_modules: "modules", com_extensions: "extensions", com_templates: "templates", com_categories: "categories", com_tags: "tags" })[key] || "controlpanel";
 }
