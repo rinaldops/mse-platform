@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { createInstallerPlugin, INSTALLER_PLUGIN_MANIFEST } from "../manifest.js";
-import { validateInstallerContract } from "../plugin.js";
+import { createInstallerPlugin, INSTALLER_PLUGIN_MANIFEST } from "../../../plugins/installer/manifest.js";
+import { validateInstallerContract } from "../../../plugins/installer/plugin.js";
 
 const calls = [];
 const plugin = createInstallerPlugin({
@@ -19,3 +19,4 @@ assert.equal(calls.length, 3);
 assert.throws(() => createInstallerPlugin({ inspect() {}, verify() {} }), /apply/);
 await assert.rejects(() => plugin.onInstallerApply({}, null), /confirm/);
 console.log("plugins/installer: ok");
+
