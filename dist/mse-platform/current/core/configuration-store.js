@@ -37,10 +37,15 @@ async function resolveListPath({ webUrl, listTitle, fetchImpl }) {
 
 async function loadPublished({ webUrl, listTitle, fetchImpl }) {
   const listPath = await resolveListPath({ webUrl, listTitle, fetchImpl });
-  const fields = "Id,Title,Escopo,Modulo,Layout,Tema,ConfiguracaoJson,Ativo,Estado,ExtensaoElemento";
+  // Fase 3b (23/10/2026, docs/AUDITORIA-JOOMLA-PENTE-FINO.md §2.8): este é o
+  // único leitor real identificado de MSEConfiguracoes — por isso lê só os
+  // campos EM INGLÊS (Scope/Module/Theme/ConfigurationJson/Active/State/
+  // ExtensionElement); os equivalentes PT (Escopo/Modulo/Tema/...) ficam
+  // DEPRECATED em core/provisioning.js, sem leitor novo.
+  const fields = "Id,Title,Scope,Module,Layout,Theme,ConfigurationJson,Active,State,ExtensionElement";
   const response = await fetchImpl(
     `${listPath}/items?$select=${fields}`
-      + "&$filter=Ativo eq 1&$top=5000",
+      + "&$filter=Active eq 1&$top=5000",
     { headers: { Accept: "application/json;odata=nometadata" } }
   );
   if (response.status === 404) return { instances: {}, global: null, extensions: {} };
@@ -48,16 +53,16 @@ async function loadPublished({ webUrl, listTitle, fetchImpl }) {
   const payload = await response.json();
   if (!Array.isArray(payload?.value)) throw new Error("A lista de configurações retornou um formato inválido.");
   const activeItems = await Promise.all(payload.value.map(async (item) => {
-    if (String(item.Estado || "Publicado") === "Publicado") return item;
+    if (String(item.State || "Published") === "Published") return item;
     const versionsResponse = await fetchImpl(
       `${listPath}/items(${item.Id})/versions`
-        + "?$select=Layout,Tema,ConfiguracaoJson,Estado&$orderby=Created desc&$top=50",
+        + "?$select=Layout,Theme,ConfigurationJson,State&$orderby=Created desc&$top=50",
       { headers: { Accept: "application/json;odata=nometadata" } }
     );
     if (!versionsResponse.ok) throw new Error(`Não foi possível carregar a versão publicada de ${item.Title} (HTTP ${versionsResponse.status}).`);
     const versions = (await versionsResponse.json())?.value;
     if (!Array.isArray(versions)) throw new Error(`O histórico de ${item.Title} retornou um formato inválido.`);
-    const published = versions.find((version) => String(version.Estado) === "Publicado");
+    const published = versions.find((version) => String(version.State) === "Published");
     return published ? { ...item, ...published } : null;
   }));
   const instancesByModule = {};
@@ -65,21 +70,21 @@ async function loadPublished({ webUrl, listTitle, fetchImpl }) {
   const configByExtensao = {};
   for (const item of activeItems) {
     if (!item) continue;
-    const scope = String(item.Escopo).toLowerCase();
-    const configuration = JSON.parse(item.ConfiguracaoJson || "{}");
+    const scope = String(item.Scope).toLowerCase();
+    const configuration = JSON.parse(item.ConfigurationJson || "{}");
     if (String(item.Layout).toLowerCase() === "contained") configuration.layout = { ...configuration.layout, mode: "contained" };
     if (String(item.Layout).toLowerCase() === "fullbleed") configuration.layout = { ...configuration.layout, mode: "fullBleed" };
-    if (item.Tema) configuration.theme = { ...configuration.theme, name: item.Tema };
+    if (item.Theme) configuration.theme = { ...configuration.theme, name: item.Theme };
 
-    if (scope === "instancia") {
-      const moduleId = String(item.Modulo || "").toLowerCase();
+    if (scope === "instance") {
+      const moduleId = String(item.Module || "").toLowerCase();
       if (!moduleId || !item.Title) continue;
       instancesByModule[moduleId] ||= {};
       instancesByModule[moduleId][item.Title] = configuration;
     } else if (scope === "global") {
       globalConfiguration = configuration;
-    } else if (scope === "extensao") {
-      const elemento = String(item.ExtensaoElemento || "").toLowerCase();
+    } else if (scope === "extension") {
+      const elemento = String(item.ExtensionElement || "").toLowerCase();
       if (!elemento) continue;
       configByExtensao[elemento] = configuration;
     }
@@ -134,10 +139,10 @@ export function createSharePointConfigurationStore({ webUrl, listTitle = "MSECon
     loadForEdit: (itemId) => loadConfigurationItemForEdit({ ...common, itemId }),
     history: (itemId) => loadHistory(common, itemId),
     create({ moduleId, instanceId, view = "Full", configuration = {}, layout = "Herdar", theme = null,
-      settingsVersion = 1, moduleVersion = null, state = "Rascunho", active = true }) {
+      settingsVersion = 1, moduleVersion = null, state = "Draft", active = true }) {
       return createConfigurationItem({
         ...common,
-        item: { key: instanceKey(instanceId, "instanceId"), scope: "Instancia", module: instanceKey(moduleId, "moduleId"),
+        item: { key: instanceKey(instanceId, "instanceId"), scope: "Instance", module: instanceKey(moduleId, "moduleId"),
           view, layout, theme, configuration, settingsVersion, moduleVersion, state, active }
       });
     },

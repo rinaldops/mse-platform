@@ -2,16 +2,16 @@ import assert from "node:assert/strict";
 import { createSharePointConfigurationStore } from "../configuration-store.js";
 
 const calls = [];
-const item = { __metadata: { type: "SP.Data.MSEConfiguracoesListItem" }, Id: 4, Title: "forum-principal", Escopo: "Instancia", Modulo: "forum", Layout: "Herdar", Tema: null, ConfiguracaoJson: JSON.stringify({ forum: { pageSize: 20 } }), VersaoConfiguracao: 1, Ativo: true };
-const summaryItem = { ...item, Id: 5, Title: "forum-resumo", TipoInstancia: "Summary", ConfiguracaoJson: JSON.stringify({ layout: { marginTop: 32 }, title: { visible: true, text: "Discussões" } }) };
-const draftItem = { ...item, Id: 6, Title: "forum-rascunho", Estado: "Rascunho", ConfiguracaoJson: JSON.stringify({ forum: { pageSize: 100 } }) };
+const item = { __metadata: { type: "SP.Data.MSEConfiguracoesListItem" }, Id: 4, Title: "forum-principal", Scope: "Instance", Module: "forum", Layout: "Herdar", Theme: null, ConfigurationJson: JSON.stringify({ forum: { pageSize: 20 } }), VersaoConfiguracao: 1, Active: true, State: "Published" };
+const summaryItem = { ...item, Id: 5, Title: "forum-resumo", TipoInstancia: "Summary", ConfigurationJson: JSON.stringify({ layout: { marginTop: 32 }, title: { visible: true, text: "Discussões" } }) };
+const draftItem = { ...item, Id: 6, Title: "forum-rascunho", State: "Draft", ConfigurationJson: JSON.stringify({ forum: { pageSize: 100 } }) };
 const response = (status, body, etag = null) => ({ ok: status >= 200 && status < 300, status, headers: { get: () => etag }, json: async () => body });
 const fetchImpl = async (url, options = {}) => {
   calls.push({ url, options });
-  if (url.includes("$filter=Ativo eq 1")) return response(200, { value: [item, summaryItem, draftItem] });
+  if (url.includes("$filter=Active eq 1")) return response(200, { value: [item, summaryItem, draftItem] });
   if (url.includes("/items(6)/versions")) return response(200, { value: [
-    { Estado: "Rascunho", ConfiguracaoJson: draftItem.ConfiguracaoJson, Layout: "Herdar", Tema: null },
-    { Estado: "Publicado", ConfiguracaoJson: JSON.stringify({ forum: { pageSize: 50 } }), Layout: "Herdar", Tema: null }
+    { State: "Draft", ConfigurationJson: draftItem.ConfigurationJson, Layout: "Herdar", Theme: null },
+    { State: "Published", ConfigurationJson: JSON.stringify({ forum: { pageSize: 50 } }), Layout: "Herdar", Theme: null }
   ] });
   if (url.includes("/items?") && url.includes("$orderby=Title")) return response(200, { value: [item, summaryItem] });
   if (url.includes("/items(4)/versions")) return response(200, { value: [{ VersionId: 2, VersionLabel: "2.0", Created: "2026-09-19T12:00:00Z", CreatedBy: { Title: "Pessoa Exemplo" } }] });
@@ -19,7 +19,7 @@ const fetchImpl = async (url, options = {}) => {
   if (url.endsWith("/_api/contextinfo")) return response(200, { FormDigestValue: "digest" });
   if (url.includes("/items(4)") && options.method === "POST") {
     const update = JSON.parse(options.body);
-    item.ConfiguracaoJson = update.ConfiguracaoJson;
+    item.ConfigurationJson = update.ConfigurationJson;
     item.VersaoConfiguracao = update.VersaoConfiguracao;
     return response(204, {});
   }

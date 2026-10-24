@@ -39,7 +39,10 @@ function clear(nodeValue) { if (typeof nodeValue.replaceChildren === "function")
 function statusCode(error) { const code = error?.status ?? error?.statusCode; if (Number.isInteger(code)) return code; const match = String(error?.message ?? "").match(/\b(403|412)\b/); return match ? Number(match[1]) : null; }
 function errorText(prefix, error) { const code = statusCode(error); if (code === 403) return `${prefix}: sem permissão (403).`; if (code === 412) return `${prefix}: conflito de edição (412); recarregue e tente novamente.`; return `${prefix}: ${error?.message || "erro desconhecido"}.`; }
 
-export function renderModulesEditor({ root, services = {} } = {}) {
+const PUBLISH_TASK = "modules.publish";
+const UNPUBLISH_TASK = "modules.unpublish";
+
+export function renderModulesEditor({ root, route, services = {} } = {}) {
   const document = root?.ownerDocument;
   const client = services.adminClient;
   const list = services.listIds?.MSEModules;
@@ -50,6 +53,16 @@ export function renderModulesEditor({ root, services = {} } = {}) {
   const toolbar = document.createElement("div"); const newButton = node(document, "button", "Novo módulo"); const reloadButton = node(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
   panel.append(node(document, "h2", "Instâncias de módulo"), error, toolbar, tableHost, formHost); root.append(panel);
   let currentId = null; let controls = {};
+  // `route.task`/`route.id` só são aplicados uma vez, no primeiro
+  // carregamento — mesmo padrão de components/com_templates/templates-editor.js.
+  let pendingTask = (route?.task === PUBLISH_TASK || route?.task === UNPUBLISH_TASK) && route.id != null
+    ? { task: route.task, id: route.id }
+    : null;
+  async function togglePublished(item, desiredPublished) {
+    error.textContent = "";
+    try { await updateAdminItem({ client, list, id: item.Id, values: { Published: desiredPublished ? "Published" : "Unpublished" } }); await reload(); }
+    catch (e) { error.textContent = errorText("Falha ao alternar módulo", e); }
+  }
   const read = () => ({ Title: controls.Title.value, Module: controls.Module.value, Position: controls.Position.value, Ordering: controls.Ordering.value, Published: controls.Published.value, PublishUp: controls.PublishUp.value, PublishDown: controls.PublishDown.value, ShowTitle: controls.ShowTitle.checked, Style: controls.Style.value, MenuAssignment: controls.MenuAssignment.value, ParamsJson: controls.ParamsJson.value, SchemaVersion: controls.SchemaVersion.value });
   function renderForm(item = {}) {
     clear(formHost); controls = {};
@@ -62,7 +75,21 @@ export function renderModulesEditor({ root, services = {} } = {}) {
     const save = node(document, "button", "Salvar"); const cancel = node(document, "button", "Cancelar"); bind(cancel, () => { currentId = null; renderForm(); });
     bind(save, async () => { error.textContent = ""; try { const values = validateModuleValues(read()); if (currentId == null) await createAdminItem({ client, list, values }); else await updateAdminItem({ client, list, id: currentId, values }); currentId = null; renderForm(); await reload(); } catch (e) { error.textContent = errorText("Falha ao salvar", e); } }); box.append(save, cancel); formHost.append(box);
   }
-  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Module, item.Position, item.Ordering]) row.append(node(document, "td", String(value ?? ""))); const stateCell = node(document, "td", String(item.Published ?? "")); stateCell.className = `mse-administrator__status-cell ${item.Published === "Published" ? "mse-administrator__status-cell--ok" : item.Published === "Trashed" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(stateCell, node(document, "td", String(item.MenuAssignment ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); actions.append(edit, remove); row.append(actions); table.append(row); } tableHost.append(table); }
-  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEModules não configurado."; return; } try { renderTable(await listAdminItems({ client, list, select: ["Id", "Title", "Module", "Position", "Ordering", "Published", "PublishUp", "PublishDown", "ShowTitle", "Style", "MenuAssignment", "ParamsJson", "SchemaVersion"], orderby: "Position,Ordering" })); } catch (e) { error.textContent = errorText("Falha ao carregar módulos", e); } }
+  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Module, item.Position, item.Ordering]) row.append(node(document, "td", String(value ?? ""))); const stateCell = node(document, "td", String(item.Published ?? "")); stateCell.className = `mse-administrator__status-cell ${item.Published === "Published" ? "mse-administrator__status-cell--ok" : item.Published === "Trashed" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(stateCell, node(document, "td", String(item.MenuAssignment ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); const toggle = node(document, "button", item.Published === "Published" ? "Despublicar" : "Publicar"); bind(toggle, () => togglePublished(item, item.Published !== "Published")); actions.append(edit, remove, toggle); row.append(actions); table.append(row); } tableHost.append(table); }
+  async function reload() {
+    if (!client || !list) { error.textContent = "Client administrativo ou lista MSEModules não configurado."; return; }
+    try {
+      const items = await listAdminItems({ client, list, select: ["Id", "Title", "Module", "Position", "Ordering", "Published", "PublishUp", "PublishDown", "ShowTitle", "Style", "MenuAssignment", "ParamsJson", "SchemaVersion"], orderby: "Position,Ordering" });
+      renderTable(items);
+      if (pendingTask != null) {
+        const { task, id } = pendingTask;
+        pendingTask = null;
+        const target = items.find((item) => item.Id === id);
+        const desiredPublished = task === PUBLISH_TASK;
+        const isPublished = target?.Published === "Published";
+        if (target && isPublished !== desiredPublished) await togglePublished(target, desiredPublished);
+      }
+    } catch (e) { error.textContent = errorText("Falha ao carregar módulos", e); }
+  }
   bind(newButton, () => { currentId = null; renderForm(); }); bind(reloadButton, reload); renderForm(); reload(); return { dispose() { panel.remove(); } };
 }

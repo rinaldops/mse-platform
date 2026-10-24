@@ -61,20 +61,27 @@ Antes da Fase 2 estes eram `"afterRoute"`/`"beforeRender"`/`"afterRender"`
 
 ## 4. Listas SharePoint ≈ tabelas Joomla!
 
-| Joomla! (`#__*`) | Lista SharePoint (atual, inglês) | Lista PT (antiga, ainda viva em produção) |
+| Joomla! (`#__*`) | Lista SharePoint (atual, inglês) | Lista PT (antiga) |
 | --- | --- | --- |
-| `#__modules` | `MSEModules` | `MSEModulos` (não gerida mais pelo installer; dados não apagados) |
+| `#__modules` | `MSEModules` | `MSEModulos` (não gerida mais pelo installer; exclusão real pendente — ver nota abaixo) |
 | `#__extensions` | `MSEExtensions` | `MSEExtensoes` (idem) |
 | `#__modules_menu` | `MSEModulesMenu` | `MSEModulosMenu` (idem) |
-| `#__menu_types` | `MSEMenuTypes` | `MSEMenuTipos` (idem) |
-| `#__menu` | `MSEMenu` (mesmo nome PT/EN) | — (campos PT e EN coexistem na mesma lista, ver seção 5) |
+| `#__menu_types` | `MSEMenuTypes` | `MSEMenuTipos` (idem; esquema removido do código, ver nota abaixo) |
+| `#__menu` | `MSEMenu` (mesmo nome PT/EN) | — (os 9 campos PT foram removidos do schema na Fase 5, ver seção 5) |
 | `#__template_styles` | `MSETemplateStyles` (sem lista PT; criada já em inglês, 22/10/2026) | — |
 | `#__users`/ACL | — | fora de escopo; SharePoint é a autoridade de permissão |
 
-As listas PT (`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/`MSEMenuTipos`)
-**continuam existindo em produção** — não foram apagadas nem alteradas,
-apenas deixaram de ser lidas pelo código a partir da Fase 4. O
-decomissionamento delas é uma limpeza futura, fora desta normalização.
+Fase 5 da normalização (23/10/2026, `tools/decommission-mse-legacy-pt.js`):
+o ESQUEMA `MSEMenuTipos` (PT) e os 9 campos PT de `MSEMenu`
+(`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/`Componente`/`Visao`/`Padrao`/
+`AbrirEm`/`Estado`) foram removidos do código — `kernel/installer.js` não
+os provisiona/verifica mais, `kernel/schemas/mse-menu.js` não os declara
+mais. A ferramenta de exclusão real das 4 listas PT
+(`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/`MSEMenuTipos`) e dos 9
+campos PT de `MSEMenu` no tenant SharePoint está implementada e testada,
+mas sua EXECUÇÃO contra produção é uma ação irreversível separada,
+pendente de sessão supervisionada (dump de segurança + confirmação humana
+explícita — ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.10).
 
 ## 5. Campos (SharePoint PascalCase) ≈ colunas Joomla!
 
@@ -139,14 +146,17 @@ uma lista PT pré-existente).
 | `moduleid` | `ModuleId` | `ModuloId` |
 | `menuid` | `MenuId` | `MenuId` (já neutro) |
 
-### `MSEMenu` (≈ `#__menu`) — campos PT e EN coexistem na mesma lista
+### `MSEMenu` (≈ `#__menu`)
 
-`MSEMenu` não ganhou lista irmã (já tinha o mesmo nome em PT/EN). Em vez
-disso, os 9 campos em inglês foram **acrescentados** lado a lado com os 12
-campos PT originais — os PT ficam `DEPRECATED` nos comentários do schema
-(`kernel/schemas/mse-menu.js`), mas não são removidos nesta fase.
+`MSEMenu` nunca ganhou lista irmã (já tinha o mesmo nome em PT/EN). Os 9
+campos em inglês foram acrescentados lado a lado com os 9 campos PT
+originais na Fase 3; os PT foram removidos do schema na **Fase 5**
+(23/10/2026, `tools/decommission-mse-legacy-pt.js`,
+`kernel/schemas/mse-menu.js`) — a tabela abaixo mostra o mapeamento
+histórico só como referência de equivalência Joomla!, não o estado atual
+do schema (que só tem os campos EN).
 
-| Joomla! | Campo em inglês (lido pelo código desde a Fase 4) | Campo PT (DEPRECATED, ainda na lista) |
+| Joomla! | Campo em inglês (único lido pelo código desde a Fase 4; schema só tem este desde a Fase 5) | Campo PT (removido na Fase 5) |
 | --- | --- | --- |
 | `menutype` | `MenuType` | `TipoMenu` |
 | `path` | `Path` | `Caminho` |
@@ -160,42 +170,90 @@ campos PT originais — os PT ficam `DEPRECATED` nos comentários do schema
 | `alias` | `Alias` | — (já era neutro) |
 | `parent_id` | `ParentId` | — (já era neutro) |
 | `params` | `ParamsJson` | — (já era neutro) |
+| `template_style_id` | `TemplateStyleId` (novo, 23/10/2026) | — (sem equivalente PT; referencia `MSETemplateStyles.Id`; ausente/`0`/`null` = usa o template padrão do site, ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.8) |
 
 A tela do Administrator (`components/com_menus/menus-editor.js`) exibe e
-edita só os 9 campos em inglês — filtra `MSE_MENU_SCHEMA` pelos nomes EN em
-vez de expor os 21 campos (12 PT + 9 EN) ao gestor.
+edita os 9 campos em inglês (hoje os únicos no schema).
+
+### Atribuição de template por item de menu + overrides de view (23/10/2026)
+
+≈ Joomla! `#__menu.template_style_id` e
+`templates/<template>/html/<component>/<view>.php`. Fechado em
+23/10/2026 — ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.8 para o
+detalhamento completo (schema, `kernel/template-registry.js`, refatoração
+de `kernel/application.js` para resolver o layout por rota em vez de uma
+única vez no boot, 3 níveis de precedência do template requisitado em
+`site-boot.js#createTemplateLayoutResolver`, e overrides de view via
+`template.json#viewOverrides`). Nenhum template existente declara
+`viewOverrides` nem usa `TemplateStyleId` — zero mudança de
+comportamento para quem não configurar essas features novas.
+
+### `MSEConfiguracoes` — Fase 3b, fechada em 23/10/2026
+
+Campos com consumidor real confirmado em
+`core/configuration-store.js#loadPublished`, traduzidos para inglês e
+acrescentados lado a lado com os PT (que ficam `DEPRECATED`, vivos, sem
+leitor novo) — mesmo padrão de `MSEMenu` nas Fases 3/4. Ver
+`docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.9.
+
+| Joomla! | Campo em inglês | Campo PT (DEPRECATED, ainda na lista) |
+| --- | --- | --- |
+| `(scope)` | `Scope` (`Global`/`Instance`/`Extension`) | `Escopo` (`Global`/`Instancia`/`Extensao`) |
+| `(module)` | `Module` | `Modulo` |
+| `(theme)` | `Theme` | `Tema` |
+| `params` | `ConfigurationJson` | `ConfiguracaoJson` |
+| `published` (via `enabled`) | `Active` (Boolean) | `Ativo` (Boolean) |
+| `published` (via estado editorial) | `State` (`Draft`/`Published`) | `Estado` (`Rascunho`/`Publicado`) |
+| `(extension element)` | `ExtensionElement` | `ExtensaoElemento` |
+| `(layout)` | `Layout` (já neutro; choice nova `Inherit` ao lado de `Herdar`) | — |
+
+Os 4 campos sem consumidor confirmado (`TipoInstancia`/
+`VersaoConfiguracao`/`VersaoSettings`/`VersaoModulo`) permanecem só em PT,
+fora desta rodada. `components/com_config/config-editor.js` (tela do
+Administrator) lê/grava só os campos em inglês dos 8 migrados, mais os 4
+que seguem em PT.
 
 ## 6. Rotas administrativas
 
 Já seguiam o vocabulário Joomla! desde antes desta normalização —
 `option=com_xxx&view=yyy&layout=zzz&task=www&id=N`
 (`components/com_cpanel/router.js`). `task` segue a convenção
-`controller.task` (ex. `templates.setdefault`) só em `com_templates`
-(prova de conceito, 22/10/2026 — ver
-`components/com_templates/templates-editor.js`); demais telas ainda
-disparam a ação só por clique direto, sem ler `route.task` — ver
-`docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3.
+`controller.task`: `com_templates` (`templates.setdefault`, prova de
+conceito, 22/10/2026), `com_extensions` (`extensions.enable`/
+`extensions.disable`), `com_menus` (`menus.publish`/`menus.unpublish`),
+`com_modules` (`modules.publish`/`modules.unpublish`) e `com_config`
+(`config.activate`/`config.deactivate`) consomem `task` para disparar,
+automaticamente na primeira carga, a mesma alternância rápida de 1 clique
+já disponível por botão em cada tela (23/10/2026 — ver cada
+`*-editor.js`). O CRUD completo (criar/editar/excluir) continua
+disparando ação só por clique direto em todas as telas — ver
+`docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.7/§3.
 
 ## 7. O que permanece deliberadamente fora de escopo
 
 - **ACL próprio** — SharePoint é a autoridade de permissão.
-- **Templates — atribuição por item de menu e overrides `templates/<t>/html/<view>`**
-  continuam fora de escopo. O mecanismo de instalação/fallback/padrão
-  (`MSETemplateStyles`, fallback de 3 níveis, `com_templates`) já existe
-  desde 22/10/2026 — ver seção 4 e `PLANO-SITE-KERNEL-MSE.md` seção 3.
 - **`MSETemplateStyles.Home` Boolean vs. `#__template_styles.home char(7)`**
   — Joomla! real usa esse campo também para templates específicos de
   idioma; o `mse-platform` não tem conceito de multi-idioma por site hoje,
   então ficou só `Boolean` (ver nota na tabela da seção 5 e
   `kernel/schemas/mse-template-styles.js#Home`). Documentado, não corrigido.
-- **`controller.task` só em `com_templates`** — ver seção 6. Reescrever o
-  padrão CRUD-lite de clique-direto para `task`-orientado nas demais telas
-  (`com_extensions`, `com_menus`, `com_modules`, `com_config`) é um
-  redesenho maior, fora desta rodada.
+- **`controller.task` limitado à alternância rápida** — ver seção 6. As 5
+  telas (`com_templates`/`com_extensions`/`com_menus`/`com_modules`/
+  `com_config`) consomem `task` só para a ação de 1 clique
+  (padrão/habilitar/publicar/ativar); reescrever o CRUD completo
+  (criar/editar/excluir) para `task`-orientado continua fora de escopo —
+  redesenho maior.
 - **`admin/`** — painel pré-Site-Kernel, congelado, sem prazo de migração.
-- **`MSEConfiguracoes`** — fora desta rodada de normalização de campos;
-  fica para uma Fase 3b dedicada futura. `MSEConfiguracoes.Tema` continua
+- **`MSEConfiguracoes` (Fase 3b)** — **fechada em 23/10/2026**, ver seção 5
+  (`MSEConfiguracoes — Fase 3b`) e `docs/AUDITORIA-JOOMLA-PENTE-FINO.md`
+  §2.9. `MSEConfiguracoes.Theme` (equivalente em inglês de `Tema`) continua
   existindo como fallback de compatibilidade enquanto `MSETemplateStyles`
   não tiver uma linha `Home=true` para o site.
-- **Decomissionamento das listas/campos PT** — vivos em produção, não lidos
-  pelo código desde a Fase 4; remoção real é limpeza futura.
+- **Decomissionamento das listas/campos PT** — o esquema `MSEMenuTipos`
+  (PT) e os 9 campos PT de `MSEMenu` já foram removidos do código (Fase 5,
+  23/10/2026). As 4 listas PT (`MSEModulos`/`MSEExtensoes`/
+  `MSEModulosMenu`/`MSEMenuTipos`) e os 8 campos PT de `MSEConfiguracoes`
+  seguem vivas em produção, não lidas pelo código — a ferramenta de
+  exclusão real (`tools/decommission-mse-legacy-pt.js`) está pronta e
+  testada, mas sua execução contra o tenant é uma ação irreversível
+  separada, pendente de sessão supervisionada.

@@ -8,12 +8,16 @@
  * + h1 "Módulos" + o editor CRUD `modules-editor.js` montado dentro), sem
  * nenhuma mudança de comportamento — só de local do arquivo.
  *
- * @param {{ root: Element, services?: object }} options
+ * Consome `route.task`/`route.id` (`modules.publish`/`modules.unpublish` —
+ * ver `modules-editor.js` e `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.7/§3),
+ * mesmo padrão `controller.task` já usado por `com_templates`.
+ *
+ * @param {{ root: Element, route?: object, services?: object }} options
  * @returns {{ dispose(): void }}
  */
 import { renderModulesEditor } from "./modules-editor.js";
 
-export function renderModulesScreen({ root, services = {} } = {}) {
+export function renderModulesScreen({ root, route, services = {} } = {}) {
   const document = root.ownerDocument;
   const panel = document.createElement("section");
   panel.className = "mse-administrator__panel";
@@ -21,7 +25,7 @@ export function renderModulesScreen({ root, services = {} } = {}) {
   h1.textContent = "Módulos";
   panel.append(h1);
   root.append(panel);
-  renderModulesEditor({ root: panel, services });
+  renderModulesEditor({ root: panel, route, services });
   return {
     dispose() {
       panel.remove();

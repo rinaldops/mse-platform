@@ -8,12 +8,16 @@
  * + h1 "Menus" + o editor CRUD `menus-editor.js` montado dentro), sem
  * nenhuma mudança de comportamento — só de local do arquivo.
  *
- * @param {{ root: Element, services?: object }} options
+ * Consome `route.task`/`route.id` (`menus.publish`/`menus.unpublish` — ver
+ * `menus-editor.js` e `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.7/§3), mesmo
+ * padrão `controller.task` já usado por `com_templates`.
+ *
+ * @param {{ root: Element, route?: object, services?: object }} options
  * @returns {{ dispose(): void }}
  */
 import { renderMenusEditor } from "./menus-editor.js";
 
-export function renderMenusScreen({ root, services = {} } = {}) {
+export function renderMenusScreen({ root, route, services = {} } = {}) {
   const document = root.ownerDocument;
   const panel = document.createElement("section");
   panel.className = "mse-administrator__panel";
@@ -21,7 +25,7 @@ export function renderMenusScreen({ root, services = {} } = {}) {
   h1.textContent = "Menus";
   panel.append(h1);
   root.append(panel);
-  renderMenusEditor({ root: panel, services });
+  renderMenusEditor({ root: panel, route, services });
   return {
     dispose() {
       panel.remove();

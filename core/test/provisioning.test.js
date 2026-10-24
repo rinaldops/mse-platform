@@ -133,6 +133,7 @@ function createFakeSharePoint({
       const body = JSON.parse(options.body);
       assert.equal(body.Title, "global");
       assert.equal(body.Escopo, "Global");
+      assert.equal(body.Scope, "Global");
       assert.equal(body.__metadata.type, "SP.Data.MSEConfiguracoesListItem");
       return makeResponse(201, {});
     }
@@ -165,8 +166,8 @@ function createFakeSharePoint({
   return { fetchImpl, state };
 }
 
-assert.equal(CONFIGURATION_LIST_SCHEMA.version, 3);
-assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 12);
+assert.equal(CONFIGURATION_LIST_SCHEMA.version, 4);
+assert.equal(CONFIGURATION_LIST_SCHEMA.fields.length, 19);
 
 const cancelledServer = createFakeSharePoint();
 let cancelledPlan;
@@ -180,7 +181,7 @@ const cancelled = await provisionConfigurationList({
 });
 assert.equal(cancelled.status, "cancelled");
 assert.equal(cancelledPlan.createList, true);
-assert.equal(cancelledPlan.fieldsToCreate.length, 12);
+assert.equal(cancelledPlan.fieldsToCreate.length, 19);
 assert.equal(cancelledServer.state.writes.length, 0);
 
 await assert.rejects(
@@ -207,7 +208,7 @@ assert.equal(confirmedPlans.length, 1);
 assert.equal(server.state.exists, true);
 assert.equal(server.state.versioning, true);
 assert.equal(server.state.globalExists, true);
-assert.equal(server.state.fields.length, 13);
+assert.equal(server.state.fields.length, 20);
 assert.equal(
   server.state.fields.find((field) => field.InternalName === "Title").EnforceUniqueValues,
   true
@@ -308,7 +309,13 @@ function createItemEditor({ raceOnWrite = false } = {}) {
       Tema: "default",
       ConfiguracaoJson: JSON.stringify({ pageSize: 20 }),
       VersaoConfiguracao: 1,
-      Ativo: true
+      Ativo: true,
+      Scope: "Global",
+      Module: null,
+      Theme: "default",
+      ConfigurationJson: JSON.stringify({ pageSize: 20 }),
+      Active: true,
+      State: "Published"
     }
   };
   const fetchImpl = async (url, options = {}) => {
@@ -408,7 +415,13 @@ function createConfigurationStoreServer() {
     Tema: null,
     ConfiguracaoJson: "{}",
     VersaoConfiguracao: 1,
-    Ativo: true
+    Ativo: true,
+    Scope: "Instance",
+    Module: "forum",
+    Theme: null,
+    ConfigurationJson: "{}",
+    Active: true,
+    State: "Published"
   }] };
   const fetchImpl = async (url, options = {}) => {
     const method = options.method || "GET";
@@ -449,7 +462,7 @@ const createdConfiguration = await createConfigurationItem({
   webUrl: "/sites/core-test",
   item: {
     key: "forum-principal",
-    scope: "Instancia",
+    scope: "Instance",
     module: "forum",
     layout: "Contained",
     theme: null,

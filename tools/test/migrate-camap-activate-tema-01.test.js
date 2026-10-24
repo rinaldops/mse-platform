@@ -91,7 +91,7 @@ const LIST_REFS = Object.freeze({
   assert.ok(Object.isFrozen(plan));
   assert.equal(plan.list, "MSEConfiguracoes");
   assert.deepEqual(plan.scopeFilter, { Escopo: "Global" });
-  assert.deepEqual(plan.values, { Tema: "camap-tema-01" });
+  assert.deepEqual(plan.values, { Tema: "camap-tema-01", Theme: "camap-tema-01" });
 }
 
 // migrateActivateTema01 exige client/listIds/confirm corretos.
@@ -111,12 +111,12 @@ const LIST_REFS = Object.freeze({
   assert.equal(updates.length, 0);
 }
 
-// (a) item Global encontrado e atualizado corretamente — só Tema muda,
-// Layout/ConfiguracaoJson permanecem intactos.
+// (a) item Global encontrado e atualizado corretamente — só Tema/Theme
+// mudam, Layout/ConfiguracaoJson permanecem intactos.
 {
   const { client, updates, lists } = createFakeClient({
     MSEConfiguracoes: [
-      { Id: 1, Escopo: "Global", Tema: "default", Layout: "Herdar", ConfiguracaoJson: '{"foo":1}' }
+      { Id: 1, Escopo: "Global", Tema: "default", Theme: "default", Layout: "Herdar", ConfiguracaoJson: '{"foo":1}' }
     ]
   });
   const result = await migrateActivateTema01({ client, listIds: LIST_REFS, confirm: () => true });
@@ -124,11 +124,12 @@ const LIST_REFS = Object.freeze({
   assert.equal(result.status, "activated");
   assert.equal(result.itemId, 1);
   assert.equal(updates.length, 1);
-  assert.deepEqual(updates[0].values, { Tema: "camap-tema-01" });
+  assert.deepEqual(updates[0].values, { Tema: "camap-tema-01", Theme: "camap-tema-01" });
 
   const items = lists.get("MSEConfiguracoes");
   assert.equal(items.length, 1, "nunca cria um 2º item Global");
   assert.equal(items[0].Tema, "camap-tema-01");
+  assert.equal(items[0].Theme, "camap-tema-01");
   assert.equal(items[0].Layout, "Herdar", "Layout deve permanecer inalterado");
   assert.equal(items[0].ConfiguracaoJson, '{"foo":1}', "ConfiguracaoJson deve permanecer inalterado");
 }
@@ -162,18 +163,34 @@ const LIST_REFS = Object.freeze({
   assert.equal(updates.length, 0);
 }
 
-// (c) item já com Tema: "camap-tema-01" -> nenhuma mudança proposta
+// (c) item já com Tema/Theme: "camap-tema-01" -> nenhuma mudança proposta
 // (idempotência).
 {
   const { client, updates } = createFakeClient({
     MSEConfiguracoes: [
-      { Id: 1, Escopo: "Global", Tema: "camap-tema-01", Layout: "Herdar", ConfiguracaoJson: "{}" }
+      { Id: 1, Escopo: "Global", Tema: "camap-tema-01", Theme: "camap-tema-01", Layout: "Herdar", ConfiguracaoJson: "{}" }
     ]
   });
   const result = await migrateActivateTema01({ client, listIds: LIST_REFS, confirm: () => true });
   assert.equal(result.status, "already-active");
   assert.equal(result.itemId, 1);
   assert.equal(updates.length, 0, "nenhum MERGE deve ser disparado quando o Tema já está correto");
+}
+
+// (d) Tema (PT) já correto mas Theme (EN, único lido por
+// core/configuration-store.js desde a Fase 3b) ainda desatualizado -> grava
+// mesmo assim, para não deixar o leitor real com o tema errado.
+{
+  const { client, updates, lists } = createFakeClient({
+    MSEConfiguracoes: [
+      { Id: 1, Escopo: "Global", Tema: "camap-tema-01", Theme: "default", Layout: "Herdar", ConfiguracaoJson: "{}" }
+    ]
+  });
+  const result = await migrateActivateTema01({ client, listIds: LIST_REFS, confirm: () => true });
+  assert.equal(result.status, "activated");
+  assert.equal(updates.length, 1);
+  const items = lists.get("MSEConfiguracoes");
+  assert.equal(items[0].Theme, "camap-tema-01", "Theme (EN) deve ser corrigido mesmo com Tema (PT) já correto");
 }
 
 console.log("migrate-camap-activate-tema-01.test.js (tools): verificações concluídas com sucesso.");

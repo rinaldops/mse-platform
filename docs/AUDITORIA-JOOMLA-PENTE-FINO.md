@@ -27,8 +27,9 @@ Confirmado por leitura direta do código, sem necessidade de correção:
   vivas em produção, mas não são mais lidas pelo código).
 - `MSEMenu` com os 9 campos em inglês (`MenuType`, `Path`, `Level`,
   `Ordering`, `Component`, `View`, `Default`, `Target`, `Published`) lidos
-  pelo código; os 12 campos PT equivalentes continuam na lista, marcados
-  `DEPRECATED` nos comentários do schema, sem remoção.
+  pelo código; os 9 campos PT equivalentes (contagem confirmada no
+  código-fonte real — não 12, como uma estimativa anterior sugeria) foram
+  removidos do schema na Fase 5 (23/10/2026, ver §2.10).
 - Vocabulário de eventos `on<Área><Momento>` (`onAfterRoute`,
   `onBeforeRender`, `onAfterRender`) em `kernel/events.js`.
 - Rotas administrativas `option=com_xxx&view=yyy&task=www&id=N`
@@ -142,29 +143,216 @@ depois das correções de 2.1–2.6; esta entrega fecha ou formaliza cada uma:
   templates-editor.js` passa a ler `route.task`/`route.id` e disparar a
   mesma ação do botão. Demais telas continuam disparando ação só por
   clique direto; reescrever todas para `task`-orientado é redesenho maior,
-  fora desta rodada.
+  fora desta rodada. **Atualização (23/10/2026):** estendido para as 4
+  telas restantes do Administrator — `com_extensions`
+  (`extensions.enable`/`extensions.disable`), `com_menus`
+  (`menus.publish`/`menus.unpublish`), `com_modules`
+  (`modules.publish`/`modules.unpublish`) e `com_config`
+  (`config.activate`/`config.deactivate`), cada uma com um botão de
+  alternância de 1 clique por linha além do consumo de `route.task`/
+  `route.id` (mesmo padrão `pendingTask` de `templates-editor.js`:
+  aplicado uma única vez, no primeiro carregamento). Guards de domínio já
+  existentes continuam respeitados (extensão `Protected` não pode ser
+  desabilitada via task; item de menu `Default` não pode ser
+  despublicado via task). O CRUD completo (criar/editar/excluir) em todas
+  as 5 telas continua disparando ação só por clique direto — ver
+  `docs/CONVENCAO-JOOMLA.md` §6/§7.
+
+## 2.8 Lacunas "Baixa"/fora de escopo fechadas em 23/10/2026
+
+- **Atribuição de template por item de menu + overrides de view
+  (`templates/<t>/html/<view>`).** No Joomla! real,
+  `#__menu.template_style_id` permite que um item de menu específico use
+  um template diferente do `Home` do site, e
+  `templates/<template>/html/<component>/<view>.php` permite sobrescrever
+  a view de um Componente só para quem usa aquele template. Corrigido:
+  - `kernel/schemas/mse-menu.js` — novo campo `TemplateStyleId` (`Number`,
+    opcional, `min:1`, sem `defaultValue`; ausente/`0`/`null` = "usa o
+    template padrão do site"), referenciando `MSETemplateStyles.Id`.
+  - `kernel/template-registry.js#resolveTemplateNameForMenuItem(styles,
+    menuItem, {clientId})` — nova função pura; devolve o `Template` do
+    estilo referenciado (mesmo `ClientId`) ou `null` (sem override; cai
+    no fallback de `resolveActiveTemplateName`/`theme?.name` já
+    existente). Nunca lança por dado de conteúdo malformado.
+  - `kernel/application.js` — a resolução de layout deixou de ser feita
+    uma única vez em `refreshSnapshot()` (antes de qualquer rota existir)
+    e passou a ser feita por `ensureLayout(menuItem)`, chamada no início
+    de toda `renderRoute`, com uma chave de cache (`layoutKey`) para que
+    a troca de item de menu com o MESMO template (ou nenhum dos dois com
+    `TemplateStyleId`) continue reaproveitando o layout montado, sem
+    dispose/remount — só uma troca real de chave aciona
+    `clearComponent()` + `clearModulesForPosition()` de cada posição do
+    layout atual + `layout.dispose()` + montagem do novo layout. Uma
+    falha de `resolveLayout` durante uma troca (não só no boot) cai no
+    mesmo fallback neutro (`createSiteLayout`) já usado no boot, sem
+    quebrar a navegação.
+  - `host-adapters/modern-script-editor/site-boot.js#createTemplateLayoutResolver`
+    — `resolveLayout` recebe agora também `menuItem`; `requestedName` é
+    resolvido em 3 níveis de precedência: (1)
+    `resolveTemplateNameForMenuItem` (override do item de menu ativo),
+    (2) `resolveActiveTemplateName` (Home do site), (3) `theme?.name`
+    (fallback de compatibilidade) — candidatos finais seguem o mesmo
+    fallback de 3 níveis já existente (`[requestedName, "mse-default",
+    "system"]`).
+  - Overrides de view: `template.json#viewOverrides` (mapa opcional
+    `{ "<componente>": { "<view>": "<caminho>" } }`) é repassado por
+    `adaptTemplateToLayout` ao `LayoutLike` (`layout.viewOverrides`);
+    `kernel/application.js#renderComponent` verifica
+    `layout.viewOverrides?.[dispatch.componente]?.[dispatch.view]` antes
+    de montar `entrypoints.full` do manifesto — se presente, monta esse
+    módulo no lugar (mesmo contrato `mount()/dispose()`, nenhum contrato
+    novo); ausente/`undefined`, comportamento idêntico a hoje. Nenhum
+    template existente (`mse-default`, `system`, `camap-tema-01/02`)
+    declara `viewOverrides` — zero mudança visual/comportamental para
+    quem não configurar essas features novas.
+  - Testes: `kernel/test/template-registry.test.js`
+    (`resolveTemplateNameForMenuItem`), `kernel/test/application.test.js`
+    (troca de layout por `TemplateStyleId` diferente; reaproveitamento
+    quando igual/ambos ausentes; fallback ao `resolveLayout` lançar numa
+    troca; `layout.viewOverrides` substituindo `entrypoints.full`),
+    `host-adapters/.../test/site-boot.test.js` (`menuItem.TemplateStyleId`
+    tem precedência sobre o Home; `adaptTemplateToLayout` repassa
+    `viewOverrides`).
+
+## 2.9 MSEConfiguracoes — Fase 3b, fechada em 23/10/2026
+
+- **Alta/Média — `MSEConfiguracoes` 100% em PT, sem consumidor em
+  inglês.** No Joomla! real, os campos de configuração de um componente
+  seguem o mesmo vocabulário em inglês do resto do schema. `MSEConfiguracoes`
+  era a única lista real do `mse-platform` 100% em português, inclusive nos
+  campos lidos pelo único consumidor real identificado
+  (`core/configuration-store.js#loadPublished`, usado por
+  `kernel/site-config.js`/`kernel/application.js` para resolver configuração
+  global/por instância/por extensão, incluindo o tema ativo do site via o
+  campo `Tema`/`Theme`). Corrigido — mesmo padrão já usado para `MSEMenu`
+  nas Fases 3/4 (campos EN acrescentados lado a lado com os PT, que ficam
+  `DEPRECATED`, vivos, sem leitor novo):
+  - `core/provisioning.js#CONFIGURATION_LIST_SCHEMA` — versão 3→4; 7 novos
+    campos (`Scope`/`Module`/`Theme`/`ConfigurationJson`/`Active`/`State`/
+    `ExtensionElement`), cada um com `schemaXml` próprio; a choice `Inherit`
+    acrescentada ao campo `Layout` (já neutro em nome, só a choice PT
+    `Herdar` fica obsoleta). Os 4 campos sem consumidor confirmado
+    (`TipoInstancia`/`VersaoConfiguracao`/`VersaoSettings`/`VersaoModulo`)
+    permanecem só em PT, fora desta rodada.
+  - `readConfigurationItem`/`listConfigurationItems` (leitura) passam a
+    mapear a partir dos campos EN; `createConfigurationItem`/
+    `updateConfigurationItem`/`insertGlobal` (escrita) gravam PT e EN lado a
+    lado — os 2 helpers puros `scopePt`/`statePt` convertem o vocabulário EN
+    (usado internamente por `validateEditableItem`) de volta para PT só para
+    a gravação do campo legado, já que o schema real ainda exige `Escopo`/
+    `Estado` (PT, `Required=TRUE`) com suas choices originais.
+  - `core/configuration-store.js#loadPublished` — único leitor real — migra
+    o `$select`/`$filter`/comparações de vocabulário inteiramente para EN
+    (`Scope`/`Module`/`Theme`/`ConfigurationJson`/`Active eq 1`/`State`/
+    `ExtensionElement`); `createSharePointConfigurationStore#create()` troca
+    os defaults `scope: "Instancia"`/`state: "Rascunho"` para `"Instance"`/
+    `"Draft"`.
+  - `components/com_config/config-editor.js` — editor do Administrator
+    migrado para ler/gravar só os campos EN (`validateConfigurationValues`,
+    formulário, tabela, `route.task`/`pendingTask` de `config.activate`/
+    `config.deactivate` já existente — preservado, só o campo-alvo da
+    escrita mudou de `Ativo` para `Active`).
+  - `tools/migrate-mse-configuracoes-to-english.js` (novo) — migração
+    IN-PLACE (MERGE com ETag, nunca cria item novo) dos itens reais já
+    existentes: traduz `Escopo`/`Estado` (Choice) e copia `Modulo`/`Tema`/
+    `ConfiguracaoJson`/`Ativo`/`ExtensaoElemento` para os campos EN
+    correspondentes. Idempotente — só grava itens cujos valores EN ainda não
+    batem com os PT de origem.
+  - `tools/migrate-camap-activate-tema-01.js` — **risco identificado e
+    corrigido**: a ferramenta de ativação do Tema 1 gravava só o campo PT
+    `Tema`; como `loadPublished` passou a ler só `Theme` (EN), rodar essa
+    migração sem o ajuste deixaria o tema ativo desatualizado para o leitor
+    real, mesmo com a gravação "bem-sucedida". Corrigida para gravar `Tema`
+    e `Theme` juntos, com idempotência que exige os DOIS campos já corretos
+    antes de pular a escrita.
+  - Testes: `core/test/provisioning.test.js` (schema v4/19 campos, leitura/
+    escrita EN), `core/test/configuration-store.test.js` (fixtures EN,
+    `$filter=Active eq 1`), `components/com_config/test/
+    editor-validation.test.js`/`config-screen.test.js` (vocabulário EN),
+    `tools/test/migrate-mse-configuracoes-to-english.test.js` (novo),
+    `tools/test/migrate-camap-activate-tema-01.test.js` (dual-write Tema/
+    Theme), `core/test/site-boot.test.js` (`$filter=Active eq 1`).
+
+## 2.10 Decomissionamento das listas/campos PT legados — Fase 5, 23/10/2026
+
+- **Baixa — listas/campos PT legados vivos em produção, sem nenhum leitor
+  desde a Fase 4.** O Joomla! real não carrega duas gerações de schema
+  lado a lado indefinidamente; a normalização anterior (Fases 3/4)
+  deliberadamente preservou os dados PT como salvaguarda, mas nunca definiu
+  quando removê-los. Autorizado pelo usuário como ação irreversível nesta
+  rodada.
+  - **Código (feito, testado, em vigor):**
+    `kernel/schemas/mse-menu.js` — removidos os 9 campos PT de `MSEMenu`
+    (`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/`Componente`/`Visao`/`Padrao`/
+    `AbrirEm`/`Estado` — contagem confirmada no código-fonte real; a
+    estimativa inicial de "12" do planejamento estava incorreta) e o
+    esquema `MSEMenuTipos` (PT) inteiro. `kernel/installer.js` nunca
+    provisionava `MSEMenuTipos` (PT) — já era código morto, confirmado via
+    `KERNEL_LIST_SCHEMAS` (6 entradas, todas EN). `kernel/menu.js` e
+    `components/com_menus/menus-editor.js#MENU_FIELD_NAMES` não dependiam
+    dos campos PT — o filtro de nomes em `menus-editor.js` foi simplificado
+    (schema agora só tem os campos EN relevantes).
+  - **Ferramenta nova (código pronto, testado; EXECUÇÃO contra produção
+    pendente):** `tools/decommission-mse-legacy-pt.js` —
+    `decommissionMseLegacyPt({installer, legacyListIds, client, confirm,
+    exportPath})`, com 3 salvaguardas obrigatórias, nesta ordem:
+    (1) chama `verifyMseSchemaMigration` (reaproveitado de
+    `tools/verify-mse-schema-migration.js`, não duplicado) e lança se
+    `ok !== true`, antes de qualquer escrita; (2) exporta um dump JSON de
+    segurança (todos os itens das 4 listas PT + os 9 campos PT de cada
+    item de `MSEMenu`) para um caminho local fora do controle de versão
+    (`tmp/`, já em `.gitignore`), SEMPRE, mesmo se a confirmação seguinte
+    for negada; (3) só então chama `confirm(plan)` — se negado, nada é
+    apagado. Confirmado, apaga as 4 listas PT
+    (`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/`MSEMenuTipos`) e os 9
+    campos PT de `MSEMenu`, via `client.request(path, {method:"DELETE",
+    etag:"*", allowWildcardEtag:true})` (mesmo mecanismo de baixo nível já
+    usado por `core/list-provisioning.js` para MERGE de campo — não existe
+    helper de alto nível para apagar lista/campo). Idempotente: lista ou
+    campo já ausente (`error.code === "not-found"`) é tratado como no-op,
+    nunca como erro.
+  - **Execução real pendente, por decisão deliberada:** este documento e o
+    código confirmam que a ferramenta existe e está testada, mas RODAR
+    `decommissionMseLegacyPt` contra o tenant de produção (apagando dados
+    reais) não foi feito nesta sessão — é uma ação irreversível que exige
+    sua própria sessão supervisionada: rodar `verify-mse-schema-migration.js`
+    isoladamente primeiro, revisar `ok:true` manualmente, só então rodar o
+    decomissionamento com `confirm` explícito, revisar o dump de segurança
+    gerado antes de autorizar, e confirmar via REST real que as 4 listas e
+    os 9 campos deixaram de existir.
+  - Testes: `tools/test/decommission-mse-legacy-pt.test.js` (novo) —
+    `buildDecommissionPlan`/`readLegacyMenuTipos` puros; validação de
+    entrada; `verifyMseSchemaMigration` com `ok:false` aborta sem escrever
+    nada (nem o dump); `confirm:false` ainda escreve o dump de segurança
+    mas não apaga nada; caminho completo apaga as 4 listas + 9 campos;
+    idempotência (2ª chamada sobre tudo já apagado não lança, não reporta
+    nada como apagado "de novo"). `kernel/test/menu.test.js` (lista de
+    nomes de campo atualizada, só os EN + `TemplateStyleId`),
+    `kernel/test/admin-form.test.js`/`kernel/test/installer.test.js`
+    (confirmados sem necessidade de alteração — não afirmavam os campos
+    PT).
 
 ## 3. Permanecem fora de escopo — só documentadas para tratamento futuro
 
 Nenhuma destas foi corrigida nesta rodada; cada uma tem uma razão
 explícita para ficar de fora agora.
 
-- **`MSEConfiguracoes` 100% em PT.** Fase 3b, já conhecida desde a
-  normalização anterior, continua adiada — fora do pedido desta rodada
-  (que era sobre Templates/Administrator, não sobre configuração global).
-- **Listas/campos PT legados** (`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/
-  `MSEMenuTipos`, campos PT de `MSEMenu`) ainda vivos em produção, não lidos
-  pelo código. Decomissionamento é limpeza futura (Fase 5), não desta
-  rodada — apagar dados de produção sem necessidade funcional não é uma
-  decisão a tomar de passagem.
+- **`MSEConfiguracoes` 100% em PT.** **Fechada em 23/10/2026**, ver §2.9.
+- **Listas/campos PT legados** — o esquema `MSEMenuTipos` (PT) e os 9
+  campos PT de `MSEMenu` já foram removidos do CÓDIGO (Fase 5, §2.10). As
+  4 listas PT (`MSEModulos`/`MSEExtensoes`/`MSEModulosMenu`/
+  `MSEMenuTipos`) e os 8 campos PT de `MSEConfiguracoes` (§2.9) ainda vivem
+  em produção — a ferramenta de exclusão real está pronta (§2.10), mas sua
+  EXECUÇÃO contra o tenant é uma ação irreversível separada, pendente de
+  sessão supervisionada — apagar dados de produção sem a dupla
+  verificação ao vivo (gate + dump + confirmação humana) não é uma decisão
+  a tomar de passagem.
 - **Atribuição de template por item de menu** e **overrides**
-  `templates/<t>/html/<view>` continuam fora de escopo — decisão histórica
-  já registrada em `PLANO-SITE-KERNEL-MSE.md`/`CONVENCAO-JOOMLA.md`; o
-  usuário não pediu isso nesta rodada, só o mecanismo de
-  instalação/fallback/admin template.
+  `templates/<t>/html/<view>` — **fechado em 23/10/2026**, ver §2.8.
 - **`controller.task` nas demais telas** (`com_extensions`, `com_menus`,
-  `com_modules`, `com_config`) — ver 2.7; só `com_templates` consome
-  `route.task` hoje.
+  `com_modules`, `com_config`) — **fechado em 23/10/2026**, ver §2.7. O
+  CRUD completo (criar/editar/excluir) continua só por clique direto em
+  todas as telas; só a alternância rápida de 1 clique ganhou `task`.
 - **ACL próprio** continua fora de escopo; SharePoint é a autoridade.
 
 ## 4. O que NÃO mudou (para ficar explícito)
@@ -183,6 +371,12 @@ explícita para ficar de fora agora.
   explícita do usuário.
 - `component.js`/`error.js` de cada tema não foram excluídos (ver 2.7) —
   só deixaram de ser referenciados por `template.json`/publicados.
+- **`MSEConfiguracoes` (§2.9, Fase 3b): nenhum dado real é apagado.** Os 8
+  campos PT migrados continuam gravados em cada item (dual-write), só
+  deixam de ser lidos por código novo. `tools/
+  migrate-mse-configuracoes-to-english.js` nunca é aplicado automaticamente
+  contra produção — exige `confirm(plan)` explícito, mesmo padrão do resto
+  de `tools/`.
 
 ## 5. Verificação
 

@@ -277,6 +277,119 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: navegação para Componente habilitado ok.");
 }
 
+// --- layout.viewOverrides (23/10/2026 — overrides de view por template,
+// `templates/<t>/html/<view>`, ver docs/AUDITORIA-JOOMLA-PENTE-FINO.md §3):
+// quando o layout ATUAL declara um override para (componente, view) da rota,
+// ele substitui entrypoints.full do manifesto original, mesmo contrato
+// mount()/dispose() ---------------------------------------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/blog");
+  const overrideMounts = [];
+  const { importModule: baseImportModule, resolveManifestUrl } = fixtureRegistry();
+
+  const overrideUrl = "https://example.invalid/blog/lista-override.js";
+  async function importModule(url) {
+    if (url === overrideUrl) {
+      return {
+        async mount({ root: overrideRoot, config, context }) {
+          overrideMounts.push({ config, context });
+          overrideRoot.setAttribute("data-mounted", "blog-override");
+          return { dispose: () => overrideMounts.push("disposed") };
+        }
+      };
+    }
+    return baseImportModule(url);
+  }
+
+  function resolveLayout() {
+    const layoutRoot = createRoot();
+    const componentElement = layoutRoot.ownerDocument.createElement("div");
+    const positionElement = layoutRoot.ownerDocument.createElement("div");
+    componentElement.setAttribute("data-mse-component", "");
+    positionElement.setAttribute("data-mse-position", "topo");
+    layoutRoot.append(componentElement, positionElement);
+    return {
+      root: layoutRoot,
+      positionElements: new Map([["topo", positionElement]]),
+      componentElement,
+      dispose() {},
+      viewOverrides: { blog: { lista: overrideUrl } }
+    };
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout
+  });
+
+  assert.equal(overrideMounts.length, 1, "override de view monta no lugar do entrypoints.full do manifesto");
+  const [{ context }] = overrideMounts;
+  assert.equal(context.view, "lista");
+
+  await app.dispose();
+  assert.deepEqual(overrideMounts[1], "disposed", "dispose() do override é chamado no dispose do app");
+
+  console.log("application.test.js: layout.viewOverrides substitui entrypoints.full do manifesto para (componente, view) ok.");
+}
+
+// --- layout SEM viewOverrides (ou sem entrada para o par componente/view):
+// comportamento idêntico a hoje, usa entrypoints.full do manifesto normal --
+
+{
+  const root = createRoot();
+  const window = createWindow("#/blog");
+  const mountedContexts = [];
+  const { importModule, resolveManifestUrl } = fixtureRegistry({
+    onComponentMount: (info) => mountedContexts.push(info)
+  });
+
+  function resolveLayout() {
+    const layoutRoot = createRoot();
+    const componentElement = layoutRoot.ownerDocument.createElement("div");
+    const positionElement = layoutRoot.ownerDocument.createElement("div");
+    componentElement.setAttribute("data-mse-component", "");
+    positionElement.setAttribute("data-mse-position", "topo");
+    layoutRoot.append(componentElement, positionElement);
+    return {
+      root: layoutRoot,
+      positionElements: new Map([["topo", positionElement]]),
+      componentElement,
+      dispose() {},
+      viewOverrides: { outroComponente: { outraView: "https://example.invalid/irrelevante.js" } }
+    };
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout
+  });
+
+  assert.equal(mountedContexts.length, 1, "sem override para (blog, lista), usa entrypoints.full normal");
+  assert.equal(mountedContexts[0].root.getAttribute("data-mounted"), "blog");
+
+  await app.dispose();
+
+  console.log("application.test.js: layout.viewOverrides sem entrada para (componente, view) da rota não altera o mount normal ok.");
+}
+
 // --- Componente cujo mount lança: isolado, não derruba o boot nem os
 // módulos de posição; onModuleError é notificado --------------------------
 
@@ -769,6 +882,207 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   assert.equal(root.children.length, 0);
 
   console.log("application.test.js: resolveLayout que lança cai para o layout neutro padrão, boot continua ok.");
+}
+
+// --- TemplateStyleId por item de menu (23/10/2026, ver
+// docs/AUDITORIA-JOOMLA-PENTE-FINO.md §3): navegar entre itens de menu com
+// TemplateStyleId DIFERENTES aciona dispose+remount do layout e dos módulos
+// -----------------------------------------------------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const resolveLayoutCalls = [];
+  const disposedLayouts = [];
+
+  function makeFakeLayout(label) {
+    const layoutRoot = createRoot();
+    const componentElement = layoutRoot.ownerDocument.createElement("div");
+    const positionElement = layoutRoot.ownerDocument.createElement("div");
+    componentElement.setAttribute("data-mse-component", "");
+    componentElement.setAttribute("data-template-label", label);
+    positionElement.setAttribute("data-mse-position", "topo");
+    layoutRoot.append(componentElement, positionElement);
+    return {
+      root: layoutRoot,
+      positionElements: new Map([["topo", positionElement]]),
+      componentElement,
+      dispose: () => disposedLayouts.push(label)
+    };
+  }
+
+  function resolveLayout({ menuItem }) {
+    const label = menuItem?.TemplateStyleId ? `tema-${menuItem.TemplateStyleId}` : "default";
+    resolveLayoutCalls.push(label);
+    return makeFakeLayout(label);
+  }
+
+  // Dois itens de menu com TemplateStyleId DIFERENTES ("blog" -> estilo 7,
+  // "Início" sem TemplateStyleId -> "default").
+  const menuItemsComTemplate = () => [
+    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Component: null, View: null, ParamsJson: null, Default: true, Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Component: "blog", View: "lista", ParamsJson: null, Default: false, Published: "Published", TemplateStyleId: 7 }
+  ];
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => menuItemsComTemplate(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout
+  });
+
+  // Boot na raiz ("Início", sem TemplateStyleId) -> layout "default" montado.
+  assert.deepEqual(resolveLayoutCalls, ["default"]);
+  assert.equal(disposedLayouts.length, 0, "nenhum dispose na primeira montagem");
+
+  // Navega para "blog" (TemplateStyleId: 7) -> chave muda -> novo
+  // resolveLayout + dispose do layout anterior ANTES do novo ser usado.
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.deepEqual(resolveLayoutCalls, ["default", "tema-7"]);
+  assert.deepEqual(disposedLayouts, ["default"], "layout anterior descartado ao trocar de template");
+
+  await app.dispose();
+  assert.deepEqual(disposedLayouts, ["default", "tema-7"], "dispose() final descarta o layout atual");
+
+  console.log("application.test.js: TemplateStyleId diferente entre itens de menu troca de layout (dispose+remount) ok.");
+}
+
+// --- navegar entre itens com o MESMO TemplateStyleId (ou ambos sem) NÃO
+// remonta o layout (layout.dispose não é chamado) ---------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const resolveLayoutCalls = [];
+  let disposeCalls = 0;
+
+  function resolveLayout() {
+    resolveLayoutCalls.push(true);
+    const layoutRoot = createRoot();
+    const componentElement = layoutRoot.ownerDocument.createElement("div");
+    const positionElement = layoutRoot.ownerDocument.createElement("div");
+    componentElement.setAttribute("data-mse-component", "");
+    positionElement.setAttribute("data-mse-position", "topo");
+    layoutRoot.append(componentElement, positionElement);
+    return {
+      root: layoutRoot,
+      positionElements: new Map([["topo", positionElement]]),
+      componentElement,
+      dispose: () => { disposeCalls += 1; }
+    };
+  }
+
+  // Dois itens SEM TemplateStyleId (ambos caem na chave "default").
+  const menuItemsSemOverride = () => [
+    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Component: null, View: null, ParamsJson: null, Default: true, Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Component: "blog", View: "lista", ParamsJson: null, Default: false, Published: "Published" }
+  ];
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => menuItemsSemOverride(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout
+  });
+
+  assert.equal(resolveLayoutCalls.length, 1, "layout montado uma vez no boot");
+
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(resolveLayoutCalls.length, 1, "mesma chave de layout -> resolveLayout não chamado de novo");
+  assert.equal(disposeCalls, 0, "layout.dispose não é chamado quando a chave não muda");
+
+  await app.dispose();
+  assert.equal(disposeCalls, 1, "dispose() final chama dispose do único layout montado");
+
+  console.log("application.test.js: TemplateStyleId igual (ou ambos ausentes) reaproveita o layout, sem remontagem ok.");
+}
+
+// --- resolveLayout lançando durante uma TROCA de layout (não só no boot)
+// cai no fallback createSiteLayout, sem quebrar a navegação -----------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+  const loadErrors = [];
+  let callCount = 0;
+
+  function resolveLayout({ menuItem }) {
+    callCount += 1;
+    if (menuItem?.TemplateStyleId) {
+      throw new Error("template configurado não encontrado (proposital, na troca).");
+    }
+    const layoutRoot = createRoot();
+    const componentElement = layoutRoot.ownerDocument.createElement("div");
+    const positionElement = layoutRoot.ownerDocument.createElement("div");
+    componentElement.setAttribute("data-mse-component", "");
+    positionElement.setAttribute("data-mse-position", "topo");
+    layoutRoot.append(componentElement, positionElement);
+    return {
+      root: layoutRoot,
+      positionElements: new Map([["topo", positionElement]]),
+      componentElement,
+      dispose() {}
+    };
+  }
+
+  const menuItemsComTemplateQuebrado = () => [
+    { Id: 1, Title: "Início", Alias: "", ParentId: 0, Component: null, View: null, ParamsJson: null, Default: true, Published: "Published" },
+    { Id: 2, Title: "Blog", Alias: "blog", ParentId: 0, Component: "blog", View: "lista", ParamsJson: null, Default: false, Published: "Published", TemplateStyleId: 7 }
+  ];
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => menuItemsComTemplateQuebrado(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule,
+    resolveLayout,
+    onLoadError: (error, chave) => loadErrors.push(chave)
+  });
+
+  assert.equal(callCount, 1, "boot: resolveLayout chamado e resolve com sucesso (sem TemplateStyleId)");
+  assert.deepEqual(loadErrors, []);
+
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(callCount, 2, "troca: resolveLayout chamado de novo (TemplateStyleId:7) e lança");
+  assert.deepEqual(loadErrors, ["resolveLayout"]);
+  // Fallback para createSiteLayout: a navegação continua funcional (mesmo
+  // root, novo esqueleto neutro, Componente montado normalmente).
+  assert.equal(root.children.length, 2, "fallback neutro montado em root");
+  const [componentElement] = root.children;
+  assert.equal(componentElement.getAttribute("data-mounted"), "blog");
+
+  await app.dispose();
+
+  console.log("application.test.js: resolveLayout lançando numa TROCA de layout cai no fallback neutro, navegação continua ok.");
 }
 
 console.log("application.test.js: verificações concluídas com sucesso.");

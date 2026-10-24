@@ -84,12 +84,29 @@ async function flush() {
 
 const LIST = Object.freeze({ listId: "20000000-0000-4000-8000-000000000002" });
 
-function createFakeAdminClient({ items, shouldReject } = {}) {
+function createFakeAdminClient({ items = [], shouldReject } = {}) {
+  const store = new Map(items.map((item) => [item.Id, { ...item }]));
+  const updates = [];
   return {
-    async getListItems() {
-      if (shouldReject) throw new Error("falha simulada de rede");
-      return items;
-    }
+    client: {
+      async getListItems() {
+        if (shouldReject) throw new Error("falha simulada de rede");
+        return [...store.values()];
+      },
+      async getListItem(_list, id) {
+        const item = store.get(Number(id));
+        if (!item) throw new Error(`getListItem: item ${id} não encontrado.`);
+        return { item: { ...item }, etag: `"item-${id}"`, status: 200 };
+      },
+      async updateListItem(_list, id, values) {
+        const item = store.get(Number(id));
+        Object.assign(item, values);
+        updates.push({ id: Number(id), values });
+        return { item: { ...item }, etag: `"item-${id}-updated"`, status: 204 };
+      }
+    },
+    updates,
+    store
   };
 }
 
@@ -104,10 +121,11 @@ function textOf(elements) {
 {
   const root = createRoot();
   const items = [
-    { Id: 1, Title: "global", Escopo: "Global", Modulo: null, TipoInstancia: "Full", Layout: "Contained", Tema: "default", ConfiguracaoJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, Estado: "Publicado", Ativo: true, ExtensaoElemento: null },
-    { Id: 2, Title: "sd-principal", Escopo: "Instancia", Modulo: "sd", TipoInstancia: "Full", Layout: "Herdar", Tema: null, ConfiguracaoJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, Estado: "Publicado", Ativo: true, ExtensaoElemento: null }
+    { Id: 1, Title: "global", Scope: "Global", Module: null, TipoInstancia: "Full", Layout: "Contained", Theme: "default", ConfigurationJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, State: "Published", Active: true, ExtensionElement: null },
+    { Id: 2, Title: "sd-principal", Scope: "Instance", Module: "sd", TipoInstancia: "Full", Layout: "Herdar", Theme: null, ConfigurationJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, State: "Published", Active: true, ExtensionElement: null }
   ];
-  const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
+  const { client } = createFakeAdminClient({ items });
+  const services = { adminClient: client, listIds: LIST_IDS };
   const view = renderConfigScreen({ root, services });
   await flush();
 
@@ -132,7 +150,8 @@ function textOf(elements) {
 
 {
   const root = createRoot();
-  const services = { adminClient: createFakeAdminClient({ shouldReject: true }), listIds: LIST_IDS };
+  const { client } = createFakeAdminClient({ shouldReject: true });
+  const services = { adminClient: client, listIds: LIST_IDS };
   const view = renderConfigScreen({ root, services });
   await flush();
 
@@ -158,6 +177,88 @@ function textOf(elements) {
 
   view.dispose();
   console.log("config-screen.test.js: services ausente mostra mensagem amigável sem lançar ok.");
+}
+
+// --- botão de alternância: ativa/desativa uma configuração ------------------
+
+{
+  const root = createRoot();
+  const items = [
+    { Id: 1, Title: "global", Scope: "Global", Module: null, TipoInstancia: "Full", Layout: "Contained", Theme: "default", ConfigurationJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, State: "Published", Active: true, ExtensionElement: null }
+  ];
+  const { client, updates } = createFakeAdminClient({ items });
+  const services = { adminClient: client, listIds: LIST_IDS };
+  const view = renderConfigScreen({ root, services });
+  await flush();
+
+  const row = root.querySelectorAll("tr")[1];
+  const toggle = row.querySelectorAll("button").find((b) => b.textContent === "Desativar");
+  assert.ok(toggle, "botão Desativar deve existir para configuração ativa");
+  await toggle.click();
+  await flush();
+
+  assert.deepEqual(updates, [{ id: 1, values: { Active: false } }]);
+
+  view.dispose();
+  console.log("config-screen.test.js: botão de alternância desativa configuração ok.");
+}
+
+// --- route.task="config.deactivate"&id=N: dispara alternância automática ---
+
+{
+  const root = createRoot();
+  const items = [
+    { Id: 1, Title: "global", Scope: "Global", Module: null, TipoInstancia: "Full", Layout: "Contained", Theme: "default", ConfigurationJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, State: "Published", Active: true, ExtensionElement: null }
+  ];
+  const { client, updates } = createFakeAdminClient({ items });
+  const route = { task: "config.deactivate", id: 1 };
+  const view = renderConfigScreen({ root, route, services: { adminClient: client, listIds: LIST_IDS } });
+  await flush();
+  await flush();
+
+  assert.deepEqual(updates, [{ id: 1, values: { Active: false } }]);
+
+  view.dispose();
+  console.log("config-screen.test.js: route.task=config.deactivate dispara alternância automaticamente ok.");
+}
+
+// --- route.task sem id válido ou já no estado-alvo: nenhuma escrita --------
+
+{
+  const items = [
+    { Id: 1, Title: "global", Scope: "Global", Module: null, TipoInstancia: "Full", Layout: "Contained", Theme: "default", ConfigurationJson: "{}", VersaoConfiguracao: 1, VersaoSettings: 1, VersaoModulo: null, State: "Published", Active: true, ExtensionElement: null }
+  ];
+
+  const rootNoTask = createRoot();
+  const { client: clientNoTask, updates: updatesNoTask } = createFakeAdminClient({ items: items.map((i) => ({ ...i })) });
+  const viewNoTask = renderConfigScreen({ root: rootNoTask, services: { adminClient: clientNoTask, listIds: LIST_IDS } });
+  await flush();
+  assert.equal(updatesNoTask.length, 0, "sem route.task, nenhuma escrita automática");
+  viewNoTask.dispose();
+
+  const rootBadId = createRoot();
+  const { client: clientBadId, updates: updatesBadId } = createFakeAdminClient({ items: items.map((i) => ({ ...i })) });
+  const viewBadId = renderConfigScreen({
+    root: rootBadId,
+    route: { task: "config.deactivate", id: 999 },
+    services: { adminClient: clientBadId, listIds: LIST_IDS }
+  });
+  await flush(); await flush();
+  assert.equal(updatesBadId.length, 0, "id inexistente não deve causar nenhuma escrita");
+  viewBadId.dispose();
+
+  const rootAlready = createRoot();
+  const { client: clientAlready, updates: updatesAlready } = createFakeAdminClient({ items: items.map((i) => ({ ...i })) });
+  const viewAlready = renderConfigScreen({
+    root: rootAlready,
+    route: { task: "config.activate", id: 1 },
+    services: { adminClient: clientAlready, listIds: LIST_IDS }
+  });
+  await flush(); await flush();
+  assert.equal(updatesAlready.length, 0, "já ativo: activate não deve gravar de novo");
+  viewAlready.dispose();
+
+  console.log("config-screen.test.js: route.task sem id válido/já-no-estado não dispara escrita ok.");
 }
 
 console.log("config-screen.test.js: verificações concluídas com sucesso.");

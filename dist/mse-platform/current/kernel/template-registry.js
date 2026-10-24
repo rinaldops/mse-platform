@@ -64,3 +64,42 @@ export function listTemplateStylesByClient(styles, options = {}) {
     : DEFAULT_CLIENT_ID;
   return toArray(styles).filter((style) => style && style.ClientId === clientId);
 }
+
+/**
+ * Resolve o nome do template (`Template`) a aplicar para um item de menu
+ * específico (23/10/2026 — atribuição de template por item de menu, ver
+ * `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3), a partir de
+ * `menuItem.TemplateStyleId` (≈ Joomla! `#__menu.template_style_id`).
+ *
+ * Devolve `null` quando:
+ *   - `menuItem` está ausente/inválido, ou `TemplateStyleId` não é um
+ *     inteiro válido (`>= 1`) — item sem override, caso comum;
+ *   - nenhum estilo em `styles` tem `Id === menuItem.TemplateStyleId` E
+ *     `ClientId === clientId` (referência inválida/estilo de outro client);
+ *   - o estilo encontrado tem `Template` vazio/ausente.
+ *
+ * `null` significa "sem override; quem chama deve cair no fallback já
+ * existente" (`resolveActiveTemplateName`/`theme?.name`) — esta função
+ * nunca lança por dado de conteúdo, mesmo princípio de
+ * `resolveActiveTemplateName` acima.
+ *
+ * @param {Array<object> | null | undefined} styles
+ * @param {{ TemplateStyleId?: number|string|null } | null | undefined} menuItem
+ * @param {{ clientId?: "Site" | "Administrator" }} [options]
+ * @returns {string | null}
+ */
+export function resolveTemplateNameForMenuItem(styles, menuItem, options = {}) {
+  const clientId = typeof options?.clientId === "string" && options.clientId.trim()
+    ? options.clientId.trim()
+    : DEFAULT_CLIENT_ID;
+  const rawId = menuItem?.TemplateStyleId;
+  const templateStyleId = Number(rawId);
+  if (rawId == null || rawId === "" || !Number.isInteger(templateStyleId) || templateStyleId < 1) {
+    return null;
+  }
+  const found = toArray(styles).find(
+    (style) => style && style.Id === templateStyleId && style.ClientId === clientId
+      && typeof style.Template === "string" && style.Template.trim() !== ""
+  );
+  return found ? found.Template.trim() : null;
+}

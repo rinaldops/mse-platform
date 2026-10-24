@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { MSE_TEMPLATE_STYLES_SCHEMA } from "../schemas/mse-template-styles.js";
-import { resolveActiveTemplateName, listTemplateStylesByClient } from "../template-registry.js";
+import { resolveActiveTemplateName, listTemplateStylesByClient, resolveTemplateNameForMenuItem } from "../template-registry.js";
 
 // --- MSE_TEMPLATE_STYLES_SCHEMA ---------------------------------------------
 
@@ -83,6 +83,48 @@ console.log("template-registry.test.js: MSE_TEMPLATE_STYLES_SCHEMA verificado.")
   assert.deepEqual(listTemplateStylesByClient(undefined), []);
   assert.deepEqual(listTemplateStylesByClient(styles, { clientId: "Outro" }), []);
   console.log("listTemplateStylesByClient: filtra por ClientId, tolera ausência/inválido ok.");
+}
+
+// --- resolveTemplateNameForMenuItem ------------------------------------------
+
+{
+  const styles = [
+    { Id: 1, Title: "CAMAP-AGP — Tema 1", Template: "camap-tema-01", ClientId: "Site", Home: true },
+    { Id: 2, Title: "mse-default", Template: "mse-default", ClientId: "Site", Home: false },
+    { Id: 3, Title: "Administrator — padrão", Template: "mse-administrator-default", ClientId: "Administrator", Home: true }
+  ];
+
+  // Item de menu com override válido para um estilo "Site".
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 2 }, { clientId: "Site" }), "mse-default");
+
+  // menuItem ausente/inválido -> null, sem lançar.
+  assert.equal(resolveTemplateNameForMenuItem(styles, null), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, undefined), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, {}), null);
+
+  // TemplateStyleId ausente/0/null/inválido -> null (sem override).
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: null }), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 0 }), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: "" }), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: -1 }), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 1.5 }), null);
+
+  // TemplateStyleId referenciando Id inexistente -> null.
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 999 }), null);
+
+  // TemplateStyleId referenciando um estilo de OUTRO ClientId -> null (não
+  // cruza client).
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 3 }, { clientId: "Site" }), null);
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: 1 }, { clientId: "Administrator" }), null);
+
+  // styles ausente/inválido -> null, sem lançar.
+  assert.equal(resolveTemplateNameForMenuItem(undefined, { TemplateStyleId: 1 }), null);
+  assert.equal(resolveTemplateNameForMenuItem(null, { TemplateStyleId: 1 }), null);
+
+  // TemplateStyleId como string numérica válida (ex.: vindo de query/route).
+  assert.equal(resolveTemplateNameForMenuItem(styles, { TemplateStyleId: "2" }, { clientId: "Site" }), "mse-default");
+
+  console.log("resolveTemplateNameForMenuItem: resolve por TemplateStyleId/ClientId, tolera ausência/inválido ok.");
 }
 
 console.log("template-registry.test.js: verificações concluídas com sucesso.");

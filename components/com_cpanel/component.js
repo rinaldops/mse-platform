@@ -14,10 +14,10 @@ const SCREEN_RENDERERS = {
   controlpanel: ({ root }) => renderControlPanel({ root }),
   publisher: ({ root, route, services }) => renderPublisherScreen({ root, route, services }),
   diagnostics: ({ root, route, services }) => renderDiagnosticsScreen({ root, route, services }),
-  extensions: ({ root, services }) => renderExtensionsScreen({ root, services }),
-  menus: ({ root, services }) => renderMenusScreen({ root, services }),
-  modules: ({ root, services }) => renderModulesScreen({ root, services }),
-  config: ({ root, services }) => renderConfigScreen({ root, services }),
+  extensions: ({ root, route, services }) => renderExtensionsScreen({ root, route, services }),
+  menus: ({ root, route, services }) => renderMenusScreen({ root, route, services }),
+  modules: ({ root, route, services }) => renderModulesScreen({ root, route, services }),
+  config: ({ root, route, services }) => renderConfigScreen({ root, route, services }),
   installer: ({ root, services }) => renderInstallerScreen({ root, services }),
   templates: ({ root, route, services }) => renderTemplatesScreen({ root, route, services })
 };

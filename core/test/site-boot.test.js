@@ -246,7 +246,7 @@ function batchFetchResponse(urls, responseForUrl) {
   assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEExtensions}')`) && batchBody.includes("$top=500"));
   assert.ok(batchBody.match(new RegExp(`lists\\(guid'${LIST_IDS.MSEModules}'\\)[^\\n]*\\$top=2000[^\\n]*\\$orderby=Ordering`)));
   assert.ok(batchBody.includes(`lists(guid'${LIST_IDS.MSEModulesMenu}')`) && batchBody.includes("$top=5000"));
-  assert.ok(calls.some((url) => url.includes("getbytitle('MSEConfiguracoes')") && url.includes("$filter=Ativo eq 1")));
+  assert.ok(calls.some((url) => url.includes("getbytitle('MSEConfiguracoes')") && url.includes("$filter=Active eq 1")));
 
   await app.dispose();
 

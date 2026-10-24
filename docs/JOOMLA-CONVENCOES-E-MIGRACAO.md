@@ -598,7 +598,7 @@ dedicado):
   `on<Área><Momento>`).
 - **Fase 3** (`a5b6ad1`): criadas as listas SharePoint em inglês
   (`MSEModules`, `MSEExtensions`, `MSEModulesMenu`, `MSEMenuTypes`) e os
-  campos em inglês acrescentados a `MSEMenu` (lado a lado com os 12 campos
+  campos em inglês acrescentados a `MSEMenu` (lado a lado com os 9 campos
   PT, que ficam `DEPRECATED`); dados reais de produção copiados para as
   listas novas via script idempotente, com script de verificação
   campo a campo.
@@ -609,16 +609,40 @@ dedicado):
 - **Fase 5** (esta edição): documentação — `README.md` de cada pasta
   renomeada, esta seção, e `docs/CONVENCAO-JOOMLA.md` (tabela de
   equivalência Joomla! ↔ mse-platform definitiva, pós-normalização).
+- **Fase 5 — decomissionamento** (23/10/2026,
+  `tools/decommission-mse-legacy-pt.js`): removidos do CÓDIGO os 9 campos
+  PT de `MSEMenu` (`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/`Componente`/
+  `Visao`/`Padrao`/`AbrirEm`/`Estado` — não 12, contagem corrigida após
+  conferência no esquema real) e o esquema `MSEMenuTipos` (PT) inteiro —
+  ver `kernel/schemas/mse-menu.js`. A ferramenta de decomissionamento real
+  (apaga as 4 listas PT + os 9 campos PT de `MSEMenu` no SharePoint, com
+  gate de verificação + dump de segurança + `confirm` obrigatórios) está
+  implementada e testada (`tools/test/decommission-mse-legacy-pt.test.js`),
+  mas a EXECUÇÃO contra o tenant real de produção é uma ação irreversível
+  separada, pendente de sessão supervisionada (ver
+  `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.10 para o procedimento exato).
 
 Pendências explícitas, fora desta rodada (registradas para não serem
 confundidas com trabalho esquecido):
 
-- **Fase 3b** (`MSEConfiguracoes`): fora de escopo desta normalização;
-  fica para uma rodada dedicada futura.
+- **Fase 3b** (`MSEConfiguracoes`): **fechada em 23/10/2026** — ver
+  `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.9. Os 8 campos com consumidor real
+  confirmado (`Escopo`/`Modulo`/`Tema`/`ConfiguracaoJson`/`Estado`/`Ativo`/
+  `ExtensaoElemento`/`Layout`) ganharam equivalentes em inglês
+  (`Scope`/`Module`/`Theme`/`ConfigurationJson`/`State`/`Active`/
+  `ExtensionElement`/`Layout`, este último já neutro — só a choice `Herdar`
+  ganhou `Inherit`), lado a lado com os PT (`DEPRECATED`). Os 4 campos
+  restantes (`TipoInstancia`/`VersaoConfiguracao`/`VersaoSettings`/
+  `VersaoModulo`) permanecem em PT — sem consumidor confirmado, fora desta
+  rodada também.
 - **Decomissionamento das listas/campos PT**: `MSEModulos`/`MSEExtensoes`/
-  `MSEModulosMenu`/`MSEMenuTipos` (listas antigas) e os 12 campos PT de
-  `MSEMenu` continuam vivos em produção — nenhum código novo os lê, mas a
-  remoção/decomissionamento real é uma limpeza futura, não feita nesta
-  normalização.
+  `MSEModulosMenu`/`MSEMenuTipos` (listas antigas) e os 8 campos PT de
+  `MSEConfiguracoes` recém-migrados continuam vivos em produção — a
+  ferramenta de remoção (código) está pronta (ver "Fase 5 —
+  decomissionamento" acima), mas a exclusão real contra o tenant é uma
+  ação futura separada, supervisionada. Os 9 campos PT de `MSEMenu` e o
+  esquema `MSEMenuTipos` já foram removidos do código (não mais
+  provisionados/lidos); a lista `MSEMenuTipos` em si e seus dados em
+  produção, se existirem, seguem a mesma pendência de exclusão real.
 - `admin/` (painel pré-Site-Kernel) continua congelado, sem prazo de
   migração definido.

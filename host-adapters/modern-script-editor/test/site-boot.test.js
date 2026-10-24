@@ -182,6 +182,75 @@ import {
   console.log("site-boot.test.js: createTemplateLayoutResolver adapta regions/component do template para positionElements/componentElement ok.");
 }
 
+// --- adaptTemplateToLayout: viewOverrides do template (se declarado) é
+// repassado ao LayoutLike sem alteração (23/10/2026 — overrides de view por
+// template, ver docs/AUDITORIA-JOOMLA-PENTE-FINO.md §3) --------------------
+
+{
+  const root = { id: "root-fake-overrides" };
+  const viewOverrides = { blog: { lista: "https://example.invalid/blog/lista-override.js" } };
+
+  const fakeTemplateModule = {
+    async createTemplate({ root: receivedRoot }) {
+      return {
+        root: receivedRoot,
+        regions: new Map(),
+        component: { id: "component-region-overrides" },
+        dispose() {},
+        viewOverrides
+      };
+    }
+  };
+
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async () => fakeTemplateModule
+  });
+
+  const layout = await resolveLayout({
+    root,
+    positions: [],
+    componentPosition: "conteudo-principal",
+    theme: { name: "camap-tema-01" }
+  });
+
+  assert.deepEqual(layout.viewOverrides, viewOverrides);
+  console.log("site-boot.test.js: adaptTemplateToLayout repassa viewOverrides do template ao LayoutLike ok.");
+}
+
+// --- adaptTemplateToLayout: template sem viewOverrides -> layout.viewOverrides
+// é undefined (comportamento idêntico ao de antes desta feature) -----------
+
+{
+  const root = { id: "root-fake-no-overrides" };
+
+  const fakeTemplateModule = {
+    async createTemplate({ root: receivedRoot }) {
+      return {
+        root: receivedRoot,
+        regions: new Map(),
+        component: { id: "component-region-no-overrides" },
+        dispose() {}
+      };
+    }
+  };
+
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async () => fakeTemplateModule
+  });
+
+  const layout = await resolveLayout({
+    root,
+    positions: [],
+    componentPosition: "conteudo-principal",
+    theme: { name: "camap-tema-01" }
+  });
+
+  assert.equal(layout.viewOverrides, undefined);
+  console.log("site-boot.test.js: adaptTemplateToLayout sem viewOverrides no template devolve undefined ok.");
+}
+
 // --- createTemplateLayoutResolver: sem tema configurado usa mse-default
 // (2º nível do fallback de 3 níveis) antes de system (3º nível) -----------
 
@@ -351,6 +420,67 @@ import {
   await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "camap-tema-01" } });
   assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
   console.log("site-boot.test.js: loadTemplateStyles indisponível cai no fallback de compatibilidade theme.name ok.");
+}
+
+// --- createTemplateLayoutResolver: menuItem.TemplateStyleId (override do
+// item de menu ATIVO) tem precedência sobre o Home do site (23/10/2026 —
+// atribuição de template por item de menu, ver
+// docs/AUDITORIA-JOOMLA-PENTE-FINO.md §3) -----------------------------------
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const template = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const styles = [
+    { Id: 1, Template: "camap-tema-01", ClientId: "Site", Home: true },
+    { Id: 2, Template: "mse-default", ClientId: "Site", Home: false },
+    { Id: 3, Template: "admin-formal", ClientId: "Administrator", Home: true }
+  ];
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/mse-platform/current",
+    importModule: async (url) => { calls.push(url); return template; },
+    loadTemplateStyles: async () => styles
+  });
+
+  // Item de menu com override (estilo Id:2, diferente do Home Id:1) vence o
+  // Home do site.
+  await resolveLayout({
+    root: fallbackRoot,
+    positions: [],
+    componentPosition: "conteudo-principal",
+    theme: { name: "tema-legado-ignorado" },
+    menuItem: { TemplateStyleId: 2 }
+  });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/mse-default/index.js"]);
+
+  // Sem menuItem (ou sem TemplateStyleId) cai de volta no Home do site.
+  calls.length = 0;
+  await resolveLayout({
+    root: fallbackRoot,
+    positions: [],
+    componentPosition: "conteudo-principal",
+    theme: { name: "tema-legado-ignorado" },
+    menuItem: null
+  });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
+
+  // TemplateStyleId referenciando um estilo inexistente/de outro ClientId cai
+  // no Home do site, sem lançar.
+  calls.length = 0;
+  await resolveLayout({
+    root: fallbackRoot,
+    positions: [],
+    componentPosition: "conteudo-principal",
+    theme: { name: "tema-legado-ignorado" },
+    menuItem: { TemplateStyleId: 3 }
+  });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
+
+  console.log("site-boot.test.js: menuItem.TemplateStyleId tem precedência sobre o Home do site (fallback quando ausente/inválido) ok.");
 }
 
 console.log("site-boot.test.js (host-adapters): verificações concluídas com sucesso.");

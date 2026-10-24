@@ -46,22 +46,29 @@
  * ELE decida internamente qual sub-renderização mostrar — este módulo nunca
  * tenta resolver um entrypoint por nome de visão.
  *
- * Templates (modelo mínimo trazido ao escopo depois do kernel original: 1
- * template ativo por site, trocável pelo gestor via `MSEConfiguracoes.Tema`
- * — escopo Global —, SEM atribuição por item de menu e SEM overrides de
- * view/layout por template, deliberadamente fora de escopo): este módulo
- * continua neutro quanto a QUEM monta o esqueleto visual. Por padrão, o
- * esqueleto é sempre `kernel/layout.js#createSiteLayout` (DOM neutro, sem
- * noção de template). O hook opcional `resolveLayout` (ver JSDoc de
- * `createSiteApplication` abaixo) permite a um host (ex.:
+ * Templates (modelo trazido ao escopo depois do kernel original: 1 template
+ * ativo por site por padrão, trocável pelo gestor via `MSETemplateStyles`/
+ * `MSEConfiguracoes.Tema` — escopo Global —, com suporte a OVERRIDE por item
+ * de menu via `MSEMenu.TemplateStyleId` e a overrides de view por template
+ * — ver `kernel/template-registry.js#resolveTemplateNameForMenuItem` e a
+ * função `ensureLayout` abaixo, 23/10/2026): este módulo continua neutro
+ * quanto a QUEM monta o esqueleto visual. Por padrão, o esqueleto é sempre
+ * `kernel/layout.js#createSiteLayout` (DOM neutro, sem noção de template). O
+ * hook opcional `resolveLayout` (ver JSDoc de `createSiteApplication`
+ * abaixo) permite a um host (ex.:
  * `host-adapters/modern-script-editor/site-boot.js`) substituir esse
  * esqueleto por um pacote de Template real (ex.:
  * `CAMAP-AGP/templates/<nome>/index.js#createTemplate`), desde que o
  * resultado seja adaptado para o mesmo shape `{ root, positionElements,
- * componentElement, dispose() }` — este módulo nunca importa um pacote de
- * template diretamente nem conhece a forma real de `createTemplate()`;
- * isso é responsabilidade de quem fornece `resolveLayout` (mesmo princípio
- * de neutralidade já usado para `resolveManifestUrl`/`importModule`).
+ * componentElement, dispose(), viewOverrides? }` — este módulo nunca importa
+ * um pacote de template diretamente nem conhece a forma real de
+ * `createTemplate()`; isso é responsabilidade de quem fornece `resolveLayout`
+ * (mesmo princípio de neutralidade já usado para `resolveManifestUrl`/
+ * `importModule`). `resolveLayout` pode ser chamado mais de uma vez durante a
+ * vida da aplicação — uma vez por "chave de layout" distinta observada entre
+ * navegações (ver `ensureLayout`); para sites que nunca usam
+ * `TemplateStyleId` em nenhum item de menu, continua sendo chamado exatamente
+ * uma vez, como antes deste mecanismo existir.
  */
 
 import { parseRoute, createSiteRouter } from "./router.js";
@@ -212,6 +219,49 @@ async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestU
 }
 
 /**
+ * Monta um override de view (`layout.viewOverrides?.[componente]?.[view]`,
+ * 23/10/2026 — ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3) no lugar do
+ * `entrypoints.full` declarado pelo manifesto do Componente. `url` já é
+ * absoluta (resolvida pelo pacote de Template, ver JSDoc de
+ * `adaptTemplateToLayout` em `host-adapters/modern-script-editor/site-boot.js`)
+ * — este módulo só faz `importModule(url)` e aplica o MESMO contrato de
+ * qualquer entrypoint (`mount({root, config, services, context})`/
+ * `dispose()`), nenhum contrato novo.
+ *
+ * @param {{ root: Element, url: string, importModule: (url: string) => Promise<any>, config: Record<string, unknown>, services: Record<string, unknown>, context: Record<string, unknown> }} args
+ * @returns {Promise<{ dispose: () => void|Promise<void> }>}
+ */
+async function mountOverrideEntrypoint({ root, url, importModule, config, services, context }) {
+  const entrypointModule = await importModule(url);
+  if (typeof entrypointModule.mount !== "function") {
+    throw new TypeError(`View override "${url}" não exporta mount().`);
+  }
+  const mounted = await entrypointModule.mount({ root, config, services, context });
+  const dispose = typeof mounted?.dispose === "function" ? mounted.dispose : entrypointModule.dispose;
+  return { dispose: typeof dispose === "function" ? dispose : () => {} };
+}
+
+/**
+ * Normaliza `menuItem.TemplateStyleId` (ver
+ * `kernel/schemas/mse-menu.js#TemplateStyleId` e
+ * `kernel/template-registry.js#resolveTemplateNameForMenuItem`) para a
+ * chave de cache de layout usada por `ensureLayout` (abaixo): `null` para
+ * "sem override" (ausente/0/inválido), ou o inteiro positivo em si. Aceita
+ * string numérica (ex.: vinda de query/rota) — mesma tolerância de
+ * `resolveTemplateNameForMenuItem`. Nunca lança por dado de conteúdo.
+ *
+ * @param {number|string|null|undefined} rawId
+ * @returns {number|null}
+ */
+function normalizeTemplateStyleId(rawId) {
+  if (rawId == null || rawId === "") return null;
+  const value = Number(rawId);
+  return Number.isInteger(value) && value >= 1 ? value : null;
+}
+
+
+
+/**
  * Cria e inicializa o Site Kernel sobre `root`: carrega o snapshot inicial
  * (menu, extensões, módulos, atribuições, configuração global), monta o
  * esqueleto de layout, registra o roteador e renderiza a rota inicial antes
@@ -237,27 +287,46 @@ async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestU
  *   events?: ReturnType<typeof createEventBus>,
  *   onLoadError?: (error: Error, chave: string) => void,
  *   onModuleError?: (error: Error, info: { elemento: string, kind: "component"|"module", position?: string }) => void,
- *   resolveLayout?: (args: { root: Element, positions: string[], componentPosition?: string, theme: object|undefined }) => (Promise<LayoutLike>|LayoutLike)
+ *   resolveLayout?: (args: { root: Element, positions: string[], componentPosition?: string, theme: object|undefined, menuItem: object|null }) => (Promise<LayoutLike>|LayoutLike)
  * }} options `resolveLayout` é o hook opcional de Templates (ver decisão no
  *   cabeçalho do arquivo). Quando AUSENTE, o comportamento é idêntico ao
  *   kernel sem noção de Template: `createSiteLayout({root, positions,
- *   componentPosition})` é montado uma única vez, no boot, antes do primeiro
- *   `refreshSnapshot()` — exatamente como antes deste hook existir (nenhuma
- *   mudança observável nesse caminho). Quando PRESENTE, é chamado DEPOIS do
- *   primeiro `refreshSnapshot()` (porque precisa de `globalConfig.theme` já
- *   carregado), recebendo `theme` como `globalConfig.theme` (pode ser
- *   `undefined`/`{}` quando nenhum Template está configurado em
- *   `MSEConfiguracoes` — escopo Global, campo `Tema`). O valor devolvido
- *   (ou aguardado, se for uma Promise) deve ter o mesmo shape `LayoutLike`
- *   de `createSiteLayout`: `{ root, positionElements: Map<string,Element>,
- *   componentElement: Element, dispose() }` — o resto deste módulo
- *   (`renderComponent`/`renderModules`/`dispose`) usa só esse shape e nunca
- *   sabe se o layout veio do fallback neutro ou de um Template real. Se
- *   `resolveLayout` lançar ou rejeitar (ex.: Template configurado não
- *   encontrado, pacote malformado), o erro é isolado (mesmo princípio de
- *   `loadSnapshot`: uma falha não deve abortar o boot inteiro) e o kernel
- *   cai para `createSiteLayout({root, positions, componentPosition})` — o
- *   mesmo esqueleto neutro usado quando `resolveLayout` não é informado.
+ *   componentPosition})` é montado uma única vez, na primeira chamada de
+ *   `renderRoute` (ver `ensureLayout` abaixo) — mesmo timing observável de
+ *   antes deste hook existir (a primeira `renderRoute` sempre acontece logo
+ *   depois do primeiro `refreshSnapshot()`, sem nenhum passo observável
+ *   entre os dois). Quando PRESENTE, é chamado a partir de `ensureLayout`
+ *   (chamada no início de toda `renderRoute`), recebendo `theme` como
+ *   `globalConfig.theme` (pode ser `undefined`/`{}` quando nenhum Template
+ *   está configurado em `MSEConfiguracoes` — escopo Global, campo `Tema`) e
+ *   `menuItem` (23/10/2026 — atribuição de template por item de menu, ver
+ *   `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3; o item de menu ativo da rota
+ *   atual, já resolvido por `findActiveMenuItem`, ou `null` se nenhum
+ *   corresponde). `resolveLayout` só é chamado de novo quando a CHAVE de
+ *   layout muda entre navegações (ver `ensureLayout`: deriva de
+ *   `menuItem?.TemplateStyleId`, normalizado — ausente/0/inválido sempre
+ *   mapeia para a mesma chave `"default"`); para sites que nunca usam
+ *   `TemplateStyleId` em nenhum item de menu, a chave nunca muda e
+ *   `resolveLayout` continua sendo chamado exatamente uma vez, como antes
+ *   deste mecanismo existir — zero mudança observável nesse caminho (caminho
+ *   testado por regressão). O valor devolvido (ou aguardado, se for uma
+ *   Promise) deve ter o mesmo shape `LayoutLike` de `createSiteLayout`:
+ *   `{ root, positionElements: Map<string,Element>, componentElement:
+ *   Element, dispose(), viewOverrides?: Record<string,Record<string,string>> }`
+ *   — o resto deste módulo (`renderComponent`/`renderModules`/`dispose`) usa
+ *   só esse shape e nunca sabe se o layout veio do fallback neutro ou de um
+ *   Template real. Se `resolveLayout` lançar ou rejeitar (ex.: Template
+ *   configurado não encontrado, pacote malformado), o erro é isolado (mesmo
+ *   princípio de `loadSnapshot`: uma falha não deve abortar o boot/navegação
+ *   inteira) e o kernel cai para `createSiteLayout({root, positions,
+ *   componentPosition})` — o mesmo esqueleto neutro usado quando
+ *   `resolveLayout` não é informado. Quando a chave de layout MUDA entre
+ *   navegações (troca de template por item de menu), o Componente e todos os
+ *   Módulos atualmente montados são desmontados (`clearComponent`/
+ *   `clearModulesForPosition`, reaproveitados — mesmas funções já usadas por
+ *   `dispose()`) e o layout anterior é descartado (`layout.dispose()`) ANTES
+ *   do novo layout ser montado — nunca há dois layouts simultaneamente
+ *   anexados a `root`.
  * @returns {Promise<{
  *   navigate: (route: object, options?: object) => string,
  *   dispose: () => Promise<void>,
@@ -285,18 +354,14 @@ export async function createSiteApplication({
 } = {}) {
   if (!root) throw new TypeError("root é obrigatório.");
 
-  // Decisão de timing (ver JSDoc de `resolveLayout` acima e decisão no
-  // cabeçalho do arquivo): quando `resolveLayout` NÃO é informado, o layout
-  // neutro é montado aqui mesmo, antes de qualquer `refreshSnapshot()` —
-  // byte a byte o mesmo timing/chamada de antes deste hook existir, para
-  // garantir zero mudança observável nesse caminho (caminho testado por
-  // regressão). Quando `resolveLayout` É informado, a montagem é adiada:
-  // `layout` começa `null` e só é populado dentro de `refreshSnapshot()`,
-  // na PRIMEIRA chamada, depois que `globalConfig.theme` já foi carregado —
-  // mas ainda assim antes de `router`/`renderRoute` serem criados mais
-  // abaixo, preservando a ordem de boot já existente (layout sempre pronto
-  // antes do primeiro render de rota).
-  let layout = resolveLayout ? null : createSiteLayout({ root, positions, componentPosition });
+  /**
+   * Layout atualmente montado (começa `null`; a primeira `renderRoute`
+   * sempre monta um, via `ensureLayout`) e a chave de cache usada para
+   * decidir se uma navegação precisa trocar de layout — ver `ensureLayout`
+   * abaixo e a decisão documentada no JSDoc de `resolveLayout` acima.
+   */
+  let layout = null;
+  let layoutKey;
 
   /** Snapshot em memória, atualizado a cada boot/refresh (ver loadSnapshot). */
   let snapshot = {};
@@ -314,22 +379,6 @@ export async function createSiteApplication({
         globalConfig = (await loadStoredGlobalConfig(configurationStore)) ?? {};
       } catch (error) {
         onLoadError?.(error, "globalConfig");
-      }
-    }
-    // Monta o layout só agora, na primeira vez que `refreshSnapshot()`
-    // resolve, quando `resolveLayout` foi informado (ver decisão acima):
-    // é só a partir daqui que `globalConfig.theme` reflete o que está
-    // publicado em `MSEConfiguracoes` (escopo Global). Chamadas
-    // subsequentes de `refreshSnapshot()` (não existem hoje, mas o guard
-    // `!layout` deixa isso seguro para o futuro) não remontam o layout.
-    if (resolveLayout && !layout) {
-      try {
-        layout = (await resolveLayout({ root, positions, componentPosition, theme: globalConfig.theme })) ?? null;
-      } catch (error) {
-        onLoadError?.(error, "resolveLayout");
-      }
-      if (!layout) {
-        layout = createSiteLayout({ root, positions, componentPosition });
       }
     }
   }
@@ -398,6 +447,63 @@ export async function createSiteApplication({
     return router.navigate(targetRoute, navigateOptions);
   }
 
+  /**
+   * Garante que `layout` reflete o template correto para `menuItem` (item de
+   * menu ativo da rota sendo renderizada) — 23/10/2026, atribuição de
+   * template por item de menu, ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3.
+   * Chamada no início de toda `renderRoute`, ANTES de `renderComponent`/
+   * `renderModules`.
+   *
+   * A "chave de layout" desejada deriva de `menuItem?.TemplateStyleId`
+   * (normalizado por `normalizeTemplateStyleId`): `"default"` quando
+   * ausente/0/inválido (caso comum — nenhum override), ou `"menu:<id>"`
+   * quando presente. Se a chave é igual à do layout já montado
+   * (`layoutKey`), esta função é um no-op — reaproveita o layout atual
+   * SEM remontagem, preservando o caminho já testado para o caso comum
+   * "nenhum menu usa TemplateStyleId" (inclui a primeira chamada de
+   * `renderRoute`, onde `layout` ainda é `null`: a comparação
+   * `layout && layoutKey === desiredKey` nunca é verdadeira enquanto
+   * `layout` for `null`, então a primeira navegação sempre monta).
+   *
+   * Quando a chave MUDA (ou é a primeira montagem): resolve o novo layout
+   * (via `resolveLayout`, se informado — recebendo agora também `menuItem`
+   * — com o mesmo fallback para `createSiteLayout` já usado no boot em caso
+   * de ausência/erro) e SÓ ENTÃO desmonta o layout anterior, se havia um
+   * (`clearComponent`/`clearModulesForPosition` para cada posição conhecida,
+   * depois `layout.dispose()`) — nunca há dois layouts simultaneamente
+   * montados em `root`.
+   *
+   * @param {object | null} menuItem
+   */
+  async function ensureLayout(menuItem) {
+    const templateStyleId = normalizeTemplateStyleId(menuItem?.TemplateStyleId);
+    const desiredKey = templateStyleId != null ? `menu:${templateStyleId}` : "default";
+    if (layout && layoutKey === desiredKey) return;
+
+    let nextLayout = null;
+    if (resolveLayout) {
+      try {
+        nextLayout = (await resolveLayout({ root, positions, componentPosition, theme: globalConfig.theme, menuItem: menuItem ?? null })) ?? null;
+      } catch (error) {
+        onLoadError?.(error, "resolveLayout");
+      }
+    }
+    if (!nextLayout) {
+      nextLayout = createSiteLayout({ root, positions, componentPosition });
+    }
+
+    if (layout) {
+      await clearComponent();
+      for (const positionName of [...disposeModulesByPosition.keys()]) {
+        await clearModulesForPosition(positionName);
+      }
+      layout.dispose();
+    }
+
+    layout = nextLayout;
+    layoutKey = desiredKey;
+  }
+
   async function renderComponent(dispatch, route, menuItem) {
     await clearComponent();
     const element = layout.componentElement;
@@ -419,17 +525,29 @@ export async function createSiteApplication({
         view: dispatch.view,
         params: { ...dispatch.params, ...namedParams }
       });
-      const { manifest, dispose } = await mountEntrypoint({
-        root: element,
-        elemento: dispatch.componente,
-        entrypointKey: "full",
-        resolveManifestUrl,
-        importModule,
-        config,
-        services,
-        context,
-        preloadedManifest
-      });
+      // Override de view por template (23/10/2026 —
+      // `templates/<t>/html/<view>`, ver docs/AUDITORIA-JOOMLA-PENTE-FINO.md
+      // §3): se o layout atual declara um override para este
+      // (componente, view), ele substitui o entrypoints.full do manifesto
+      // original — mesmo contrato mount()/dispose(), nenhuma mudança de
+      // forma. Ausente/undefined: comportamento idêntico a hoje.
+      const overrideUrl = layout.viewOverrides?.[dispatch.componente]?.[dispatch.view];
+      const { manifest, dispose } = overrideUrl
+        ? {
+            manifest: preloadedManifest.manifest,
+            ...(await mountOverrideEntrypoint({ root: element, url: overrideUrl, importModule, config, services, context }))
+          }
+        : await mountEntrypoint({
+            root: element,
+            elemento: dispatch.componente,
+            entrypointKey: "full",
+            resolveManifestUrl,
+            importModule,
+            config,
+            services,
+            context,
+            preloadedManifest
+          });
       if (manifest.views && !manifest.views[dispatch.view]) {
         const fallbackView = Object.keys(manifest.views)[0];
         element.dataset && (element.dataset.mseView = fallbackView ?? dispatch.view);
@@ -510,6 +628,8 @@ export async function createSiteApplication({
   async function renderRoute(route) {
     const menuItem = findActiveMenuItem(snapshot.menuItems, route);
     events.emit("onAfterRoute", { route, menuItem });
+
+    await ensureLayout(menuItem);
 
     const dispatch = resolveDispatch({ route, menuItems: snapshot.menuItems, extensions: snapshot.extensions, defaultView });
 

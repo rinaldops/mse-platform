@@ -9,12 +9,16 @@
  * + h1 "Extensões" + o editor CRUD `extensions-editor.js` montado dentro),
  * sem nenhuma mudança de comportamento — só de local do arquivo.
  *
- * @param {{ root: Element, services?: object }} options
+ * Consome `route.task`/`route.id` (`extensions.enable`/`extensions.disable`
+ * — ver `extensions-editor.js` e `docs/AUDITORIA-JOOMLA-PENTE-FINO.md`
+ * §2.7/§3), mesmo padrão `controller.task` já usado por `com_templates`.
+ *
+ * @param {{ root: Element, route?: object, services?: object }} options
  * @returns {{ dispose(): void }}
  */
 import { renderExtensionsEditor } from "./extensions-editor.js";
 
-export function renderExtensionsScreen({ root, services = {} } = {}) {
+export function renderExtensionsScreen({ root, route, services = {} } = {}) {
   const document = root.ownerDocument;
   const panel = document.createElement("section");
   panel.className = "mse-administrator__panel";
@@ -22,7 +26,7 @@ export function renderExtensionsScreen({ root, services = {} } = {}) {
   h1.textContent = "Extensões";
   panel.append(h1);
   root.append(panel);
-  renderExtensionsEditor({ root: panel, services });
+  renderExtensionsEditor({ root: panel, route, services });
   return {
     dispose() {
       panel.remove();

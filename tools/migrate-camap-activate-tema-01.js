@@ -39,17 +39,23 @@ function deepFreeze(value) {
  * Global de `MSEConfiguracoes` e o filtro usado para localizá-lo. Sem rede,
  * sem `Id` (resolvido em runtime pela própria migração).
  *
+ * Grava tanto `Tema` (PT, legado) quanto `Theme` (EN, Fase 3b — 23/10/2026,
+ * ver docs/AUDITORIA-JOOMLA-PENTE-FINO.md §2.8) com o mesmo valor: desde a
+ * Fase 3b, `core/configuration-store.js#loadPublished` (único leitor real em
+ * produção) lê só `Theme` — gravar apenas `Tema` deixaria o tema ativo
+ * silenciosamente desatualizado para esse leitor.
+ *
  * @returns {{
  *   list: "MSEConfiguracoes",
  *   scopeFilter: { Escopo: "Global" },
- *   values: { Tema: string }
+ *   values: { Tema: string, Theme: string }
  * }}
  */
 export function buildActivateTema01Migration() {
   return deepFreeze({
     list: "MSEConfiguracoes",
     scopeFilter: { Escopo: "Global" },
-    values: { Tema: TARGET_THEME }
+    values: { Tema: TARGET_THEME, Theme: TARGET_THEME }
   });
 }
 
@@ -114,7 +120,7 @@ export async function migrateActivateTema01({ client, listIds, confirm } = {}) {
 
   const list = listIds.MSEConfiguracoes;
   const found = await client.getListItems(list, {
-    select: ["Id", "Escopo", "Tema"],
+    select: ["Id", "Escopo", "Tema", "Theme"],
     filter: `Escopo eq ${odataLiteral(plan.scopeFilter.Escopo)}`,
     top: 5 // só precisamos distinguir 0 / 1 / >1; nenhum tenant real deveria se aproximar deste teto
   });
@@ -135,7 +141,11 @@ export async function migrateActivateTema01({ client, listIds, confirm } = {}) {
   }
 
   const globalItem = found[0];
-  if (globalItem.Tema === TARGET_THEME) {
+  // Idempotente só quando OS DOIS campos já refletem o alvo — se só `Tema`
+  // (PT) estiver correto mas `Theme` (EN, único lido por
+  // core/configuration-store.js desde a Fase 3b) não, ainda é preciso
+  // gravar para corrigir o leitor real.
+  if (globalItem.Tema === TARGET_THEME && globalItem.Theme === TARGET_THEME) {
     return Object.freeze({ status: "already-active", itemId: globalItem.Id });
   }
 

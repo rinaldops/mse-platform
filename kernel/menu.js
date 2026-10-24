@@ -8,10 +8,11 @@
  *
  * Fase 4 da normalização Joomla! (`docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`):
  * este módulo passou a ler os campos em inglês de `MSEMenu` (já presentes na
- * mesma lista desde a Fase 3, gravados in-place junto aos campos PT antigos)
- * em vez dos campos PT (`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/`Componente`/
- * `Visao`/`Padrao`/`AbrirEm`/`Estado`), que continuam vivos na lista mas não
- * são mais lidos por nenhum código consumidor.
+ * mesma lista desde a Fase 3, gravados in-place junto aos campos PT antigos
+ * à época). Os 9 campos PT (`TipoMenu`/`Caminho`/`Nivel`/`Ordem`/
+ * `Componente`/`Visao`/`Padrao`/`AbrirEm`/`Estado`) foram decomissionados na
+ * Fase 5 (23/10/2026, `tools/decommission-mse-legacy-pt.js`) — já não
+ * existem mais na lista.
  *
  * Shape esperado de cada item de `items` (um registro da lista MSEMenu já
  * lido do SharePoint e normalizado pelo chamador):

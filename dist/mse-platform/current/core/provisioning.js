@@ -1,14 +1,23 @@
 const DEFAULT_LIST_TITLE = "MSEConfiguracoes";
 const ADD_TO_ALL_CONTENT_TYPES_WITH_INTERNAL_NAME_HINT = 12;
-const CONFIGURATION_FIELDS = "Id,Title,Escopo,Modulo,TipoInstancia,Layout,Tema,ConfiguracaoJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,Estado,Ativo,ExtensaoElemento";
+// Fase 3b da normalização Joomla! (23/10/2026, ver
+// docs/AUDITORIA-JOOMLA-PENTE-FINO.md §2.8 e docs/CONVENCAO-JOOMLA.md §5):
+// os 8 campos com consumidor real confirmado em
+// core/configuration-store.js#loadPublished foram traduzidos para inglês,
+// acrescentados lado a lado com os PT (mesmo padrão já aplicado a
+// kernel/schemas/mse-menu.js nas Fases 3/4 — os PT ficam DEPRECATED, vivos,
+// não lidos por código novo). Os 4 campos sem consumidor confirmado
+// (`TipoInstancia`/`VersaoConfiguracao`/`VersaoSettings`/`VersaoModulo`)
+// permanecem em PT, fora desta rodada.
+const CONFIGURATION_FIELDS = "Id,Title,Scope,Module,TipoInstancia,Layout,Theme,ConfigurationJson,VersaoConfiguracao,VersaoSettings,VersaoModulo,State,Active,ExtensionElement";
 const CONFIGURATION_KEYS = new Set([
   "key", "scope", "module", "view", "layout", "theme", "configuration", "settingsVersion",
-  "moduleVersion", "state", "active", "extensaoElemento"
+  "moduleVersion", "state", "active", "extensionElement"
 ]);
 const FORBIDDEN_JSON_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
-  version: 3,
+  version: 4,
   title: Object.freeze({
     internalName: "Title",
     displayName: "Chave",
@@ -24,6 +33,9 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Choice",
       required: true,
       choices: Object.freeze(["Global", "Instancia", "Extensao"]),
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é `Scope`
+      // (abaixo). Mantido vivo, não lido por código novo — ver
+      // core/configuration-store.js#loadPublished.
       schemaXml: "<Field Type='Choice' DisplayName='Escopo' Name='Escopo' StaticName='Escopo' Required='TRUE' Format='Dropdown'><CHOICES><CHOICE>Global</CHOICE><CHOICE>Instancia</CHOICE><CHOICE>Extensao</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
@@ -32,6 +44,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Text",
       required: false,
       indexed: true,
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é `Module`
+      // (abaixo).
       schemaXml: "<Field Type='Text' DisplayName='Módulo' Name='Modulo' StaticName='Modulo' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
     }),
     Object.freeze({
@@ -40,6 +54,9 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Choice",
       required: true,
       choices: Object.freeze(["Full", "Summary"]),
+      // Sem consumidor confirmado em core/configuration-store.js nesta
+      // rodada — permanece em PT, fora da Fase 3b (ver
+      // docs/AUDITORIA-JOOMLA-PENTE-FINO.md §2.8).
       schemaXml: "<Field Type='Choice' DisplayName='Tipo de instância' Name='TipoInstancia' StaticName='TipoInstancia' Required='TRUE' Format='Dropdown'><Default>Full</Default><CHOICES><CHOICE>Full</CHOICE><CHOICE>Summary</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
@@ -47,14 +64,19 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Layout",
       type: "Choice",
       required: true,
-      choices: Object.freeze(["Herdar", "Contained", "FullBleed"]),
-      schemaXml: "<Field Type='Choice' DisplayName='Layout' Name='Layout' StaticName='Layout' Required='TRUE' Format='Dropdown'><Default>Herdar</Default><CHOICES><CHOICE>Herdar</CHOICE><CHOICE>Contained</CHOICE><CHOICE>FullBleed</CHOICE></CHOICES></Field>"
+      // "Inherit" acrescentada (Fase 3b, 23/10/2026) ao lado de "Herdar"
+      // (equivalente PT) — campo já era neutro em nome, só a choice PT
+      // (`Herdar`) fica obsoleta; código novo grava/lê "Inherit".
+      choices: Object.freeze(["Herdar", "Contained", "FullBleed", "Inherit"]),
+      schemaXml: "<Field Type='Choice' DisplayName='Layout' Name='Layout' StaticName='Layout' Required='TRUE' Format='Dropdown'><Default>Herdar</Default><CHOICES><CHOICE>Herdar</CHOICE><CHOICE>Contained</CHOICE><CHOICE>FullBleed</CHOICE><CHOICE>Inherit</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
       internalName: "Tema",
       displayName: "Tema",
       type: "Text",
       required: false,
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é `Theme`
+      // (abaixo).
       schemaXml: "<Field Type='Text' DisplayName='Tema' Name='Tema' StaticName='Tema' Required='FALSE' MaxLength='128' />"
     }),
     Object.freeze({
@@ -62,6 +84,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Configuração JSON",
       type: "Note",
       required: false,
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é
+      // `ConfigurationJson` (abaixo).
       schemaXml: "<Field Type='Note' DisplayName='Configuração JSON' Name='ConfiguracaoJson' StaticName='ConfiguracaoJson' Required='FALSE' RichText='FALSE' NumLines='8' />"
     }),
     Object.freeze({
@@ -69,6 +93,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Versão da configuração",
       type: "Number",
       required: true,
+      // Sem consumidor confirmado em core/configuration-store.js nesta
+      // rodada — permanece em PT, fora da Fase 3b.
       schemaXml: "<Field Type='Number' DisplayName='Versão da configuração' Name='VersaoConfiguracao' StaticName='VersaoConfiguracao' Required='TRUE' Decimals='0' Min='1'><Default>1</Default></Field>"
     }),
     Object.freeze({
@@ -76,6 +102,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Versão dos settings",
       type: "Number",
       required: true,
+      // Sem consumidor confirmado em core/configuration-store.js nesta
+      // rodada — permanece em PT, fora da Fase 3b.
       schemaXml: "<Field Type='Number' DisplayName='Versão dos settings' Name='VersaoSettings' StaticName='VersaoSettings' Required='TRUE' Decimals='0' Min='1'><Default>1</Default></Field>"
     }),
     Object.freeze({
@@ -83,6 +111,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       displayName: "Versão do módulo",
       type: "Text",
       required: false,
+      // Sem consumidor confirmado em core/configuration-store.js nesta
+      // rodada — permanece em PT, fora da Fase 3b.
       schemaXml: "<Field Type='Text' DisplayName='Versão do módulo' Name='VersaoModulo' StaticName='VersaoModulo' Required='FALSE' MaxLength='64' />"
     }),
     Object.freeze({
@@ -91,6 +121,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Choice",
       required: true,
       choices: Object.freeze(["Rascunho", "Publicado"]),
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é `State`
+      // (abaixo).
       schemaXml: "<Field Type='Choice' DisplayName='Estado' Name='Estado' StaticName='Estado' Required='TRUE' Format='Dropdown'><Default>Publicado</Default><CHOICES><CHOICE>Rascunho</CHOICE><CHOICE>Publicado</CHOICE></CHOICES></Field>"
     }),
     Object.freeze({
@@ -99,6 +131,8 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       type: "Boolean",
       required: true,
       indexed: true,
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é `Active`
+      // (abaixo).
       schemaXml: "<Field Type='Boolean' DisplayName='Ativo' Name='Ativo' StaticName='Ativo' Required='TRUE' Indexed='TRUE'><Default>1</Default></Field>"
     }),
     Object.freeze({
@@ -111,7 +145,74 @@ export const CONFIGURATION_LIST_SCHEMA = Object.freeze({
       // quando Escopo === "Extensao"; vazio/nulo nos demais escopos. Segue a
       // mesma convenção de `MSE_EXTENSOES_SCHEMA.Elemento`
       // (kernel/schemas/mse-extensoes.js).
+      // DEPRECATED (Fase 3b, 23/10/2026): equivalente em inglês é
+      // `ExtensionElement` (abaixo).
       schemaXml: "<Field Type='Text' DisplayName='Elemento da extensão' Name='ExtensaoElemento' StaticName='ExtensaoElemento' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
+    }),
+    Object.freeze({
+      internalName: "Scope",
+      displayName: "Scope",
+      type: "Choice",
+      required: false,
+      indexed: true,
+      choices: Object.freeze(["Global", "Instance", "Extension"]),
+      // ≈ Escopo (inglês; Global/Instancia/Extensao→Global/Instance/Extension).
+      // Opcional nesta fase (campo novo, preenchido via UPDATE nos itens
+      // reais já existentes pela migração) — mesmo princípio de
+      // kernel/schemas/mse-menu.js#MenuType.
+      schemaXml: "<Field Type='Choice' DisplayName='Scope' Name='Scope' StaticName='Scope' Required='FALSE' Indexed='TRUE' Format='Dropdown'><CHOICES><CHOICE>Global</CHOICE><CHOICE>Instance</CHOICE><CHOICE>Extension</CHOICE></CHOICES></Field>"
+    }),
+    Object.freeze({
+      internalName: "Module",
+      displayName: "Module",
+      type: "Text",
+      required: false,
+      indexed: true,
+      // ≈ Modulo (inglês).
+      schemaXml: "<Field Type='Text' DisplayName='Module' Name='Module' StaticName='Module' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
+    }),
+    Object.freeze({
+      internalName: "Theme",
+      displayName: "Theme",
+      type: "Text",
+      required: false,
+      // ≈ Tema (inglês).
+      schemaXml: "<Field Type='Text' DisplayName='Theme' Name='Theme' StaticName='Theme' Required='FALSE' MaxLength='128' />"
+    }),
+    Object.freeze({
+      internalName: "ConfigurationJson",
+      displayName: "Configuration JSON",
+      type: "Note",
+      required: false,
+      // ≈ ConfiguracaoJson (inglês).
+      schemaXml: "<Field Type='Note' DisplayName='Configuration JSON' Name='ConfigurationJson' StaticName='ConfigurationJson' Required='FALSE' RichText='FALSE' NumLines='8' />"
+    }),
+    Object.freeze({
+      internalName: "Active",
+      displayName: "Active",
+      type: "Boolean",
+      required: false,
+      indexed: true,
+      // ≈ Ativo (inglês).
+      schemaXml: "<Field Type='Boolean' DisplayName='Active' Name='Active' StaticName='Active' Required='FALSE' Indexed='TRUE'><Default>1</Default></Field>"
+    }),
+    Object.freeze({
+      internalName: "State",
+      displayName: "State",
+      type: "Choice",
+      required: false,
+      choices: Object.freeze(["Draft", "Published"]),
+      // ≈ Estado (inglês; Rascunho/Publicado→Draft/Published).
+      schemaXml: "<Field Type='Choice' DisplayName='State' Name='State' StaticName='State' Required='FALSE' Format='Dropdown'><CHOICES><CHOICE>Draft</CHOICE><CHOICE>Published</CHOICE></CHOICES></Field>"
+    }),
+    Object.freeze({
+      internalName: "ExtensionElement",
+      displayName: "Extension element",
+      type: "Text",
+      required: false,
+      indexed: true,
+      // ≈ ExtensaoElemento (inglês).
+      schemaXml: "<Field Type='Text' DisplayName='Extension element' Name='ExtensionElement' StaticName='ExtensionElement' Required='FALSE' Indexed='TRUE' MaxLength='128' />"
     })
   ])
 });
@@ -515,7 +616,24 @@ async function insertGlobal({ webUrl, listTitle, itemType, fetchImpl, digest }) 
       VersaoSettings: 1,
       VersaoModulo: null,
       Estado: "Publicado",
-      Ativo: true
+      Ativo: true,
+      // Campos EN (Fase 3b, 23/10/2026) gravados lado a lado com os PT
+      // acima, já com o mesmo conteúdo — ver
+      // core/configuration-store.js#loadPublished (único leitor).
+      Scope: "Global",
+      Theme: "default",
+      ConfigurationJson: JSON.stringify({
+        theme: {
+          tokens: {
+            fontFamily: "Segoe UI, Arial, sans-serif",
+            fontSizeBody: "1rem",
+            space3: "1rem",
+            radius: "0.5rem"
+          }
+        }
+      }),
+      State: "Published",
+      Active: true
     }
   });
 }
@@ -526,6 +644,18 @@ function validateName(value, label) {
   }
   return value;
 }
+
+// Fase 3b (23/10/2026): o schema real ainda exige o campo PT `Escopo`
+// (Choice Required=TRUE, choices em PT) e `Estado` (idem) — só os campos EN
+// `Scope`/`State` usam o vocabulário em inglês. As duas gravações lado a
+// lado (ver createConfigurationItem/updateConfigurationItem) precisam do
+// valor em CADA vocabulário; normalized.scope/normalized.state (vindos de
+// validateEditableItem) já estão em inglês, então estas tabelas convertem
+// de volta para PT só para a gravação do campo legado.
+const SCOPE_EN_TO_PT = Object.freeze({ Global: "Global", Instance: "Instancia", Extension: "Extensao" });
+const STATE_EN_TO_PT = Object.freeze({ Draft: "Rascunho", Published: "Publicado" });
+function scopePt(scopeEn) { return SCOPE_EN_TO_PT[scopeEn] ?? scopeEn; }
+function statePt(stateEn) { return STATE_EN_TO_PT[stateEn] ?? stateEn; }
 
 function normalizeConfiguration(value) {
   let json;
@@ -566,14 +696,17 @@ function validateEditableItem(item) {
     configuration: normalizeConfiguration(item.configuration),
     settingsVersion: item.settingsVersion ?? 1,
     moduleVersion: item.moduleVersion ?? null,
-    state: String(item.state || "Publicado")
+    // Vocabulário em inglês (Fase 3b, 23/10/2026) — equivalente aos valores
+    // gravados em Scope/State (core/configuration-store.js#loadPublished é o
+    // único leitor real); ver docs/AUDITORIA-JOOMLA-PENTE-FINO.md §2.8.
+    state: String(item.state || "Published")
   };
 
-  if (!new Set(["Global", "Instancia", "Extensao"]).has(normalized.scope)) {
-    throw provisioningError("invalid-item", "Escopo deve ser Global, Instancia ou Extensao.");
+  if (!new Set(["Global", "Instance", "Extension"]).has(normalized.scope)) {
+    throw provisioningError("invalid-item", "Escopo deve ser Global, Instance ou Extension.");
   }
-  if (!new Set(["Herdar", "Contained", "FullBleed"]).has(normalized.layout)) {
-    throw provisioningError("invalid-item", "Layout deve ser Herdar, Contained ou FullBleed.");
+  if (!new Set(["Herdar", "Contained", "FullBleed", "Inherit"]).has(normalized.layout)) {
+    throw provisioningError("invalid-item", "Layout deve ser Inherit, Contained ou FullBleed.");
   }
   if (typeof normalized.active !== "boolean") {
     throw provisioningError("invalid-item", "Ativo deve ser booleano.");
@@ -588,27 +721,27 @@ function validateEditableItem(item) {
     && (typeof normalized.moduleVersion !== "string" || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(normalized.moduleVersion))) {
     throw provisioningError("invalid-item", "Versão do módulo deve usar SemVer.");
   }
-  if (!new Set(["Rascunho", "Publicado"]).has(normalized.state)) {
-    throw provisioningError("invalid-item", "Estado deve ser Rascunho ou Publicado.");
+  if (!new Set(["Draft", "Published"]).has(normalized.state)) {
+    throw provisioningError("invalid-item", "Estado deve ser Draft ou Published.");
   }
   if (normalized.scope === "Global") {
     if (normalized.key.toLowerCase() !== "global") {
       throw provisioningError("invalid-item", "O registro Global deve usar a chave global.");
     }
     normalized.module = null;
-    normalized.extensaoElemento = null;
-  } else if (normalized.scope === "Extensao") {
+    normalized.extensionElement = null;
+  } else if (normalized.scope === "Extension") {
     if (normalized.key.toLowerCase() === "global") {
       throw provisioningError("invalid-item", "A chave global é reservada.");
     }
     normalized.module = null;
-    normalized.extensaoElemento = validateName(normalized.extensaoElemento, "Elemento da extensão");
+    normalized.extensionElement = validateName(normalized.extensionElement, "Elemento da extensão");
   } else {
     if (normalized.key.toLowerCase() === "global") {
       throw provisioningError("invalid-item", "A chave global é reservada.");
     }
     normalized.module = validateName(normalized.module, "Módulo");
-    normalized.extensaoElemento = null;
+    normalized.extensionElement = null;
   }
   return normalized;
 }
@@ -644,26 +777,28 @@ async function readConfigurationItem({ webUrl, listTitle, itemId, fetchImpl }) {
 
   let configuration;
   try {
-    configuration = JSON.parse(value.ConfiguracaoJson || "{}");
+    configuration = JSON.parse(value.ConfigurationJson || "{}");
   } catch (cause) {
     throw provisioningError("invalid-item", `O registro ${itemId} contém JSON inválido.`, { cause });
   }
+  // Fase 3b (23/10/2026): mapeia a partir dos campos EN, únicos lidos por
+  // código novo — ver CONFIGURATION_FIELDS/core/configuration-store.js.
   const record = validateEditableItem({
     id: value.Id,
     etag,
     key: value.Title,
-    scope: value.Escopo,
-    module: value.Modulo || null,
-    extensaoElemento: value.ExtensaoElemento || null,
+    scope: value.Scope,
+    module: value.Module || null,
+    extensionElement: value.ExtensionElement || null,
     view: value.TipoInstancia || "Full",
     layout: value.Layout,
-    theme: value.Tema || null,
+    theme: value.Theme || null,
     configuration,
     settingsVersion: value.VersaoSettings || 1,
     moduleVersion: value.VersaoModulo || null,
-    state: value.Estado || "Publicado",
+    state: value.State || "Published",
     version: value.VersaoConfiguracao,
-    active: Boolean(value.Ativo)
+    active: Boolean(value.Active)
   });
   if (!Number.isInteger(record.version) || record.version < 1) {
     throw provisioningError("invalid-item", `O registro ${itemId} possui versão inválida.`);
@@ -703,7 +838,7 @@ export async function listConfigurationItems({
     throw provisioningError("fetch-unavailable", "A API fetch não está disponível.");
   }
   const moduleFilter = module
-    ? `&$filter=Modulo eq '${validateName(module, "Módulo").replaceAll("'", "''")}'`
+    ? `&$filter=Module eq '${validateName(module, "Módulo").replaceAll("'", "''")}'`
     : "";
   const response = await fetchResponse(
     fetchImpl,
@@ -719,17 +854,17 @@ export async function listConfigurationItems({
   return Object.freeze(items.map((item) => Object.freeze({
     id: item.Id,
     key: item.Title,
-    scope: item.Escopo,
-    module: item.Modulo || null,
-    extensaoElemento: item.ExtensaoElemento || null,
+    scope: item.Scope,
+    module: item.Module || null,
+    extensionElement: item.ExtensionElement || null,
     view: item.TipoInstancia || "Full",
     layout: item.Layout,
-    theme: item.Tema || null,
+    theme: item.Theme || null,
     version: item.VersaoConfiguracao,
     settingsVersion: item.VersaoSettings || 1,
     moduleVersion: item.VersaoModulo || null,
-    state: item.Estado || "Publicado",
-    active: Boolean(item.Ativo)
+    state: item.State || "Published",
+    active: Boolean(item.Active)
   })));
 }
 
@@ -765,9 +900,12 @@ export async function createConfigurationItem({
     body: {
       __metadata: { type: list.ListItemEntityTypeFullName },
       Title: normalized.key,
-      Escopo: normalized.scope,
+      // PT (ainda Required=TRUE no schema real) e EN (Fase 3b, lido por
+      // core/configuration-store.js) gravados lado a lado — mesmo padrão de
+      // insertGlobal().
+      Escopo: scopePt(normalized.scope),
       Modulo: normalized.module,
-      ExtensaoElemento: normalized.extensaoElemento,
+      ExtensaoElemento: normalized.extensionElement,
       TipoInstancia: normalized.view,
       Layout: normalized.layout,
       Tema: normalized.theme,
@@ -775,8 +913,15 @@ export async function createConfigurationItem({
       VersaoConfiguracao: 1,
       VersaoSettings: normalized.settingsVersion,
       VersaoModulo: normalized.moduleVersion,
-      Estado: normalized.state,
-      Ativo: normalized.active
+      Estado: statePt(normalized.state),
+      Ativo: normalized.active,
+      Scope: normalized.scope,
+      Module: normalized.module,
+      ExtensionElement: normalized.extensionElement,
+      Theme: normalized.theme,
+      ConfigurationJson: JSON.stringify(normalized.configuration),
+      State: normalized.state,
+      Active: normalized.active
     }
   });
   const created = unwrap(await readJson(response, `criar a configuração ${normalized.key}`));
@@ -842,9 +987,11 @@ export async function updateConfigurationItem({
     body: {
       __metadata: { type: current.itemType },
       Title: updated.key,
-      Escopo: updated.scope,
+      // PT (ainda Required=TRUE no schema real) e EN (Fase 3b, lido por
+      // core/configuration-store.js) gravados lado a lado.
+      Escopo: scopePt(updated.scope),
       Modulo: updated.module,
-      ExtensaoElemento: updated.extensaoElemento,
+      ExtensaoElemento: updated.extensionElement,
       TipoInstancia: updated.view,
       Layout: updated.layout,
       Tema: updated.theme,
@@ -852,8 +999,15 @@ export async function updateConfigurationItem({
       VersaoConfiguracao: current.record.version + 1,
       VersaoSettings: updated.settingsVersion,
       VersaoModulo: updated.moduleVersion,
-      Estado: updated.state,
-      Ativo: updated.active
+      Estado: statePt(updated.state),
+      Ativo: updated.active,
+      Scope: updated.scope,
+      Module: updated.module,
+      ExtensionElement: updated.extensionElement,
+      Theme: updated.theme,
+      ConfigurationJson: JSON.stringify(updated.configuration),
+      State: updated.state,
+      Active: updated.active
     }
   });
 

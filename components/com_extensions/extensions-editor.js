@@ -28,7 +28,10 @@ function clear(nodeValue) { if (typeof nodeValue.replaceChildren === "function")
 function statusCode(error) { const code = error?.status ?? error?.statusCode; if (Number.isInteger(code)) return code; const match = String(error?.message ?? "").match(/\b(403|412)\b/); return match ? Number(match[1]) : null; }
 function errorText(prefix, error) { const code = statusCode(error); if (code === 403) return `${prefix}: sem permissão (403).`; if (code === 412) return `${prefix}: conflito de edição (412); recarregue e tente novamente.`; return `${prefix}: ${error?.message || "erro desconhecido"}.`; }
 
-export function renderExtensionsEditor({ root, services = {} } = {}) {
+const ENABLE_TASK = "extensions.enable";
+const DISABLE_TASK = "extensions.disable";
+
+export function renderExtensionsEditor({ root, route, services = {} } = {}) {
   const document = root?.ownerDocument; const client = services.adminClient; const list = services.listIds?.MSEExtensions;
   if (!document) throw new TypeError("root é obrigatório.");
   const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__extensions";
@@ -36,6 +39,17 @@ export function renderExtensionsEditor({ root, services = {} } = {}) {
   const tableHost = document.createElement("div"); const formHost = document.createElement("div"); const toolbar = document.createElement("div"); const newButton = node(document, "button", "Nova extensão"); const reloadButton = node(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
   panel.append(node(document, "h2", "Extensões instaladas"), error, toolbar, tableHost, formHost); root.append(panel);
   let currentId = null; let currentProtected = false; let controls = {};
+  // `route.task`/`route.id` só são aplicados uma vez, no primeiro
+  // carregamento — mesmo padrão de components/com_templates/templates-editor.js.
+  let pendingTask = (route?.task === ENABLE_TASK || route?.task === DISABLE_TASK) && route.id != null
+    ? { task: route.task, id: route.id }
+    : null;
+  async function toggleEnabled(item, desiredEnabled) {
+    if (item.Protected && !desiredEnabled) { error.textContent = "Extensão protegida não pode ser desabilitada."; return; }
+    error.textContent = "";
+    try { await updateAdminItem({ client, list, id: item.Id, values: { Enabled: desiredEnabled } }); await reload(); }
+    catch (e) { error.textContent = errorText("Falha ao alternar extensão", e); }
+  }
   const read = () => ({ Title: controls.Title.value, Type: controls.Type.value, Element: controls.Element.value, ClientId: controls.ClientId.value, Version: controls.Version.value, Enabled: controls.Enabled.checked, Protected: controls.Protected.checked, Ordering: controls.Ordering.value, ParamsJson: controls.ParamsJson.value });
   function form(item = {}) { clear(formHost); controls = {}; const box = document.createElement("div"); box.className = "mse-administrator__form";
     for (const [label, name] of [["Título", "Title"], ["Elemento", "Element"], ["Versão", "Version"], ["Ordem", "Ordering"], ["Parâmetros (JSON)", "ParamsJson"]]) { const row = document.createElement("label"); row.textContent = label; controls[name] = input(document, name, item[name] ?? (name === "ParamsJson" ? "{}" : "")); row.append(controls[name]); box.append(row); }
@@ -43,7 +57,20 @@ export function renderExtensionsEditor({ root, services = {} } = {}) {
     controls.ClientId = select(document, "ClientId", CLIENT_IDS, item.ClientId || "Site"); const clientRow = document.createElement("label"); clientRow.textContent = "Client"; clientRow.append(controls.ClientId); box.append(clientRow);
     for (const [label, name] of [["Habilitado", "Enabled"], ["Protegido", "Protected"]]) { const row = document.createElement("label"); row.textContent = label; controls[name] = document.createElement("input"); controls[name].type = "checkbox"; controls[name].checked = Boolean(item[name]); controls[name].disabled = name === "Protected" || (currentProtected && name === "Enabled"); row.append(controls[name]); box.append(row); }
     const save = node(document, "button", "Salvar"); const cancel = node(document, "button", "Cancelar"); bind(cancel, () => { currentId = null; currentProtected = false; form(); }); bind(save, async () => { error.textContent = ""; try { const values = validateExtensionValues(read()); if (currentProtected && !values.Enabled) throw new Error("Extensão protegida não pode ser desabilitada."); if (currentId == null) await createAdminItem({ client, list, values }); else await updateAdminItem({ client, list, id: currentId, values }); currentId = null; currentProtected = false; form(); await reload(); } catch (e) { error.textContent = errorText("Falha ao salvar", e); } }); box.append(save, cancel); formHost.append(box); }
-  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Elemento", "Client", "Versão", "Habilitada", "Protegida", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Type, item.Element, item.ClientId, item.Version]) row.append(node(document, "td", String(value ?? ""))); const enabledCell = node(document, "td", item.Enabled ? "Sim" : "Não"); enabledCell.className = `mse-administrator__status-cell ${item.Enabled ? "mse-administrator__status-cell--ok" : "mse-administrator__status-cell--muted"}`; const protectedCell = node(document, "td", item.Protected ? "Sim" : "Não"); protectedCell.className = `mse-administrator__status-cell ${item.Protected ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(enabledCell, protectedCell); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; currentProtected = Boolean(item.Protected); form(item); }); const remove = node(document, "button", "Excluir"); remove.disabled = Boolean(item.Protected); bind(remove, async () => { if (item.Protected) return; error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); actions.append(edit, remove); row.append(actions); table.append(row); } tableHost.append(table); }
-  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEExtensions não configurado."; return; } try { renderTable(await listAdminItems({ client, list, select: ["Id", "Title", "Type", "Element", "ClientId", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"], orderby: "Type,Element" })); } catch (e) { error.textContent = errorText("Falha ao carregar extensões", e); } }
+  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Elemento", "Client", "Versão", "Habilitada", "Protegida", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Type, item.Element, item.ClientId, item.Version]) row.append(node(document, "td", String(value ?? ""))); const enabledCell = node(document, "td", item.Enabled ? "Sim" : "Não"); enabledCell.className = `mse-administrator__status-cell ${item.Enabled ? "mse-administrator__status-cell--ok" : "mse-administrator__status-cell--muted"}`; const protectedCell = node(document, "td", item.Protected ? "Sim" : "Não"); protectedCell.className = `mse-administrator__status-cell ${item.Protected ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(enabledCell, protectedCell); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; currentProtected = Boolean(item.Protected); form(item); }); const remove = node(document, "button", "Excluir"); remove.disabled = Boolean(item.Protected); bind(remove, async () => { if (item.Protected) return; error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); const toggle = node(document, "button", item.Enabled ? "Desabilitar" : "Habilitar"); toggle.disabled = Boolean(item.Protected) && item.Enabled; bind(toggle, () => toggleEnabled(item, !item.Enabled)); actions.append(edit, remove, toggle); row.append(actions); table.append(row); } tableHost.append(table); }
+  async function reload() {
+    if (!client || !list) { error.textContent = "Client administrativo ou lista MSEExtensions não configurado."; return; }
+    try {
+      const items = await listAdminItems({ client, list, select: ["Id", "Title", "Type", "Element", "ClientId", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"], orderby: "Type,Element" });
+      renderTable(items);
+      if (pendingTask != null) {
+        const { task, id } = pendingTask;
+        pendingTask = null;
+        const target = items.find((item) => item.Id === id);
+        const desiredEnabled = task === ENABLE_TASK;
+        if (target && target.Enabled !== desiredEnabled) await toggleEnabled(target, desiredEnabled);
+      }
+    } catch (e) { error.textContent = errorText("Falha ao carregar extensões", e); }
+  }
   bind(newButton, () => { currentId = null; currentProtected = false; form(); }); bind(reloadButton, reload); form(); reload(); return { dispose() { panel.remove(); } };
 }

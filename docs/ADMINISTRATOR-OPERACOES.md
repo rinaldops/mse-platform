@@ -33,13 +33,15 @@ usuário sem ocultar a falha. O conteúdo HTML do Publicador continua sanitizado
 Os nomes das listas e campos seguem o contrato do Mini Joomla!/SharePoint, já
 normalizado para a convenção Joomla! (inglês — ver
 `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`): `MSEMenu`, `MSEModules`,
-`MSEExtensions` e campos declarados em `kernel/schemas/`. `MSEMenu` ainda
-mantém, lado a lado, os 12 campos em português (DEPRECATED, decomissionamento
-pendente) e os 9 campos em inglês — só os últimos são lidos pelo código atual.
-`MSEConfiguracoes` permanece inteiramente em português (Fase 3b, fora de
-escopo da normalização — ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`). A
-consulta de permissões usa somente o mecanismo nativo do SharePoint; não
-substitui nem simula ACL.
+`MSEExtensions` e campos declarados em `kernel/schemas/`. `MSEMenu` tinha,
+lado a lado, 9 campos em português (DEPRECATED) e os 9 campos em inglês;
+os campos PT foram removidos do schema na Fase 5 (23/10/2026,
+`tools/decommission-mse-legacy-pt.js`) — só os campos em inglês existem
+hoje. `MSEConfiguracoes` teve 8 dos 13 campos traduzidos para inglês na
+Fase 3b (23/10/2026, ver `docs/JOOMLA-CONVENCOES-E-MIGRACAO.md`); os 4
+restantes, sem consumidor confirmado, permanecem em português. A consulta
+de permissões usa somente o mecanismo nativo do SharePoint; não substitui
+nem simula ACL.
 
 ## Testes
 

@@ -83,12 +83,29 @@ async function flush() {
 
 const LIST = Object.freeze({ listId: "20000000-0000-4000-8000-000000000001" });
 
-function createFakeAdminClient({ items, shouldReject } = {}) {
+function createFakeAdminClient({ items = [], shouldReject } = {}) {
+  const store = new Map(items.map((item) => [item.Id, { ...item }]));
+  const updates = [];
   return {
-    async getListItems() {
-      if (shouldReject) throw new Error("falha simulada de rede");
-      return items;
-    }
+    client: {
+      async getListItems() {
+        if (shouldReject) throw new Error("falha simulada de rede");
+        return [...store.values()];
+      },
+      async getListItem(_list, id) {
+        const item = store.get(Number(id));
+        if (!item) throw new Error(`getListItem: item ${id} não encontrado.`);
+        return { item: { ...item }, etag: `"item-${id}"`, status: 200 };
+      },
+      async updateListItem(_list, id, values) {
+        const item = store.get(Number(id));
+        Object.assign(item, values);
+        updates.push({ id: Number(id), values });
+        return { item: { ...item }, etag: `"item-${id}-updated"`, status: 204 };
+      }
+    },
+    updates,
+    store
   };
 }
 
@@ -105,7 +122,8 @@ function textOf(elements) {
   const items = [
     { Id: 1, Title: "Início", Alias: "", MenuType: "principal", ParentId: 0, Path: "", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: null, Default: true, Target: "SameTab", Published: "Published" }
   ];
-  const services = { adminClient: createFakeAdminClient({ items }), listIds: LIST_IDS };
+  const { client } = createFakeAdminClient({ items });
+  const services = { adminClient: client, listIds: LIST_IDS };
   const view = renderMenusScreen({ root, services });
   await flush();
 
@@ -122,6 +140,79 @@ function textOf(elements) {
 
   view.dispose();
   console.log("menus-screen.test.js: com_menus renderiza tabela real ok.");
+}
+
+// --- botão de alternância: publica/despublica um item de menu não-padrão --
+
+{
+  const root = createRoot();
+  const items = [
+    { Id: 1, Title: "Início", Alias: "inicio", MenuType: "principal", ParentId: 0, Path: "inicio", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: "{}", Default: true, Target: "SameTab", Published: "Published" },
+    { Id: 2, Title: "Notícias", Alias: "noticias", MenuType: "principal", ParentId: 0, Path: "noticias", Level: 1, Ordering: 1, Component: "", View: "", ParamsJson: "{}", Default: false, Target: "SameTab", Published: "Published" }
+  ];
+  const { client, updates } = createFakeAdminClient({ items });
+  const services = { adminClient: client, listIds: LIST_IDS };
+  const view = renderMenusScreen({ root, services });
+  await flush();
+
+  const rows = root.querySelectorAll("tr").slice(1);
+  const toggle = rows[1].querySelectorAll("button").find((b) => b.textContent === "Despublicar");
+  assert.ok(toggle, "botão Despublicar deve existir para item não-padrão publicado");
+  await toggle.click();
+  await flush();
+
+  assert.deepEqual(updates, [{ id: 2, values: { Published: "Unpublished" } }]);
+
+  view.dispose();
+  console.log("menus-screen.test.js: botão de alternância despublica item de menu ok.");
+}
+
+// --- route.task="menus.unpublish"&id=N: dispara alternância automática -----
+
+{
+  const root = createRoot();
+  const items = [
+    { Id: 1, Title: "Início", Alias: "inicio", MenuType: "principal", ParentId: 0, Path: "inicio", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: "{}", Default: true, Target: "SameTab", Published: "Published" },
+    { Id: 2, Title: "Notícias", Alias: "noticias", MenuType: "principal", ParentId: 0, Path: "noticias", Level: 1, Ordering: 1, Component: "", View: "", ParamsJson: "{}", Default: false, Target: "SameTab", Published: "Published" }
+  ];
+  const { client, updates } = createFakeAdminClient({ items });
+  const route = { task: "menus.unpublish", id: 2 };
+  const view = renderMenusScreen({ root, route, services: { adminClient: client, listIds: LIST_IDS } });
+  await flush();
+  await flush();
+
+  assert.deepEqual(updates, [{ id: 2, values: { Published: "Unpublished" } }]);
+
+  view.dispose();
+  console.log("menus-screen.test.js: route.task=menus.unpublish dispara alternância automaticamente ok.");
+}
+
+// --- route.task sem id válido ou item Default: nenhuma escrita automática --
+
+{
+  const items = [
+    { Id: 1, Title: "Início", Alias: "inicio", MenuType: "principal", ParentId: 0, Path: "inicio", Level: 1, Ordering: 0, Component: "", View: "", ParamsJson: "{}", Default: true, Target: "SameTab", Published: "Published" }
+  ];
+
+  const rootNoTask = createRoot();
+  const { client: clientNoTask, updates: updatesNoTask } = createFakeAdminClient({ items: items.map((i) => ({ ...i })) });
+  const viewNoTask = renderMenusScreen({ root: rootNoTask, services: { adminClient: clientNoTask, listIds: LIST_IDS } });
+  await flush();
+  assert.equal(updatesNoTask.length, 0, "sem route.task, nenhuma escrita automática");
+  viewNoTask.dispose();
+
+  const rootDefault = createRoot();
+  const { client: clientDefault, updates: updatesDefault } = createFakeAdminClient({ items: items.map((i) => ({ ...i })) });
+  const viewDefault = renderMenusScreen({
+    root: rootDefault,
+    route: { task: "menus.unpublish", id: 1 },
+    services: { adminClient: clientDefault, listIds: LIST_IDS }
+  });
+  await flush(); await flush();
+  assert.equal(updatesDefault.length, 0, "item Default não deve ser despublicado via task");
+  viewDefault.dispose();
+
+  console.log("menus-screen.test.js: route.task sem id válido/item Default não dispara escrita ok.");
 }
 
 console.log("menus-screen.test.js: verificações concluídas com sucesso.");

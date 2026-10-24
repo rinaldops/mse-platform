@@ -1,10 +1,16 @@
 /**
  * Rotas administrativas `option=com_xxx&view=yyy&task=www&id=N`, mesmo
- * vocabulário do Joomla! real. `task` é extraído aqui para todas as telas,
- * mas só `com_templates` (22/10/2026, prova de conceito da convenção
- * `controller.task` — ver `components/com_templates/templates-editor.js` e
- * `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.7/§3) de fato o consome; as
- * demais telas continuam disparando ação só por clique direto.
+ * vocabulário do Joomla! real. `task` é extraído aqui para todas as telas;
+ * `com_templates` (`templates.setdefault`), `com_extensions`
+ * (`extensions.enable`/`extensions.disable`), `com_menus`
+ * (`menus.publish`/`menus.unpublish`), `com_modules`
+ * (`modules.publish`/`modules.unpublish`) e `com_config`
+ * (`config.activate`/`config.deactivate`) consomem `task` para disparar,
+ * automaticamente na primeira carga, a mesma alternância rápida de 1 clique
+ * já disponível por botão em cada tela — ver cada `*-editor.js` e
+ * `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §2.7/§3. O CRUD completo
+ * (criar/editar/excluir) continua disparando ação só por clique direto em
+ * todas as telas.
  */
 export function parseAdministratorRoute(params = {}) {
   if (!params || typeof params !== "object" || Array.isArray(params)) throw new TypeError("params deve ser um objeto.");

@@ -27,14 +27,16 @@ assert.equal(MSE_MENU_SCHEMA.internalName, "MSEMenu");
 assert.equal(MSE_MENU_SCHEMA.titleField.displayName, "Título");
 const menuFieldNames = MSE_MENU_SCHEMA.fields.map((field) => field.internalName);
 assert.deepEqual(menuFieldNames, [
-  "Alias", "TipoMenu", "ParentId", "Caminho", "Nivel", "Ordem",
-  "Componente", "Visao", "ParamsJson", "Padrao", "AbrirEm", "Estado",
-  // Fase 3 da normalização Joomla! (docs/JOOMLA-CONVENCOES-E-MIGRACAO.md):
-  // campos em inglês acrescentados in-place, lado a lado com os PT acima.
-  // Os PT continuam vivos na lista (não removidos nesta fase); a Fase 4
-  // só trocou quem LÊ o quê (ver kernel/menu.js) — não o schema.
+  "Alias", "ParentId", "ParamsJson",
+  // Fase 5 da normalização Joomla! (docs/JOOMLA-CONVENCOES-E-MIGRACAO.md,
+  // 23/10/2026): os 9 campos PT (TipoMenu/Caminho/Nivel/Ordem/Componente/
+  // Visao/Padrao/AbrirEm/Estado) foram decomissionados — ver
+  // tools/decommission-mse-legacy-pt.js. Só os campos em inglês permanecem.
   "MenuType", "Path", "Level", "Ordering", "Component", "View",
-  "Default", "Target", "Published"
+  "Default", "Target", "Published",
+  // 23/10/2026 — atribuição de template por item de menu (ver
+  // docs/AUDITORIA-JOOMLA-PENTE-FINO.md §3): campo novo, sem equivalente PT.
+  "TemplateStyleId"
 ]);
 for (const field of MSE_MENU_SCHEMA.fields) {
   assert.ok(Object.isFrozen(field));

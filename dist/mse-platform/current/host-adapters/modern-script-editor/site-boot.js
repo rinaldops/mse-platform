@@ -37,13 +37,13 @@ import { createSiteApplication } from "../../kernel/application.js";
 import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet } from "../../core/rest.js";
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
 import { createKernelInstaller } from "../../kernel/installer.js";
-import { resolveActiveTemplateName } from "../../kernel/template-registry.js";
+import { resolveActiveTemplateName, resolveTemplateNameForMenuItem } from "../../kernel/template-registry.js";
 
 const TEMPLATE_STYLES_FIELDS = Object.freeze(["Id", "Title", "Template", "ClientId", "Home"]);
 
 const MENU_FIELDS = Object.freeze([
   "Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering",
-  "Component", "View", "ParamsJson", "Default", "Target", "Published"
+  "Component", "View", "ParamsJson", "Default", "Target", "Published", "TemplateStyleId"
 ]);
 const EXTENSIONS_FIELDS = Object.freeze([
   "Id", "Title", "Type", "Element", "ClientId", "Version", "Enabled", "Protected", "Ordering", "ParamsJson"
@@ -289,7 +289,7 @@ export function createTemplateResolver(releaseBase, templatePathByName = {}, pla
  * assumido) para o shape `LayoutLike` que `kernel/application.js#resolveLayout`
  * espera (o mesmo shape de `kernel/layout.js#createSiteLayout`):
  * `{ root, positionElements: Map<string,Element>, componentElement: Element,
- * dispose() }`.
+ * dispose(), viewOverrides?: Record<string,Record<string,string>> }`.
  *
  * `regions` do template inclui TAMBÃ‰M a entrada de `componentPosition` (o
  * prÃ³prio `createTemplate` cria essa regiÃ£o com `createRegion(document,
@@ -302,9 +302,18 @@ export function createTemplateResolver(releaseBase, templatePathByName = {}, pla
  * mas sem depender de `componentPosition` estar definido no momento da
  * adaptaÃ§Ã£o).
  *
- * @param {{ root: Element, shell?: Element, regions: Map<string, Element>, component: Element, position?: (nome: string) => (Element|null), dispose: () => (void|Promise<void>) }} template
+ * `viewOverrides` (23/10/2026 — overrides de view por template, ver
+ * `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3): repassado tal qual vier de
+ * `template.viewOverrides` (mapa opcional `{ "<componente>": { "<view>":
+ * "<url absoluta>" } }`, já resolvido pelo pacote de Template — ver
+ * `CAMAP-AGP/templates/<tema>/index.js#createTemplate`). Ausente/undefined
+ * no template de origem resulta em `viewOverrides: undefined` no
+ * `LayoutLike` adaptado — `kernel/application.js` trata ausência como
+ * "nenhum override", comportamento idêntico a hoje.
+ *
+ * @param {{ root: Element, shell?: Element, regions: Map<string, Element>, component: Element, position?: (nome: string) => (Element|null), dispose: () => (void|Promise<void>), viewOverrides?: Record<string,Record<string,string>> }} template
  * @param {string} [componentPosition]
- * @returns {{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }}
+ * @returns {{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>), viewOverrides?: Record<string,Record<string,string>> }}
  */
 function adaptTemplateToLayout(template, componentPosition) {
   const positionElements = new Map(template.regions);
@@ -313,7 +322,8 @@ function adaptTemplateToLayout(template, componentPosition) {
     root: template.root,
     positionElements,
     componentElement: template.component,
-    dispose: () => template.dispose()
+    dispose: () => template.dispose(),
+    viewOverrides: template.viewOverrides
   };
 }
 
@@ -382,15 +392,23 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
  * contra `releaseBase`, igual ao comportamento anterior a este mecanismo.
  *
  * `requestedName` em si (qual Template o SITE pediu, antes do fallback):
- * resolvido via `loadTemplateStyles` (opcional, `() =>
- * Promise<Array<object>|null|undefined>`, tipicamente lendo `MSETemplateStyles`
- * ≈ `#__template_styles`) + `kernel/template-registry.js#resolveActiveTemplateName`
- * (`ClientId="Site"`, `Home=true`). Se `loadTemplateStyles` não é informado,
- * ou resolve para `null` (lista ainda vazia/sem linha `Home=true`, ou
- * `MSETemplateStyles` ainda não provisionada), cai no `theme?.name`
- * recebido de `resolveLayout` (hoje `globalConfig.theme`, vindo de
- * `MSEConfiguracoes.Tema` — ver `kernel/application.js`) como fallback de
- * compatibilidade — migração suave, nenhum site existente quebra.
+ * resolvido nesta ordem (23/10/2026 — atribuição de template por item de
+ * menu, ver `docs/AUDITORIA-JOOMLA-PENTE-FINO.md` §3):
+ *   1. `resolveTemplateNameForMenuItem(styles, menuItem, {clientId:"Site"})`
+ *      — override do item de menu ATIVO da rota atual (`menuItem`, recebido
+ *      de `kernel/application.js#ensureLayout`), via
+ *      `MSEMenu.TemplateStyleId` apontando para um `MSETemplateStyles.Id`
+ *      do mesmo `ClientId`;
+ *   2. `kernel/template-registry.js#resolveActiveTemplateName` (`ClientId
+ *      ="Site"`, `Home=true`) — Home do site, já existente;
+ *   3. `theme?.name` recebido de `resolveLayout` (hoje `globalConfig.theme`,
+ *      vindo de `MSEConfiguracoes.Tema` — ver `kernel/application.js`) —
+ *      fallback de compatibilidade, migração suave, nenhum site existente
+ *      quebra.
+ * O primeiro nível que resolver para um nome não-vazio vence; `styles`
+ * ausente/vazio ou `menuItem` sem `TemplateStyleId` fazem o nível 1 cair
+ * silenciosamente no nível 2 (mesmo princípio de `resolveTemplateNameForMenuItem`:
+ * nunca lança por dado de conteúdo).
  *
  * Exportada (embora `bootSiteKernel` seja o único chamador em produção)
  * para permitir um teste isolado da adaptação de shape (`adaptTemplateToLayout`,
@@ -398,7 +416,7 @@ export function buildAdministratorServices({ resolvedListIds = {}, services = {}
  * basta um `importModule` fake devolvendo `{ createTemplate: fn }`.
  *
  * @param {{ releaseBase: string, templatePathByName?: Record<string, string>, importModule: (url: string) => Promise<any>, platformTemplateBase?: string, platformTemplateNames?: string[], loadTemplateStyles?: () => Promise<Array<object>|null|undefined> }} args
- * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string } }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>) }>}
+ * @returns {(resolveArgs: { root: Element, positions: string[], componentPosition?: string, theme?: { name?: string }, menuItem?: object|null }) => Promise<{ root: Element, positionElements: Map<string, Element>, componentElement: Element, dispose: () => (void|Promise<void>), viewOverrides?: Record<string,Record<string,string>> }>}
  */
 export function createTemplateLayoutResolver({
   releaseBase,
@@ -412,16 +430,18 @@ export function createTemplateLayoutResolver({
     platformTemplateBase,
     platformTemplateNames
   });
-  return async function resolveLayout({ root, positions, componentPosition, theme }) {
-    let styleName = null;
+  return async function resolveLayout({ root, positions, componentPosition, theme, menuItem }) {
+    let styles = null;
     if (typeof loadTemplateStyles === "function") {
       try {
-        const styles = await loadTemplateStyles();
-        styleName = resolveActiveTemplateName(styles, { clientId: "Site" });
+        styles = await loadTemplateStyles();
       } catch {
-        styleName = null;
+        styles = null;
       }
     }
+    const menuItemStyleName = resolveTemplateNameForMenuItem(styles, menuItem, { clientId: "Site" });
+    const activeStyleName = resolveActiveTemplateName(styles, { clientId: "Site" });
+    const styleName = menuItemStyleName || activeStyleName;
     const requestedName = styleName
       || (typeof theme?.name === "string" && theme.name.trim() ? theme.name.trim() : null);
     const candidates = [...new Set([...(requestedName ? [requestedName] : []), ...platformTemplateNames])];

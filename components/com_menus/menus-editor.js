@@ -5,13 +5,15 @@ import { MSE_MENU_SCHEMA } from "../../kernel/schemas/mse-menu.js";
 const ESTADOS = ["Published", "Unpublished", "Trashed"];
 const ABRIR_EM = ["SameTab", "NewTab"];
 
-// MSE_MENU_SCHEMA ainda contém os 12 campos PT (DEPRECATED, Fase 3) lado a
-// lado com os 9 campos em inglês — ver kernel/schemas/mse-menu.js. Esta tela
-// só exibe/edita os campos em inglês; o filtro abaixo corta o schema para
-// esses 9 nomes (em vez de slice por posição, resiliente a reordenação
-// futura do schema).
-const MENU_FIELD_NAMES = ["MenuType", "Path", "Level", "Ordering", "Component", "View", "Default", "Target", "Published"];
-export const MENU_FORM_FIELDS = buildFormFields(MSE_MENU_SCHEMA).filter((field) => MENU_FIELD_NAMES.includes(field.name));
+// MSE_MENU_SCHEMA continha os 9 campos PT (DEPRECATED, Fase 3) lado a lado
+// com os 9 campos em inglês até a Fase 5 (23/10/2026,
+// tools/decommission-mse-legacy-pt.js) decomissioná-los — ver
+// kernel/schemas/mse-menu.js. O schema agora só tem os campos EN (+ Alias/
+// ParentId/ParamsJson/TemplateStyleId, já neutros), então o filtro por nome
+// deixou de ser necessário.
+export const MENU_FORM_FIELDS = buildFormFields(MSE_MENU_SCHEMA).filter((field) =>
+  ["MenuType", "Path", "Level", "Ordering", "Component", "View", "Default", "Target", "Published"].includes(field.name)
+);
 
 export function validateMenuValues(values = {}) {
   const item = values && typeof values === "object" ? values : {};
@@ -49,7 +51,10 @@ function clear(node) { if (node.replaceChildren) node.replaceChildren(); else if
 function statusCode(error) { const n = error?.status ?? error?.statusCode; if (Number.isInteger(n)) return n; const m = String(error?.message || "").match(/\b(403|412)\b/); return m ? Number(m[1]) : null; }
 function message(prefix, error) { const code = statusCode(error); if (code === 403) return `${prefix}: sem permissão (403).`; if (code === 412) return `${prefix}: conflito de edição (412); recarregue e tente novamente.`; return `${prefix}: ${error?.message || "erro desconhecido"}.`; }
 
-export function renderMenusEditor({ root, services = {} } = {}) {
+const PUBLISH_TASK = "menus.publish";
+const UNPUBLISH_TASK = "menus.unpublish";
+
+export function renderMenusEditor({ root, route, services = {} } = {}) {
   const document = root?.ownerDocument; const client = services.adminClient; const list = services.listIds?.MSEMenu;
   if (!document) throw new TypeError("root é obrigatório.");
   const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__menus";
@@ -58,6 +63,17 @@ export function renderMenusEditor({ root, services = {} } = {}) {
   const toolbar = document.createElement("div"); const newButton = text(document, "button", "Novo item"); const reloadButton = text(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
   panel.append(text(document, "h2", "Itens de menu"), error, toolbar, tableHost, formHost); root.append(panel);
   let currentId = null; let controls = {};
+  // `route.task`/`route.id` só são aplicados uma vez, no primeiro
+  // carregamento — mesmo padrão de components/com_templates/templates-editor.js.
+  let pendingTask = (route?.task === PUBLISH_TASK || route?.task === UNPUBLISH_TASK) && route.id != null
+    ? { task: route.task, id: route.id }
+    : null;
+  async function togglePublished(item, desiredPublished) {
+    if (item.Default && !desiredPublished) { error.textContent = "O item de menu padrão não pode ser despublicado."; return; }
+    error.textContent = "";
+    try { await updateAdminItem({ client, list, id: item.Id, values: { Published: desiredPublished ? "Published" : "Unpublished" } }); await reload(); }
+    catch (e) { error.textContent = message("Falha ao alternar item de menu", e); }
+  }
   const read = () => ({ Title: controls.Title.value, Alias: controls.Alias.value, MenuType: controls.MenuType.value, ParentId: controls.ParentId.value, Path: controls.Path.value, Level: controls.Level.value, Ordering: controls.Ordering.value, Component: controls.Component.value, View: controls.View.value, ParamsJson: controls.ParamsJson.value, Default: controls.Default.checked, Target: controls.Target.value, Published: controls.Published.value });
   function form(item = {}) { clear(formHost); controls = {}; const box = document.createElement("div");
     const fields = [["Título","Title"],["Alias","Alias"],["Tipo de menu","MenuType"],["ParentId","ParentId"],["Caminho","Path"],["Nível","Level"],["Ordem","Ordering"],["Componente","Component"],["Visão","View"],["ParamsJson","ParamsJson"]];
@@ -97,11 +113,28 @@ export function renderMenusEditor({ root, services = {} } = {}) {
         try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); }
         catch (e) { error.textContent = message("Falha ao excluir", e); }
       });
-      actions.append(edit, remove);
+      const toggle = text(document, "button", item.Published === "Published" ? "Despublicar" : "Publicar");
+      toggle.disabled = Boolean(item.Default) && item.Published === "Published";
+      bindClick(toggle, () => togglePublished(item, item.Published !== "Published"));
+      actions.append(edit, remove, toggle);
       row.append(actions);
       table.append(row);
     }
     tableHost.append(table);
-  }  async function reload() { if (!client || !list) { error.textContent = "Client administrativo ou lista MSEMenu não configurado."; return; } try { render(await listAdminItems({ client, list, select: ["Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering", "Component", "View", "ParamsJson", "Default", "Target", "Published"], orderby: "Ordering" })); } catch (e) { error.textContent = message("Falha ao carregar menus", e); } }
+  }  async function reload() {
+    if (!client || !list) { error.textContent = "Client administrativo ou lista MSEMenu não configurado."; return; }
+    try {
+      const items = await listAdminItems({ client, list, select: ["Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering", "Component", "View", "ParamsJson", "Default", "Target", "Published"], orderby: "Ordering" });
+      render(items);
+      if (pendingTask != null) {
+        const { task, id } = pendingTask;
+        pendingTask = null;
+        const target = items.find((item) => item.Id === id);
+        const desiredPublished = task === PUBLISH_TASK;
+        const isPublished = target?.Published === "Published";
+        if (target && isPublished !== desiredPublished) await togglePublished(target, desiredPublished);
+      }
+    } catch (e) { error.textContent = message("Falha ao carregar menus", e); }
+  }
   bindClick(newButton, () => { currentId = null; form(); }); bindClick(reloadButton, reload); form(); reload(); return { dispose() { panel.remove(); } };
 }
