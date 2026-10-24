@@ -1,7 +1,3 @@
 # plugins/content
 
-Plugin de ciclo de vida de conteúdo. A implementação é deliberadamente
-agnóstica ao SharePoint: recebe dados já carregados, aplica transformação
-segura e devolve o resultado ao pipeline. Não persiste dados nem implementa
-sanitização HTML completa; essa política deve ser injetada pelo serviço de
-conteúdo do site.
+Plugin de ciclo de vida e sanitização de conteúdo. O pacote sanitize usa o sanitizador rico já existente no core e registra handlers no event bus sem alterar o kernel. A integração em produção deve ser feita por um loader que injete o event bus e o contexto do host.
