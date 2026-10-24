@@ -1,0 +1,17 @@
+{
+  "$schema": "https://example.invalid/mse-plugin.schema.json",
+  "name": "plg_system_mse_diagnostics",
+  "group": "system",
+  "element": "mse_diagnostics",
+  "version": "0.1.0",
+  "title": "MSE System Diagnostics",
+  "description": "Diagnóstico mínimo do ciclo de vida do Site Kernel (router/render) e registro em console.",
+  "entry": "plugins/system/mse_diagnostics/mse_diagnostics.js",
+  "events": ["onAfterRoute", "onBeforeRender", "onAfterRender"],
+  "provides": {
+    "diagnostics": {
+      "id": "mse_diagnostics",
+      "label": "System Diagnostics"
+    }
+  }
+}
