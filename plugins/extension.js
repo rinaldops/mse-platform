@@ -1,0 +1,3 @@
+export const EXTENSION_PLUGIN_MANIFEST=Object.freeze({id:"extension-core",type:"plugin",group:"extension",version:"1.0.0",events:["onExtensionDiscover","onExtensionEnable","onExtensionDisable"],entrypoint:"./plugin.js"});
+function fn(v,n){if(typeof v!=="function")throw new TypeError(`${n} deve ser uma função.`);return v;}
+export function createExtensionPlugin({discover,enable,disable}={}){fn(discover,"discover");fn(enable,"enable");fn(disable,"disable");return Object.freeze({manifest:EXTENSION_PLUGIN_MANIFEST,onExtensionDiscover:discover,onExtensionEnable:enable,onExtensionDisable:disable});}
