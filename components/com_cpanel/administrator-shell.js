@@ -140,6 +140,43 @@ function createIcon(document, option) {
   return span;
 }
 
+// Ícone do toggle "Recolher Menu" (24/10/2026 — fidelidade ao Joomla! real:
+// o `atum` real tem um controle fixo no topo da sidebar para recolher toda
+// a navegação para só-ícones). Glifo de seta dupla, mesmo princípio dos
+// demais ícones deste arquivo.
+const COLLAPSE_ICON_PATH = '<path d="M11 17l-5-5 5-5"/><path d="M18 17l-5-5 5-5"/>';
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "mse-administrator:sidebar-collapsed";
+
+function createCollapseIcon(document) {
+  const span = document.createElement("span");
+  span.className = "mse-administrator-shell__collapse-icon";
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${COLLAPSE_ICON_PATH}</svg>`;
+  return span;
+}
+
+// Acesso defensivo ao storage (pode não existir em ambiente de teste, ou
+// lançar em navegadores com armazenamento bloqueado) — mesmo princípio de
+// `observeViewportOffset`/`observeAdministratorMode` em
+// CAMAP-AGP/templates/camap-tema-01/index.js: nunca lança, degrada
+// silenciosamente para "sem persistência".
+function readCollapsedState(storage) {
+  if (!storage || typeof storage.getItem !== "function") return false;
+  try {
+    return storage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function writeCollapsedState(storage, collapsed) {
+  if (!storage || typeof storage.setItem !== "function") return;
+  try {
+    storage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, collapsed ? "1" : "0");
+  } catch {
+    // Sem persistência disponível — o toggle ainda funciona na sessão atual.
+  }
+}
+
 function createGroupIcon(document, groupKey) {
   const paths = ADMINISTRATOR_NAV_GROUP_ICON_PATHS[groupKey];
   if (!paths) return null;
@@ -164,14 +201,56 @@ function createNavLink(document, option, label, activeOption) {
   return a;
 }
 
-export function createAdministratorShell({ root, activeOption } = {}) {
+export function createAdministratorShell({ root, activeOption, storage } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
   const document = root.ownerDocument;
+  // `storage` é opcional e aditivo (extensão de contrato, não quebra
+  // chamadores existentes): por padrão usa `window.sessionStorage` quando
+  // disponível — preferência de sessão de trabalho, não deve sobreviver a
+  // login/dispositivo diferentes num SharePoint compartilhado (ao contrário
+  // de localStorage), mas também não deve ser perdida num F5 dentro da
+  // mesma sessão (ao contrário de um estado só em memória).
+  const sidebarStorage = storage !== undefined
+    ? storage
+    : (typeof window !== "undefined" ? window.sessionStorage : null);
   root.replaceChildren();
   root.classList.add("mse-administrator-shell");
 
+  // Rótulo por `option`, lido de ADMINISTRATOR_NAV_LINKS (fonte única de
+  // verdade) — o agrupamento (ADMINISTRATOR_NAV_GROUPS) só decide
+  // ORDEM/moldura visual, nunca duplica o rótulo. Calculado ANTES do
+  // cabeçalho porque o header magro (ver abaixo) também lê daqui.
+  const labelByOption = new Map(ADMINISTRATOR_NAV_LINKS);
+  const groupedOptions = new Set(ADMINISTRATOR_NAV_GROUPS.flatMap((group) => group.options));
+
+  // Header magro, estilo breadcrumb (24/10/2026 — fidelidade ao Joomla!
+  // real: o header do `atum` real é uma faixa fina com só um ícone + o
+  // título da tela atual à esquerda, nunca um banner de marca cheio de
+  // cor). Reaproveita `createIcon`/`labelByOption`, nenhuma fonte nova de
+  // verdade. A marca "Administrator"/"mini-Joomla!" (antes vivia aqui)
+  // migra para o topo de `nav`, abaixo — o próprio Joomla real também não
+  // exibe o nome do produto no header superior.
   const header = document.createElement("header");
   header.className = "mse-administrator-shell__header";
+  const headerIcon = createIcon(document, activeOption);
+  if (headerIcon) {
+    headerIcon.classList.add("mse-administrator-shell__header-icon");
+    header.append(headerIcon);
+  }
+  const headerTitle = document.createElement("span");
+  headerTitle.className = "mse-administrator-shell__header-title";
+  headerTitle.textContent = labelByOption.get(activeOption) || "Administrator";
+  header.append(headerTitle);
+
+  const body = document.createElement("div");
+  body.className = "mse-administrator-shell__body";
+
+  const nav = document.createElement("nav");
+  nav.className = "mse-administrator-shell__nav";
+  nav.setAttribute("aria-label", "Administração");
+
+  // Marca do produto (movida do header para o topo da sidebar — ver
+  // comentário acima).
   const brand = document.createElement("strong");
   brand.className = "mse-administrator-shell__brand";
   const brandIcon = createIcon(document, "com_cpanel");
@@ -186,20 +265,35 @@ export function createAdministratorShell({ root, activeOption } = {}) {
   const tagline = document.createElement("span");
   tagline.className = "mse-administrator-shell__tagline";
   tagline.textContent = "mini-Joomla!";
-  header.append(brand, tagline);
+  nav.append(brand, tagline);
 
-  const body = document.createElement("div");
-  body.className = "mse-administrator-shell__body";
-
-  // Rótulo por `option`, lido de ADMINISTRATOR_NAV_LINKS (fonte única de
-  // verdade) — o agrupamento (ADMINISTRATOR_NAV_GROUPS) só decide
-  // ORDEM/moldura visual, nunca duplica o rótulo.
-  const labelByOption = new Map(ADMINISTRATOR_NAV_LINKS);
-  const groupedOptions = new Set(ADMINISTRATOR_NAV_GROUPS.flatMap((group) => group.options));
-
-  const nav = document.createElement("nav");
-  nav.className = "mse-administrator-shell__nav";
-  nav.setAttribute("aria-label", "Administração");
+  // Toggle "Recolher Menu" (item 1.4 — fidelidade ao Joomla! real): alterna
+  // a classe `--collapsed` em `nav`, que o CSS usa para encolher a sidebar
+  // para só-ícones. Não é um <a> (não conta na asserção de
+  // `administrator-shell.test.js` que soma todos os <a>) nem reaproveita a
+  // classe `__group-toggle` (não conta na asserção que soma botões de
+  // grupo). Estado persiste via `storage` (ver topo da função) para
+  // sobreviver a uma navegação/F5 dentro da mesma sessão.
+  const collapseToggle = document.createElement("button");
+  collapseToggle.type = "button";
+  collapseToggle.className = "mse-administrator-shell__collapse-toggle";
+  collapseToggle.append(createCollapseIcon(document));
+  const collapseLabel = document.createElement("span");
+  collapseLabel.className = "mse-administrator-shell__collapse-label";
+  collapseLabel.textContent = "Recolher Menu";
+  collapseToggle.append(collapseLabel);
+  let navCollapsed = readCollapsedState(sidebarStorage);
+  const applyNavCollapsed = () => {
+    nav.classList.toggle("mse-administrator-shell__nav--collapsed", navCollapsed);
+    collapseToggle.setAttribute("aria-pressed", String(navCollapsed));
+  };
+  applyNavCollapsed();
+  collapseToggle.addEventListener("click", () => {
+    navCollapsed = !navCollapsed;
+    applyNavCollapsed();
+    writeCollapsedState(sidebarStorage, navCollapsed);
+  });
+  nav.append(collapseToggle);
 
   // "Painel" (com_cpanel) fica solto no topo, fora de qualquer grupo —
   // mesmo papel do item "Painel Principal" no backend `atum` do Joomla!
@@ -224,7 +318,6 @@ export function createAdministratorShell({ root, activeOption } = {}) {
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "mse-administrator-shell__group-toggle";
-    toggle.setAttribute("aria-expanded", "true");
     const groupIcon = createGroupIcon(document, group.key);
     if (groupIcon) toggle.append(groupIcon);
     const groupLabel = document.createElement("span");
@@ -240,12 +333,13 @@ export function createAdministratorShell({ root, activeOption } = {}) {
       sublist.append(createNavLink(document, option, label, activeOption));
     }
 
-    let expanded = true;
+    let expanded = groupActive;
     const applyExpanded = () => {
       toggle.setAttribute("aria-expanded", String(expanded));
       sublist.hidden = !expanded;
       section.classList.toggle("mse-administrator-shell__group--collapsed", !expanded);
     };
+    applyExpanded();
     toggle.addEventListener("click", () => {
       expanded = !expanded;
       applyExpanded();

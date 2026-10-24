@@ -105,6 +105,29 @@ function createRoot() {
   console.log("administrator-shell.test.js: monta cabeçalho+nav com link ativo marcado ok.");
 }
 
+// --- header magro (estilo breadcrumb): ícone + rótulo da tela ativa, nunca
+// o nome do produto — a marca migra para dentro de <nav> --------------------
+
+{
+  for (const activeOption of ["com_cpanel", "com_modules", "com_menus"]) {
+    const root = createRoot();
+    createAdministratorShell({ root, activeOption });
+
+    const header = root.querySelectorAll("header")[0];
+    assert.ok(header, `header ausente para activeOption="${activeOption}"`);
+    const headerTitle = header.children.find((child) => child.className === "mse-administrator-shell__header-title");
+    assert.ok(headerTitle, `header-title ausente para activeOption="${activeOption}"`);
+    assert.equal(headerTitle.textContent, new Map(ADMINISTRATOR_NAV_LINKS).get(activeOption), `header deve mostrar o rótulo de "${activeOption}"`);
+
+    const nav = root.querySelectorAll("nav")[0];
+    const brand = nav.children.find((child) => child.className === "mse-administrator-shell__brand");
+    assert.ok(brand, "marca do produto deve estar dentro de <nav>, não mais em <header>");
+    assert.equal(header.children.some((child) => child.className === "mse-administrator-shell__brand"), false, "header não deve mais conter a marca do produto");
+  }
+
+  console.log("administrator-shell.test.js: header magro mostra ícone+rótulo da tela ativa, marca migrou para nav ok.");
+}
+
 // --- agrupamento hierárquico (24/10/2026): com_cpanel fica solto no topo;
 // todas as demais opções pertencem a exatamente 1 grupo; os cabeçalhos de
 // grupo são <button>, nunca <a> (não contam para a asserção acima) --------
@@ -116,8 +139,8 @@ function createRoot() {
   const groups = root.querySelectorAll("div").filter((node) => node.className === "mse-administrator-shell__group");
   assert.equal(groups.length, ADMINISTRATOR_NAV_GROUPS.length, "um <div> de grupo por entrada de ADMINISTRATOR_NAV_GROUPS");
 
-  const toggles = root.querySelectorAll("button");
-  assert.equal(toggles.length, ADMINISTRATOR_NAV_GROUPS.length, "um botão de toggle por grupo, nenhum <a> adicional");
+  const toggles = root.querySelectorAll("button").filter((button) => button.className === "mse-administrator-shell__group-toggle");
+  assert.equal(toggles.length, ADMINISTRATOR_NAV_GROUPS.length, "um botão de toggle por grupo, nenhum <a> adicional (filtra o botão 'Recolher Menu', que não é um toggle de grupo)");
 
   const groupedOptionCount = ADMINISTRATOR_NAV_GROUPS.reduce((total, group) => total + group.options.length, 0);
   assert.equal(groupedOptionCount + 1, ADMINISTRATOR_NAV_LINKS.length, "com_cpanel (solto) + todas as opções agrupadas = total de links");
@@ -125,26 +148,50 @@ function createRoot() {
   console.log("administrator-shell.test.js: com_cpanel solto no topo, demais opções em grupos, cabeçalhos são <button> ok.");
 }
 
-// --- toggle de grupo: clique recolhe (hidden=true, aria-expanded="false") e
-// um segundo clique expande de novo -----------------------------------------
+// --- grupos nascem colapsados por padrão, exceto o grupo do activeOption
+// atual (fidelidade ao Joomla! real: só a categoria da tela corrente
+// aparece expandida ao montar) ----------------------------------------------
+
+{
+  const root = createRoot();
+  createAdministratorShell({ root, activeOption: "com_modules" }); // com_modules pertence ao grupo "system"
+
+  const groupSections = root.querySelectorAll("div").filter((node) => node.className === "mse-administrator-shell__group");
+  for (const section of groupSections) {
+    const toggle = section.children.find((child) => child.tagName === "BUTTON");
+    const sublist = section.children.find((child) => child !== toggle);
+    const isActiveGroup = section.classList.has("mse-administrator-shell__group--active");
+    assert.equal(toggle.getAttribute("aria-expanded"), String(isActiveGroup), `grupo ${isActiveGroup ? "ativo" : "inativo"} deve nascer ${isActiveGroup ? "expandido" : "colapsado"}`);
+    assert.equal(sublist.hidden, !isActiveGroup);
+  }
+  // Confirma que exatamente 1 grupo ("system") está marcado ativo/expandido.
+  assert.equal(groupSections.filter((section) => section.classList.has("mse-administrator-shell__group--active")).length, 1);
+
+  console.log("administrator-shell.test.js: só o grupo do activeOption nasce expandido ok.");
+}
+
+// --- toggle de grupo: nasce colapsado (activeOption fora de qualquer grupo),
+// 1º clique expande (hidden=false, aria-expanded="true") e um segundo
+// clique recolhe de novo — fidelidade ao Joomla! real, que só expande o
+// grupo da tela atual, nunca todos por padrão ------------------------------
 
 {
   const root = createRoot();
   createAdministratorShell({ root, activeOption: "com_cpanel" });
 
-  const toggle = root.querySelectorAll("button")[0];
+  const toggle = root.querySelectorAll("button").filter((button) => button.className === "mse-administrator-shell__group-toggle")[0];
   const sublist = toggle.parentNode.children.find((child) => child !== toggle);
 
-  assert.equal(toggle.getAttribute("aria-expanded"), "true");
-  assert.equal(sublist.hidden, false);
-
-  toggle.click();
-  assert.equal(toggle.getAttribute("aria-expanded"), "false", "1º clique recolhe o grupo");
+  assert.equal(toggle.getAttribute("aria-expanded"), "false", "com_cpanel não pertence a nenhum grupo: nasce colapsado");
   assert.equal(sublist.hidden, true);
 
   toggle.click();
-  assert.equal(toggle.getAttribute("aria-expanded"), "true", "2º clique expande de novo");
+  assert.equal(toggle.getAttribute("aria-expanded"), "true", "1º clique expande o grupo");
   assert.equal(sublist.hidden, false);
+
+  toggle.click();
+  assert.equal(toggle.getAttribute("aria-expanded"), "false", "2º clique recolhe de novo");
+  assert.equal(sublist.hidden, true);
 
   console.log("administrator-shell.test.js: toggle de grupo recolhe/expande corretamente ok.");
 }
@@ -158,6 +205,53 @@ function createRoot() {
   assert.equal(links.filter((a) => a.getAttribute("aria-current") === "page").length, 0);
 
   console.log("administrator-shell.test.js: sem activeOption, nenhum link marcado ok.");
+}
+
+// --- toggle "Recolher Menu": alterna classe de colapso em <nav> e persiste
+// via `storage` (sessionStorage real ou um fake injetado via opção aditiva
+// `storage`) ------------------------------------------------------------
+
+function createFakeStorage(initial = {}) {
+  const map = new Map(Object.entries(initial));
+  return {
+    calls: [],
+    getItem(key) { return map.has(key) ? map.get(key) : null; },
+    setItem(key, value) { map.set(key, value); this.calls.push([key, value]); }
+  };
+}
+
+{
+  const root = createRoot();
+  const storage = createFakeStorage();
+  createAdministratorShell({ root, activeOption: "com_cpanel", storage });
+
+  const nav = root.querySelectorAll("nav")[0];
+  const collapseToggle = nav.children.find((child) => child.className === "mse-administrator-shell__collapse-toggle");
+  assert.ok(collapseToggle, "botão 'Recolher Menu' ausente");
+  assert.equal(nav.classList.names.has("mse-administrator-shell__nav--collapsed"), false, "sem storage prévio, nav nasce expandida");
+  assert.equal(collapseToggle.getAttribute("aria-pressed"), "false");
+
+  collapseToggle.click();
+  assert.equal(nav.classList.names.has("mse-administrator-shell__nav--collapsed"), true, "clique deve colapsar a nav");
+  assert.equal(collapseToggle.getAttribute("aria-pressed"), "true");
+  assert.deepEqual(storage.calls[storage.calls.length - 1], ["mse-administrator:sidebar-collapsed", "1"], "clique deve persistir o novo estado no storage");
+
+  collapseToggle.click();
+  assert.equal(nav.classList.names.has("mse-administrator-shell__nav--collapsed"), false, "2º clique deve expandir de novo");
+  assert.deepEqual(storage.calls[storage.calls.length - 1], ["mse-administrator:sidebar-collapsed", "0"]);
+
+  console.log("administrator-shell.test.js: toggle 'Recolher Menu' alterna e persiste no storage ok.");
+}
+
+{
+  const root = createRoot();
+  const storage = createFakeStorage({ "mse-administrator:sidebar-collapsed": "1" });
+  createAdministratorShell({ root, activeOption: "com_cpanel", storage });
+
+  const nav = root.querySelectorAll("nav")[0];
+  assert.equal(nav.classList.names.has("mse-administrator-shell__nav--collapsed"), true, "com storage indicando colapsado, nav deve nascer já colapsada");
+
+  console.log("administrator-shell.test.js: com storage prévio colapsado, shell nasce colapsado ok.");
 }
 
 // --- dispose() limpa o root por completo ------------------------------------
