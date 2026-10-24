@@ -135,6 +135,8 @@ function textOf(elements) {
   const headers = textOf(root.querySelectorAll("th"));
   assert.deepEqual(headers, ["Chave", "Escopo", "Módulo", "Tema", "Estado", "Ativo", "Ações"]);
 
+  assert.equal(root.querySelectorAll("table")[0].className, "mse-administrator__table", "tabela deve ativar zebra/sticky-header/hover de administrator.css");
+
   const rows = root.querySelectorAll("tr").slice(1);
   assert.equal(rows.length, 2);
   assert.equal(rows[0].querySelectorAll("td")[0].textContent, "global");

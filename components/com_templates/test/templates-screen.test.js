@@ -136,6 +136,8 @@ function textOf(elements) {
   const headers = textOf(root.querySelectorAll("th"));
   assert.deepEqual(headers, ["Título", "Template", "Padrão", "Ações"]);
 
+  assert.equal(root.querySelectorAll("table")[0].className, "mse-administrator__table", "tabela deve ativar zebra/sticky-header/hover de administrator.css");
+
   // Só os 2 estilos ClientId="Site" aparecem — o de "Administrator" é
   // filtrado (ver kernel/template-registry.js#listTemplateStylesByClient).
   const rows = root.querySelectorAll("tr").slice(1);

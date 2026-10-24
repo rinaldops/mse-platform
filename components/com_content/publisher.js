@@ -21,6 +21,7 @@ import {
 
 import { sanitizeRichText } from "../../core/rich-text.js";
 import { EDITORIAL_STATES, filterPublisherItems } from "./publisher-filters.js";
+import { createAdministratorToolbar } from "../com_cpanel/administrator-toolbar.js";
 
 const ESTADOS = ["Publicado", "Despublicado", "Arquivado", "Lixeira"];
 const DEFAULT_ESTADO = "Despublicado";
@@ -131,10 +132,6 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   const title = el(document, "h1", { text: "Publicador" });
   const hint = el(document, "p", { className: "mse-administrator__hint", text: "Gerencie artigos (lista SharePoint) com ETag." });
   const error = el(document, "p", { className: "mse-administrator__error", text: "" });
-  const toolbar = el(document, "div", { className: "mse-administrator__toolbar" });
-  const btnNew = el(document, "button", { text: "Novo artigo" });
-  const btnReload = el(document, "button", { text: "Recarregar" });
-  const filterTerm = el(document, "input", { type: "search", name: "FiltroTermo", value: "" });
   const filterState = el(document, "select", { name: "FiltroEstado" });
   filterState.append(el(document, "option", { text: "Todos os estados", value: "" }));
   for (const state of EDITORIAL_STATES) filterState.append(el(document, "option", { text: state, value: state }));
@@ -142,13 +139,23 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   const filterFeatured = el(document, "select", { name: "FiltroDestaque" });
   filterFeatured.append(el(document, "option", { text: "Todos", value: "" }), el(document, "option", { text: "Destaques", value: "true" }), el(document, "option", { text: "Não destacados", value: "false" }));
   const filterBar = el(document, "div", { className: "mse-administrator__publisher-filters" });
-  filterBar.append(filterTerm, filterState, filterCategory, filterFeatured);
-  toolbar.append(btnNew, btnReload, filterBar);
+  filterBar.append(filterState, filterCategory, filterFeatured);
 
   const listContainer = el(document, "div", { className: "mse-administrator__publisher-list" });
   const formContainer = el(document, "div", { className: "mse-administrator__publisher-form" });
 
-  panel.append(title, hint, error, toolbar, listContainer, formContainer);
+  panel.append(title, hint, error);
+  // Adoção PARCIAL do toolbar unificado (`administrator-toolbar.js`): só
+  // "Novo artigo"/"Recarregar"/busca livre migram para o helper; os 3
+  // filtros de domínio (estado/categoria/destaque) continuam fora, por
+  // serem específicos do Publicador — ver plano "Item 4".
+  const toolbar = createAdministratorToolbar({
+    root: panel,
+    primaryActions: [{ label: "Novo artigo", onClick: () => { currentId = null; clearForm(); buildForm(); } }],
+    secondaryActions: [{ label: "Recarregar", onClick: () => reload() }],
+    search: { placeholder: "Buscar artigo...", onInput: () => applyFilters() }
+  });
+  panel.append(filterBar, listContainer, formContainer);
   root.append(panel);
 
   const adminClient = services.adminClient;
@@ -304,7 +311,7 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   }
 
   function currentFilters() {
-    return { termo: filterTerm.value, estado: filterState.value, categoria: filterCategory.value, destaque: filterFeatured.value, vigenteEm: new Date() };
+    return { termo: toolbar.searchInput?.value ?? "", estado: filterState.value, categoria: filterCategory.value, destaque: filterFeatured.value, vigenteEm: new Date() };
   }
 
   function renderTable(items) {
@@ -377,18 +384,12 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
   }
 
   function applyFilters() { renderTable(loadedItems, { saveItems: false }); }
-  for (const control of [filterTerm, filterState, filterCategory, filterFeatured]) {
+  for (const control of [filterState, filterCategory, filterFeatured]) {
     if (typeof control.addEventListener === "function") control.addEventListener("input", applyFilters);
     else control.oninput = applyFilters;
     if (typeof control.addEventListener === "function") control.addEventListener("change", applyFilters);
     else control.onchange = applyFilters;
   }
-  setClick(btnReload, () => reload());
-  setClick(btnNew, () => {
-    currentId = null;
-    clearForm();
-    buildForm();
-  });
 
   // Render inicial.
   clearForm();
@@ -397,6 +398,7 @@ export function renderPublisherScreen({ root, services = {} } = {}) {
 
   return {
     dispose() {
+      toolbar.dispose();
       panel.remove();
     }
   };

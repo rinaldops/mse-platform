@@ -141,6 +141,8 @@ function textOf(elements) {
   const expectedLabels = ["Título", "Tipo", "Elemento", "Client", "Versão", "Habilitada", "Protegida", "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
+  assert.equal(root.querySelectorAll("table")[0].className, "mse-administrator__table", "tabela deve ativar zebra/sticky-header/hover de administrator.css");
+
   const rows = root.querySelectorAll("tr").slice(1); // pula o cabeçalho
   assert.equal(rows.length, 2);
   assert.equal(rows[0].querySelectorAll("td")[0].textContent, "Blog");

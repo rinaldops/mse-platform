@@ -1,4 +1,5 @@
 import { createAdminItem, deleteAdminItem, listAdminItems, updateAdminItem } from "../../kernel/admin-data.js";
+import { createAdministratorToolbar } from "../com_cpanel/administrator-toolbar.js";
 
 const ESTADOS = ["Published", "Unpublished", "Trashed"];
 const ATRIBUICOES = ["All", "None", "Only", "AllExcept"];
@@ -50,8 +51,14 @@ export function renderModulesEditor({ root, route, services = {} } = {}) {
   const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__modules";
   const error = node(document, "p"); error.className = "mse-administrator__error";
   const tableHost = document.createElement("div"); const formHost = document.createElement("div");
-  const toolbar = document.createElement("div"); const newButton = node(document, "button", "Novo módulo"); const reloadButton = node(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
-  panel.append(node(document, "h2", "Instâncias de módulo"), error, toolbar, tableHost, formHost); root.append(panel);
+  let searchTerm = ""; let loadedItems = [];
+  const toolbar = createAdministratorToolbar({
+    root: panel,
+    primaryActions: [{ label: "Novo módulo", onClick: () => { currentId = null; renderForm(); } }],
+    secondaryActions: [{ label: "Recarregar", onClick: () => reload() }],
+    search: { placeholder: "Buscar módulo...", onInput: (value) => { searchTerm = value; renderTable(loadedItems); } }
+  });
+  panel.append(node(document, "h2", "Instâncias de módulo"), error, tableHost, formHost); root.append(panel);
   let currentId = null; let controls = {};
   // `route.task`/`route.id` só são aplicados uma vez, no primeiro
   // carregamento — mesmo padrão de components/com_templates/templates-editor.js.
@@ -75,11 +82,12 @@ export function renderModulesEditor({ root, route, services = {} } = {}) {
     const save = node(document, "button", "Salvar"); const cancel = node(document, "button", "Cancelar"); bind(cancel, () => { currentId = null; renderForm(); });
     bind(save, async () => { error.textContent = ""; try { const values = validateModuleValues(read()); if (currentId == null) await createAdminItem({ client, list, values }); else await updateAdminItem({ client, list, id: currentId, values }); currentId = null; renderForm(); await reload(); } catch (e) { error.textContent = errorText("Falha ao salvar", e); } }); box.append(save, cancel); formHost.append(box);
   }
-  function renderTable(items) { clear(tableHost); const table = document.createElement("table"); const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of items) { const row = document.createElement("tr"); for (const value of [item.Title, item.Module, item.Position, item.Ordering]) row.append(node(document, "td", String(value ?? ""))); const stateCell = node(document, "td", String(item.Published ?? "")); stateCell.className = `mse-administrator__status-cell ${item.Published === "Published" ? "mse-administrator__status-cell--ok" : item.Published === "Trashed" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(stateCell, node(document, "td", String(item.MenuAssignment ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); const toggle = node(document, "button", item.Published === "Published" ? "Despublicar" : "Publicar"); bind(toggle, () => togglePublished(item, item.Published !== "Published")); actions.append(edit, remove, toggle); row.append(actions); table.append(row); } tableHost.append(table); }
+  function renderTable(items) { clear(tableHost); const term = searchTerm.trim().toLowerCase(); const visible = term ? items.filter((item) => [item.Title, item.Module, item.Position].some((value) => String(value ?? "").toLowerCase().includes(term))) : items; const table = document.createElement("table"); table.className = "mse-administrator__table"; const header = document.createElement("tr"); for (const label of ["Título", "Tipo", "Posição", "Ordem", "Estado", "Atribuição", "Ações"]) header.append(node(document, "th", label)); table.append(header); for (const item of visible) { const row = document.createElement("tr"); for (const value of [item.Title, item.Module, item.Position, item.Ordering]) row.append(node(document, "td", String(value ?? ""))); const stateCell = node(document, "td", String(item.Published ?? "")); stateCell.className = `mse-administrator__status-cell ${item.Published === "Published" ? "mse-administrator__status-cell--ok" : item.Published === "Trashed" ? "mse-administrator__status-cell--attn" : "mse-administrator__status-cell--muted"}`; row.append(stateCell, node(document, "td", String(item.MenuAssignment ?? ""))); const actions = document.createElement("td"); const edit = node(document, "button", "Editar"); bind(edit, () => { currentId = item.Id; renderForm(item); }); const remove = node(document, "button", "Excluir"); bind(remove, async () => { error.textContent = ""; try { await deleteAdminItem({ client, list, id: item.Id }); await reload(); } catch (e) { error.textContent = errorText("Falha ao excluir", e); } }); const toggle = node(document, "button", item.Published === "Published" ? "Despublicar" : "Publicar"); bind(toggle, () => togglePublished(item, item.Published !== "Published")); actions.append(edit, remove, toggle); row.append(actions); table.append(row); } tableHost.append(table); }
   async function reload() {
     if (!client || !list) { error.textContent = "Client administrativo ou lista MSEModules não configurado."; return; }
     try {
       const items = await listAdminItems({ client, list, select: ["Id", "Title", "Module", "Position", "Ordering", "Published", "PublishUp", "PublishDown", "ShowTitle", "Style", "MenuAssignment", "ParamsJson", "SchemaVersion"], orderby: "Position,Ordering" });
+      loadedItems = items;
       renderTable(items);
       if (pendingTask != null) {
         const { task, id } = pendingTask;
@@ -91,5 +99,5 @@ export function renderModulesEditor({ root, route, services = {} } = {}) {
       }
     } catch (e) { error.textContent = errorText("Falha ao carregar módulos", e); }
   }
-  bind(newButton, () => { currentId = null; renderForm(); }); bind(reloadButton, reload); renderForm(); reload(); return { dispose() { panel.remove(); } };
+  renderForm(); reload(); return { dispose() { toolbar.dispose(); panel.remove(); } };
 }

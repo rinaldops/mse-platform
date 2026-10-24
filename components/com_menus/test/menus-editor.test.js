@@ -32,6 +32,7 @@ const viewRoot = root();
 renderMenusEditor({ root: viewRoot, services: { adminClient: client, listIds: { MSEMenu: list } } });
 await new Promise((resolve) => setTimeout(resolve, 0));
 assert.equal(viewRoot.querySelectorAll("table").length, 1);
+assert.equal(viewRoot.querySelectorAll("table")[0].className, "mse-administrator__table", "tabela deve ativar zebra/sticky-header/hover de administrator.css");
 const buttons = viewRoot.querySelectorAll("button");
 assert.ok(buttons.some((button) => button.textContent === "Novo item"));
 assert.ok(buttons.some((button) => button.textContent === "Editar"));
