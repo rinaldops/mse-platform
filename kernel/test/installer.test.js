@@ -130,25 +130,27 @@ function createFakeClient() {
   return { client: { request }, state };
 }
 
-// KERNEL_LIST_SCHEMAS deve conter exatamente as 6 listas fixas do kernel.
+// KERNEL_LIST_SCHEMAS deve conter exatamente as 7 listas fixas do kernel.
 // Fase 3 da normalização Joomla!: MSEMenu continua com esse internalName
 // (campos novos em inglês acrescentados in-place), as outras 4 passam a
 // ser as listas novas em inglês. MSETemplateStyles (≈ #__template_styles)
 // acrescentada junto com o mecanismo de Templates instaláveis/fallback.
-assert.equal(KERNEL_LIST_SCHEMAS.length, 6);
+// MSECategories (≈ #__categories) acrescentada junto com o componente
+// com_categories (components/com_categories).
+assert.equal(KERNEL_LIST_SCHEMAS.length, 7);
 assert.deepEqual(
   KERNEL_LIST_SCHEMAS.map((schema) => schema.internalName),
-  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles"]
+  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles", "MSECategories"]
 );
 assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
 
-// inspect() detecta as 6 listas ausentes quando o site não tem nenhuma delas.
+// inspect() detecta as 7 listas ausentes quando o site não tem nenhuma delas.
 {
   const { client } = createFakeClient();
   const installer = createKernelInstaller({ client });
   const inspection = await installer.inspect();
   assert.equal(inspection.status, "changes-required");
-  assert.equal(inspection.plan.lists.length, 6);
+  assert.equal(inspection.plan.lists.length, 7);
   assert.equal(inspection.plan.lists.every((list) => list.createList), true);
 }
 
@@ -173,14 +175,14 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.writes.length, 0);
 }
 
-// apply(confirm) autorizado cria as 6 listas + campos; verify() confirma estado final.
+// apply(confirm) autorizado cria as 7 listas + campos; verify() confirma estado final.
 {
   const { client, state } = createFakeClient();
   const installer = createKernelInstaller({ client });
 
   const applied = await installer.apply(() => true);
   assert.equal(applied.status, "provisioned");
-  assert.equal(state.lists.size, 6);
+  assert.equal(state.lists.size, 7);
   assert.equal(state.lists.get("MSEMenuTypes").fields.some((field) => field.InternalName === "Key"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Alias"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Component"), true);
@@ -188,6 +190,7 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.lists.get("MSEModules").fields.some((field) => field.InternalName === "Module"), true);
   assert.equal(state.lists.get("MSEModulesMenu").fields.some((field) => field.InternalName === "ModuleId"), true);
   assert.equal(state.lists.get("MSETemplateStyles").fields.some((field) => field.InternalName === "Template"), true);
+  assert.equal(state.lists.get("MSECategories").fields.some((field) => field.InternalName === "Alias"), true);
 
   const verified = await installer.verify();
   assert.equal(verified.status, "ready");

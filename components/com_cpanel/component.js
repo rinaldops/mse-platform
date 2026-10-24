@@ -9,6 +9,7 @@ import { renderModulesScreen } from "../com_modules/modules-screen.js";
 import { renderConfigScreen } from "../com_config/config-screen.js";
 import { renderInstallerScreen } from "../com_installer/installer-screen.js";
 import { renderTemplatesScreen } from "../com_templates/templates-screen.js";
+import { renderCategoriesScreen } from "../com_categories/categories-screen.js";
 
 const SCREEN_RENDERERS = {
   controlpanel: ({ root }) => renderControlPanel({ root }),
@@ -19,7 +20,8 @@ const SCREEN_RENDERERS = {
   modules: ({ root, route, services }) => renderModulesScreen({ root, route, services }),
   config: ({ root, route, services }) => renderConfigScreen({ root, route, services }),
   installer: ({ root, services }) => renderInstallerScreen({ root, services }),
-  templates: ({ root, route, services }) => renderTemplatesScreen({ root, route, services })
+  templates: ({ root, route, services }) => renderTemplatesScreen({ root, route, services }),
+  categories: ({ root, route, services }) => renderCategoriesScreen({ root, route, services })
 };
 
 // Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
