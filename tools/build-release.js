@@ -23,6 +23,9 @@ const packages = {
   "explore-mais": await packageVersion("modules/mod_recursos/package.json"),
   videoteca: await packageVersion("modules/mod_videoteca/package.json"),
   home: await packageVersion("modules/mod_home/package.json"),
+  menu: await packageVersion("modules/mod_menu/package.json"),
+  breadcrumbs: await packageVersion("modules/mod_breadcrumbs/package.json"),
+  footer: await packageVersion("modules/mod_footer/package.json"),
   admin: await packageVersion("admin/package.json"),
   "host-modern-script-editor": await packageVersion("host-adapters/modern-script-editor/package.json")
 };

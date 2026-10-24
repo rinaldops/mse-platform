@@ -1,0 +1,65 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="menu"][data-mse-module="menu"] {
+  --menu-text: #000000;
+  --menu-text-muted: #75787B;
+  --menu-accent: #006298;
+  --menu-active: #008542;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-menu {
+  display: block;
+}
+
+.mse-module-menu__status {
+  color: var(--menu-text-muted);
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.mse-module-menu__empty {
+  color: var(--menu-text-muted);
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.mse-module-menu__list,
+.mse-module-menu__sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.mse-module-menu__sublist {
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 1rem;
+}
+
+.mse-module-menu__list {
+  flex-wrap: wrap;
+}
+
+.mse-module-menu__item {
+  position: relative;
+}
+
+.mse-module-menu__link {
+  display: inline-block;
+  color: var(--menu-text);
+  text-decoration: none;
+  padding: 0.5rem 0.25rem;
+}
+
+.mse-module-menu__link:hover {
+  color: var(--menu-accent);
+}
+
+.mse-module-menu__item--active > .mse-module-menu__link {
+  color: var(--menu-active);
+  font-weight: 700;
+}

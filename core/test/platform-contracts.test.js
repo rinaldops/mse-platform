@@ -17,6 +17,9 @@ import forumManifestDefault, { FORUM_MANIFEST } from "../../modules/mod_forum/ma
 import homeManifestDefault, { HOME_MANIFEST } from "../../modules/mod_home/manifest.js";
 import recursosManifestDefault, { RECURSOS_MANIFEST } from "../../modules/mod_recursos/manifest.js";
 import videotecaManifestDefault, { VIDEOTECA_MANIFEST } from "../../modules/mod_videoteca/manifest.js";
+import menuManifestDefault, { MENU_MANIFEST } from "../../modules/mod_menu/manifest.js";
+import breadcrumbsManifestDefault, { BREADCRUMBS_MANIFEST } from "../../modules/mod_breadcrumbs/manifest.js";
+import footerManifestDefault, { FOOTER_MANIFEST } from "../../modules/mod_footer/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });
@@ -49,6 +52,9 @@ assert.equal(forumManifestDefault, FORUM_MANIFEST);
 assert.equal(homeManifestDefault, HOME_MANIFEST);
 assert.equal(recursosManifestDefault, RECURSOS_MANIFEST);
 assert.equal(videotecaManifestDefault, VIDEOTECA_MANIFEST);
+assert.equal(menuManifestDefault, MENU_MANIFEST);
+assert.equal(breadcrumbsManifestDefault, BREADCRUMBS_MANIFEST);
+assert.equal(footerManifestDefault, FOOTER_MANIFEST);
 
 let disposed = false;
 function classList() {

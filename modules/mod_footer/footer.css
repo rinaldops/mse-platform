@@ -1,0 +1,21 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="footer"][data-mse-module="footer"] {
+  --footer-text: #75787B;
+  --footer-bg: #FFFFFF;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-footer {
+  display: block;
+  background: var(--footer-bg);
+  padding: 1rem clamp(20px, 4vw, 56px);
+  text-align: center;
+}
+
+.mse-module-footer__text {
+  margin: 0;
+  color: var(--footer-text);
+  font-size: 0.85rem;
+}
