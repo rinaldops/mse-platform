@@ -1,6 +1,30 @@
-# Extension plugin
+# plugins/extension/manifest-validator
 
-`manifest-validator` valida a forma mínima dos manifestos declarativos das
-extensões (`component`, `module`, `plugin` e `template`). É somente validação
-local: instalação, persistência e permissões permanecem sob o Installer e o
-SharePoint.
+Plugin do grupo **`extension`** (convenção Joomla: `plugins/extension/*`).
+
+## Objetivo
+Validar, de forma transversal, os **manifestos** de extensões (`component`/`module`/`plugin`) carregadas pelo host/kernel.
+
+## Contrato
+- Entry-point: `manifest-validator.js`.
+- Exporta `createPlugin(options?)` que devolve handlers de evento.
+- Handler implementado: `onAfterRoute(payload)`.
+
+### Payload esperado (mínimo)
+```js
+{
+  manifests: [
+    { elemento: "blog", manifest: {...}, manifestUrl: "..." },
+    ...
+  ],
+  errors: [],
+  warn: (message, meta) => void
+}
+```
+
+## Modo de falha
+- **default (`collect`)**: acumula em `payload.errors`.
+- **`throw`**: lança no primeiro manifesto inválido (útil em testes/CI).
+
+## Testes
+- `plugins/extension/manifest-validator/test/manifest-validator.test.js`
