@@ -37,6 +37,7 @@ import { MSE_EXTENSIONS_SCHEMA } from "./schemas/mse-extensions.js";
 import { MSE_MODULES_SCHEMA } from "./schemas/mse-modules.js";
 import { MSE_MODULES_MENU_SCHEMA } from "./schemas/mse-modules-menu.js";
 import { MSE_TEMPLATE_STYLES_SCHEMA } from "./schemas/mse-template-styles.js";
+import { MSE_CATEGORIES_SCHEMA } from "./schemas/mse-categories.js";
 
 // MSETemplateStyles (≈ #__template_styles) acrescentada ao conjunto fixo
 // junto com o mecanismo de Templates instaláveis/fallback — ver
@@ -47,7 +48,8 @@ export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_EXTENSIONS_SCHEMA,
   MSE_MODULES_SCHEMA,
   MSE_MODULES_MENU_SCHEMA,
-  MSE_TEMPLATE_STYLES_SCHEMA
+  MSE_TEMPLATE_STYLES_SCHEMA,
+  MSE_CATEGORIES_SCHEMA
 ]);
 
 /**
