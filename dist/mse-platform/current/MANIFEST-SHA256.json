@@ -167,6 +167,11 @@
       "sha256": "91dfcfeb68ea9402a16e8b3d2aac81872cc25d4262574b99ca201561e3ed7797"
     },
     {
+      "path": "kernel/articles-data.js",
+      "bytes": 4195,
+      "sha256": "5b3f6111abd5493c89163fa86ece4e374cdeca8202e3657382df1e1cfbfef25a"
+    },
+    {
       "path": "kernel/categories.js",
       "bytes": 4049,
       "sha256": "cce0639010ba1fe94445b1c764df8b9aba0ad77e3d1ddbad2d82702ae501a41e"

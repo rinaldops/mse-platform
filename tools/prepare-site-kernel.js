@@ -39,10 +39,11 @@
 //     dois schemas que ainda não estavam nesta lista; os outros 3 já vinham
 //     do Administrator, ver nota abaixo) precisam ser publicados.
 //   - `kernel/content-services.js`/`kernel/article-mapper.js`/
-//     `kernel/categories.js`/`kernel/publisher-data.js` (Wave 2, módulos de
-//     posição `mod_articles_*`/`mod_tags_*`): deixaram de se qualificar
-//     para a exclusão original ("nenhum módulo usa com_content ainda") —
-//     ver nota abaixo, mesmo princípio de `kernel/installer.js` acima.
+//     `kernel/articles-data.js`/`kernel/categories.js`/`kernel/publisher-data.js`
+//     (Wave 2, módulos de posição `mod_articles_*`/`mod_tags_*`): deixaram de
+//     se qualificar para a exclusão original ("nenhum módulo usa com_content
+//     ainda") — ver nota abaixo, mesmo princípio de `kernel/installer.js`
+//     acima.
 //
 // Administrator (18/10/2026, ampliação de escopo — Templates/Administrator
 // trazidos para o escopo formal): o Administrator É carregado pelo
@@ -123,6 +124,7 @@ const FILES = [
   // então as funções puras que consomem precisam estar no pacote publicado.
   "kernel/content-services.js",
   "kernel/article-mapper.js",
+  "kernel/articles-data.js",
   "kernel/categories.js",
   "kernel/publisher-data.js",
   // Templates shipped pela PLATAFORMA (fallback de 2º/3º nível — ver
