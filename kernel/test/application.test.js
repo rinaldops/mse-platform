@@ -42,7 +42,27 @@ class FakeElement {
   }
 }
 
+// `head` fake mínimo — só o necessário para exercitar
+// `kernel/application.js#loadManifestStyles` (23/10/2026): `append` guarda os
+// `<link>` inseridos e `querySelector` entende apenas o seletor exato que
+// `loadManifestStyles` usa (`link[data-mse-manifest-style="<href>"]`), mesmo
+// padrão de fake mínimo (não um DOM completo) já usado no resto do arquivo.
+function createFakeHead() {
+  const children = [];
+  return {
+    children,
+    append(...nodes) { children.push(...nodes); },
+    querySelector(selector) {
+      const match = /^link\[data-mse-manifest-style="(.*)"\]$/.exec(selector);
+      if (!match) return null;
+      const [, href] = match;
+      return children.find((node) => node.getAttribute("data-mse-manifest-style") === href) ?? null;
+    }
+  };
+}
+
 const document = {
+  head: createFakeHead(),
   createElement(tag) {
     const node = new FakeElement(tag);
     node.ownerDocument = document;
@@ -135,7 +155,7 @@ function fixtureModulosComParamsInvalido() {
 // entrypoints são resolvidos como URL relativa a essa manifest URL (mesmo
 // contrato de host-adapters/modern-script-editor/bootstrap.js).
 
-function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = false } = {}) {
+function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = false, blogStyles } = {}) {
   const manifestUrl = (elemento) => `https://example.invalid/${elemento}/manifest.js`;
   const disposed = [];
 
@@ -146,7 +166,8 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
         type: "component",
         views: { lista: true, destaques: true },
         routeParams: ["id", "slug"],
-        entrypoints: { full: "./full.js" }
+        entrypoints: { full: "./full.js" },
+        ...(blogStyles ? { styles: blogStyles } : {})
       }
     }],
     ["https://example.invalid/blog/full.js", {
@@ -1083,6 +1104,99 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   await app.dispose();
 
   console.log("application.test.js: resolveLayout lançando numa TROCA de layout cai no fallback neutro, navegação continua ok.");
+}
+
+// --- manifest.styles (23/10/2026, gap do redesenho visual do
+// Administrator): Componente cujo manifesto declara `styles` ganha um
+// <link rel="stylesheet"> em document.head ao montar, resolvido como URL
+// relativa à manifest URL, e NUNCA duplicado (nem no mesmo mount, nem numa
+// remontagem por navegação de ida-e-volta) ------------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const { importModule, resolveManifestUrl } = fixtureRegistry({
+    blogStyles: ["./blog.css"]
+  });
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const expectedHref = "https://example.invalid/blog/blog.css";
+  const linksAfterFirstMount = document.head.children.filter(
+    (node) => node.getAttribute("data-mse-manifest-style") === expectedHref
+  );
+  assert.equal(linksAfterFirstMount.length, 1, "manifest.styles do Componente monta exatamente 1 <link>");
+  assert.equal(linksAfterFirstMount[0].tagName, "LINK");
+  // `loadManifestStyles` grava `rel`/`href` como propriedades diretas do nó
+  // (mesmo padrão de `link.rel =`/`link.href =` do DOM real), não via
+  // `setAttribute` — só `data-mse-manifest-style` usa `setAttribute` (é o
+  // que `querySelector` do fake `head` precisa casar).
+  assert.equal(linksAfterFirstMount[0].rel, "stylesheet");
+  assert.equal(linksAfterFirstMount[0].href, expectedHref);
+
+  // Ida-e-volta (dispose + remount do mesmo Componente): não duplica o <link>.
+  dispatchHashChange(window, "#/");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const linksAfterRemount = document.head.children.filter(
+    (node) => node.getAttribute("data-mse-manifest-style") === expectedHref
+  );
+  assert.equal(linksAfterRemount.length, 1, "remontagem do mesmo Componente não duplica o <link> de estilo");
+
+  await app.dispose();
+
+  console.log("application.test.js: manifest.styles do Componente carrega <link> uma única vez, sem duplicar em remontagem ok.");
+}
+
+// --- manifest sem `styles` (caso comum, com_content/com_blog/etc.): nenhum
+// <link> extra é inserido, document.head não recebe nada do mountEntrypoint
+// quando o manifesto simplesmente não declara styles --------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/");
+  const headChildrenBefore = document.head.children.length;
+  const { importModule, resolveManifestUrl } = fixtureRegistry();
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: ["topo"],
+    loadMenu: async () => fixtureMenuItems(),
+    loadExtensions: async () => fixtureExtensions(),
+    loadModulos: async () => fixtureModulos(),
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  dispatchHashChange(window, "#/blog");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(document.head.children.length, headChildrenBefore, "Componente sem manifest.styles não insere <link>");
+
+  await app.dispose();
+
+  console.log("application.test.js: Componente sem manifest.styles não toca document.head ok.");
 }
 
 console.log("application.test.js: verificações concluídas com sucesso.");

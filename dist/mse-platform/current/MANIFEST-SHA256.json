@@ -13,8 +13,8 @@
     },
     {
       "path": "kernel/application.js",
-      "bytes": 32268,
-      "sha256": "e4167f49728d9a95ad690909fbdfe9b585953bf4b14a2b71df97fa923cfa69c1"
+      "bytes": 34233,
+      "sha256": "74222782cce887e21be16de010639351236d85741d3e75bb242bc062307abc6c"
     },
     {
       "path": "kernel/router.js",

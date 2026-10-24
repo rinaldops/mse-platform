@@ -177,6 +177,50 @@ async function importManifest(elemento, resolveManifestUrl, importModule) {
   return { manifest, manifestUrl };
 }
 
+// Carregamento de `manifest.styles` (23/10/2026 — gap descoberto na
+// verificação em produção do redesenho visual do Administrator,
+// `docs/AUDITORIA-JOOMLA-PENTE-FINO.md`: `components/com_cpanel/manifest.js`
+// já declarava `styles: ["./administrator.css"]`, mas nenhum ponto do
+// caminho real de boot (`mountEntrypoint` abaixo) jamais lia esse campo —
+// só `host-adapters/modern-script-editor/bootstrap.js#loadStyle`, um
+// host-adapter separado usado só pelos módulos "EPUB", lia `manifest.styles`.
+// Resultado: `administrator.css` nunca foi servido em produção; os ícones
+// SVG novos do shell/cards renderizavam sem o `width`/`height` que essa
+// folha define. Mesmo princípio de `loadStyle` (cache por `Map` de
+// `href` já anexado — nunca duplica `<link>` entre montagens/instâncias —
+// e NUNCA bloqueia/lança: falha de rede num `<link>` de estilo não deve
+// impedir o `mount()` do Componente/Módulo, só degrada visualmente).
+const loadedManifestStyles = new Map();
+
+/**
+ * @param {Element} root
+ * @param {{ styles?: string[] }} manifest
+ * @param {string} manifestUrl
+ */
+function loadManifestStyles(root, manifest, manifestUrl) {
+  const document = root?.ownerDocument;
+  const head = document?.head;
+  if (!head || typeof document.createElement !== "function" || typeof head.querySelector !== "function") return;
+  for (const style of manifest?.styles ?? []) {
+    let href;
+    try {
+      href = new URL(style, manifestUrl).href;
+    } catch {
+      continue;
+    }
+    if (loadedManifestStyles.has(href) || head.querySelector(`link[data-mse-manifest-style="${href}"]`)) {
+      loadedManifestStyles.set(href, true);
+      continue;
+    }
+    loadedManifestStyles.set(href, true);
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute("data-mse-manifest-style", href);
+    head.append(link);
+  }
+}
+
 /**
  * Monta um entrypoint (Componente ou instância de Módulo) em `root`,
  * devolvendo uma função `dispose()`. Nunca decide isolamento de falha — isso
@@ -204,6 +248,7 @@ async function importManifest(elemento, resolveManifestUrl, importModule) {
  */
 async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestUrl, importModule, config, services, context, preloadedManifest }) {
   const { manifest, manifestUrl } = preloadedManifest ?? (await importManifest(elemento, resolveManifestUrl, importModule));
+  loadManifestStyles(root, manifest, manifestUrl);
   const entrypointPath = manifest.entrypoints?.[entrypointKey];
   if (!entrypointPath) {
     throw new Error(`"${elemento}" não declara entrypoints.${entrypointKey}.`);
