@@ -52,8 +52,9 @@
  * com itens repetidos" nesta rodada). `ADMINISTRATOR_NAV_GROUPS` declara a
  * qual grupo cada `option` pertence — `com_cpanel` fica de fora (é o link
  * solto do topo, nunca um grupo). Mapeamento Joomla! real → mse-platform:
- * - "Conteúdo" → com_content (Publicador/Artigos); Mídia/Campos/Grupos de
- *   Campos do Joomla! real não têm equivalente implementado ainda.
+ * - "Conteúdo" → com_content (Publicador/Artigos) e com_tags (Tags); Mídia/
+ *   Campos/Grupos de Campos do Joomla! real não têm equivalente
+ *   implementado ainda.
  * - "Menus" → com_menus (igual ao Joomla! real, 1:1).
  * - "Sistema" → com_extensions/com_modules/com_templates (no Joomla! real
  *   vivem sob "Sistema > Gerenciar/Temas", não sob "Componentes" — ver
@@ -64,8 +65,8 @@
  *   "Sistema > Instalar", adaptado para o provisionamento de listas do
  *   kernel).
  * "Componentes" e "Usuários" do Joomla! real não têm grupo equivalente
- * aqui de propósito: `components/com_categories|com_media|com_tags`
- * seguem reservados sem implementação (ver seus README.md), e gestão de
+ * aqui de propósito: `components/com_categories|com_media` seguem
+ * reservados sem implementação (ver seus README.md), e gestão de
  * usuário é uma decisão arquitetural já declarada (SharePoint é a
  * autoridade de permissão, não um `com_users` próprio) — não é uma lacuna
  * a preencher nesta rodada.
@@ -76,6 +77,7 @@
 export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
   ["com_cpanel", "Painel"],
   ["com_content", "Publicador"],
+  ["com_tags", "Tags"],
   ["com_menus", "Menus"],
   ["com_extensions", "Extensões"],
   ["com_modules", "Módulos"],
@@ -93,7 +95,7 @@ export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
 // por teste em administrator-shell.test.js). `com_cpanel` nunca aparece
 // aqui: é o único link que fica fora de qualquer grupo.
 export const ADMINISTRATOR_NAV_GROUPS = Object.freeze([
-  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content"]) },
+  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content", "com_tags"]) },
   { key: "menus", label: "Menus", options: Object.freeze(["com_menus"]) },
   {
     key: "system",
@@ -127,7 +129,8 @@ export const ADMINISTRATOR_NAV_ICON_PATHS = Object.freeze({
   com_menus: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>',
   com_modules: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
   com_templates: '<rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/>',
-  com_installer: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>'
+  com_installer: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>',
+  com_tags: '<path d="M20.59 13.41 12.41 21.6a2 2 0 0 1-2.83 0l-7.17-7.17a2 2 0 0 1 0-2.83L10.59 3.4A2 2 0 0 1 12 2.83H20a1 1 0 0 1 1 1v7.76a2 2 0 0 1-.41 1.21z"/><circle cx="16.5" cy="7.5" r="1.5"/>'
 });
 
 function createIcon(document, option) {
