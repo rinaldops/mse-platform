@@ -70,6 +70,33 @@
 .mse-administrator-shell__nav-link[aria-current="page"] { background: var(--camap-hover, #F2F7FA); border-color: var(--camap-grey-light, #E3E9ED); border-left-color: var(--camap-sun, #FDC82F); font-weight: 700; }
 .mse-administrator-shell__nav-link:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
 
+/* Grupos colapsáveis da sidebar (24/10/2026 — administrator-shell.js#ADMINISTRATOR_NAV_GROUPS,
+   fidelidade estrutural às categorias "Conteúdo"/"Menus"/"Sistema" do
+   backend `atum` do Joomla! real): cabeçalho <button> + sublista de links,
+   indentada em relação aos links soltos (ex. "Painel"). */
+.mse-administrator-shell__group { margin-top: 4px; }
+.mse-administrator-shell__group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--camap-ocean, #006298);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.mse-administrator-shell__group-toggle:hover { background: var(--camap-hover, #F2F7FA); }
+.mse-administrator-shell__group-toggle:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator-shell__group-icon { display: inline-flex; flex: 0 0 auto; width: 16px; height: 16px; }
+.mse-administrator-shell__group-icon svg { width: 100%; height: 100%; }
+.mse-administrator-shell__group-label { min-width: 0; text-transform: uppercase; font-size: .78rem; letter-spacing: .04em; }
+.mse-administrator-shell__group--active .mse-administrator-shell__group-toggle { color: var(--camap-ocean, #006298); border-left: 4px solid var(--camap-sun, #FDC82F); padding-left: 8px; }
+.mse-administrator-shell__group-items { display: flex; flex-direction: column; gap: 2px; padding-left: 14px; }
+
 .mse-administrator-shell__content { min-width: 0; }
 
 @media (max-width: 700px) {
@@ -85,11 +112,18 @@
 .mse-administrator__panel h2 { color: var(--camap-ocean, #006298); margin-top: 28px; }
 .mse-administrator__hint { color: var(--camap-line, #75787B); margin-top: 0; }
 
-/* --- Painel inicial (com_cpanel/control-panel.js): grid de cards, cada um
-   com ícone + título + descrição curta — equivalente aos "ícones rápidos"
-   (`cpanel-modules`) do painel inicial do Joomla! real. ------------------- */
+/* --- Painel inicial (com_cpanel/control-panel.js): blocos de cards com
+   cabeçalho por categoria — equivalente aos blocos "Site"/"System"
+   (`cpanel-modules`) do painel inicial do Joomla! real (24/10/2026:
+   antes era uma única grade plana de 8 cards; agora reaproveita os mesmos
+   grupos da sidebar — ADMINISTRATOR_NAV_GROUPS — como blocos com
+   cabeçalho, para não repetir a MESMA lista em dois formatos sem
+   hierarquia visual comum). Cada card tem ícone + título + descrição
+   curta. ------------------------------------------------------------- */
 
-.mse-administrator__cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 24px; }
+.mse-administrator__card-group { margin-top: 28px; }
+.mse-administrator__card-group-title { color: var(--camap-ocean, #006298); margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--camap-grey-light, #E3E9ED); font-size: 1rem; text-transform: uppercase; letter-spacing: .04em; }
+.mse-administrator__cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 0; }
 .mse-administrator__card {
   display: flex;
   flex-direction: column;

@@ -183,18 +183,18 @@
     },
     {
       "path": "components/com_cpanel/administrator.css",
-      "bytes": 12880,
-      "sha256": "0b10664a6569008e0471dbfc39a5a560d6860cc611b91426b4839dc880f5c45d"
+      "bytes": 14980,
+      "sha256": "caeaf9c437e6542ab71f7cdf3c0ff945388a9e62f471330fcb1e888b45fcacff"
     },
     {
       "path": "components/com_cpanel/administrator-shell.js",
-      "bytes": 7584,
-      "sha256": "d72af1698756eabd937224145e94205db678bdef9b0bb8b151e50a29252eb837"
+      "bytes": 14677,
+      "sha256": "c2158d4fa2d1f58736d040352ac8a9ca96ac9112cbbc176bc5f633969b13c379"
     },
     {
       "path": "components/com_cpanel/control-panel.js",
-      "bytes": 3787,
-      "sha256": "b830ee913123ce2658adc2dae6d82ead15f85d8b8f35671149655aceb1541c60"
+      "bytes": 5263,
+      "sha256": "47b4248fa0ff064344f1e794eae7899e3229c14da04ece089318fcaa516cdb8e"
     },
     {
       "path": "components/com_extensions/extensions-screen.js",

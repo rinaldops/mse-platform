@@ -36,20 +36,81 @@
  * extra — ex. "voltar ao site" — quebraria essa asserção; por isso não
  * existe nenhum outro `<a>` aqui, de propósito).
  *
+ * Agrupamento hierárquico (24/10/2026 — fidelidade estrutural ao Joomla!
+ * real, ver comparação direta com uma instância PHP de referência): o
+ * backend `atum` do Joomla! real nunca lista as telas em texto corrido —
+ * agrupa em categorias colapsáveis ("Conteúdo", "Menus", "Componentes",
+ * "Usuários", "Sistema"), cada uma com seu próprio ícone, e só o item
+ * "Painel Principal" fica solto no topo. `ADMINISTRATOR_NAV_LINKS`
+ * continua existindo (mesma forma `[option, label][]`, mesmo papel de
+ * fonte única de verdade para rótulo/rota por `option` — reaproveitada
+ * tanto pelos testes quanto por `control-panel.js`), mas sua ORDEM agora é
+ * contígua por grupo (antes era: cpanel, config, diagnostics, content,
+ * extensions, menus, modules, templates, installer — uma ordem que não
+ * correspondia a nenhum agrupamento visual; ver
+ * `docs/AUDITORIA-JOOMLA-PENTE-FINO.md`/relato do usuário de "dois menus
+ * com itens repetidos" nesta rodada). `ADMINISTRATOR_NAV_GROUPS` declara a
+ * qual grupo cada `option` pertence — `com_cpanel` fica de fora (é o link
+ * solto do topo, nunca um grupo). Mapeamento Joomla! real → mse-platform:
+ * - "Conteúdo" → com_content (Publicador/Artigos); Mídia/Campos/Grupos de
+ *   Campos do Joomla! real não têm equivalente implementado ainda.
+ * - "Menus" → com_menus (igual ao Joomla! real, 1:1).
+ * - "Sistema" → com_extensions/com_modules/com_templates (no Joomla! real
+ *   vivem sob "Sistema > Gerenciar/Temas", não sob "Componentes" — ver
+ *   inspeção da instância de referência), com_config (Configurações
+ *   Globais), com_diagnostics (mais próximo de "Informações do Sistema",
+ *   adaptado: aqui é verificação estrutural + permissões efetivas,
+ *   conceito próprio do mse-platform) e com_installer (próximo de
+ *   "Sistema > Instalar", adaptado para o provisionamento de listas do
+ *   kernel).
+ * "Componentes" e "Usuários" do Joomla! real não têm grupo equivalente
+ * aqui de propósito: `components/com_categories|com_media|com_tags`
+ * seguem reservados sem implementação (ver seus README.md), e gestão de
+ * usuário é uma decisão arquitetural já declarada (SharePoint é a
+ * autoridade de permissão, não um `com_users` próprio) — não é uma lacuna
+ * a preencher nesta rodada.
+ *
  * @param {{ root: Element, activeOption?: string }} options
  * @returns {{ contentElement: Element, dispose(): void }}
  */
 export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
   ["com_cpanel", "Painel"],
-  ["com_config", "Configuração global"],
-  ["com_diagnostics", "Diagnóstico"],
   ["com_content", "Publicador"],
-  ["com_extensions", "Extensões"],
   ["com_menus", "Menus"],
+  ["com_extensions", "Extensões"],
   ["com_modules", "Módulos"],
   ["com_templates", "Templates"],
+  ["com_config", "Configuração global"],
+  ["com_diagnostics", "Diagnóstico"],
   ["com_installer", "Instalador"]
 ]);
+
+// Grupos colapsáveis da navegação lateral — mesma ideia das categorias
+// "Conteúdo"/"Menus"/"Sistema" do backend `atum` do Joomla! real.
+// `options` lista as `option` (mesma chave de ADMINISTRATOR_NAV_LINKS) que
+// pertencem ao grupo, NA ORDEM em que devem ser renderizadas — precisa
+// bater com a ordem contígua de ADMINISTRATOR_NAV_LINKS acima (verificado
+// por teste em administrator-shell.test.js). `com_cpanel` nunca aparece
+// aqui: é o único link que fica fora de qualquer grupo.
+export const ADMINISTRATOR_NAV_GROUPS = Object.freeze([
+  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content"]) },
+  { key: "menus", label: "Menus", options: Object.freeze(["com_menus"]) },
+  {
+    key: "system",
+    label: "Sistema",
+    options: Object.freeze(["com_extensions", "com_modules", "com_templates", "com_config", "com_diagnostics", "com_installer"])
+  }
+]);
+
+// Ícones dos CABEÇALHOS de grupo (distintos dos ícones por item abaixo) —
+// mesmos glifos monocromáticos `currentColor`, inspirados nos ícones de
+// categoria do Joomla! real (arquivo/documento para Conteúdo, lista para
+// Menus, chave-de-fenda para Sistema).
+const ADMINISTRATOR_NAV_GROUP_ICON_PATHS = Object.freeze({
+  content: '<path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8 12h8M8 16h8M8 8h3"/>',
+  menus: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>',
+  system: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>'
+});
 
 // Ícones monocromáticos (stroke="currentColor", sem fill, 24x24 viewBox) —
 // glifos simples desenhados à mão, mesmo princípio de
@@ -79,6 +140,30 @@ function createIcon(document, option) {
   return span;
 }
 
+function createGroupIcon(document, groupKey) {
+  const paths = ADMINISTRATOR_NAV_GROUP_ICON_PATHS[groupKey];
+  if (!paths) return null;
+  const span = document.createElement("span");
+  span.className = "mse-administrator-shell__group-icon";
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+  return span;
+}
+
+function createNavLink(document, option, label, activeOption) {
+  const a = document.createElement("a");
+  a.className = "mse-administrator-shell__nav-link";
+  a.href = `#/administrator?option=${option}`;
+  const icon = createIcon(document, option);
+  if (icon) a.append(icon);
+  const text = document.createElement("span");
+  text.className = "mse-administrator-shell__nav-label";
+  text.textContent = label;
+  a.append(text);
+  if (option === activeOption) a.setAttribute("aria-current", "page");
+  return a;
+}
+
 export function createAdministratorShell({ root, activeOption } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
   const document = root.ownerDocument;
@@ -106,21 +191,68 @@ export function createAdministratorShell({ root, activeOption } = {}) {
   const body = document.createElement("div");
   body.className = "mse-administrator-shell__body";
 
+  // Rótulo por `option`, lido de ADMINISTRATOR_NAV_LINKS (fonte única de
+  // verdade) — o agrupamento (ADMINISTRATOR_NAV_GROUPS) só decide
+  // ORDEM/moldura visual, nunca duplica o rótulo.
+  const labelByOption = new Map(ADMINISTRATOR_NAV_LINKS);
+  const groupedOptions = new Set(ADMINISTRATOR_NAV_GROUPS.flatMap((group) => group.options));
+
   const nav = document.createElement("nav");
   nav.className = "mse-administrator-shell__nav";
   nav.setAttribute("aria-label", "Administração");
+
+  // "Painel" (com_cpanel) fica solto no topo, fora de qualquer grupo —
+  // mesmo papel do item "Painel Principal" no backend `atum` do Joomla!
+  // real (nunca pertence a uma categoria).
   for (const [option, label] of ADMINISTRATOR_NAV_LINKS) {
-    const a = document.createElement("a");
-    a.className = "mse-administrator-shell__nav-link";
-    a.href = `#/administrator?option=${option}`;
-    const icon = createIcon(document, option);
-    if (icon) a.append(icon);
-    const text = document.createElement("span");
-    text.className = "mse-administrator-shell__nav-label";
-    text.textContent = label;
-    a.append(text);
-    if (option === activeOption) a.setAttribute("aria-current", "page");
-    nav.append(a);
+    if (groupedOptions.has(option)) continue;
+    nav.append(createNavLink(document, option, label, activeOption));
+  }
+
+  // Grupos colapsáveis — cada cabeçalho é um <button> (não <a>: o teste
+  // `administrator-shell.test.js` conta TODOS os <a> do shell e exige que
+  // seja exatamente ADMINISTRATOR_NAV_LINKS.length, então o cabeçalho de
+  // grupo não pode ser um link navegável, só um controle de
+  // expandir/recolher — mesmo papel do "has-arrow" do atum, que também não
+  // navega, só expande).
+  for (const group of ADMINISTRATOR_NAV_GROUPS) {
+    const groupActive = group.options.includes(activeOption);
+    const section = document.createElement("div");
+    section.className = "mse-administrator-shell__group";
+    if (groupActive) section.classList.add("mse-administrator-shell__group--active");
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "mse-administrator-shell__group-toggle";
+    toggle.setAttribute("aria-expanded", "true");
+    const groupIcon = createGroupIcon(document, group.key);
+    if (groupIcon) toggle.append(groupIcon);
+    const groupLabel = document.createElement("span");
+    groupLabel.className = "mse-administrator-shell__group-label";
+    groupLabel.textContent = group.label;
+    toggle.append(groupLabel);
+
+    const sublist = document.createElement("div");
+    sublist.className = "mse-administrator-shell__group-items";
+    for (const option of group.options) {
+      const label = labelByOption.get(option);
+      if (label == null) continue;
+      sublist.append(createNavLink(document, option, label, activeOption));
+    }
+
+    let expanded = true;
+    const applyExpanded = () => {
+      toggle.setAttribute("aria-expanded", String(expanded));
+      sublist.hidden = !expanded;
+      section.classList.toggle("mse-administrator-shell__group--collapsed", !expanded);
+    };
+    toggle.addEventListener("click", () => {
+      expanded = !expanded;
+      applyExpanded();
+    });
+
+    section.append(toggle, sublist);
+    nav.append(section);
   }
 
   const content = document.createElement("div");
