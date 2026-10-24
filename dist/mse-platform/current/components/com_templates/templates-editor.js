@@ -34,6 +34,7 @@
  */
 import { listAdminItems, updateAdminItem } from "../../kernel/admin-data.js";
 import { listTemplateStylesByClient } from "../../kernel/template-registry.js";
+import { createAdministratorToolbar } from "../com_cpanel/administrator-toolbar.js";
 
 const CLIENT_ID = "Site";
 const TEMPLATE_STYLES_FIELDS = ["Id", "Title", "Template", "ClientId", "Home"];
@@ -55,10 +56,14 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
   const error = node(document, "p");
   error.className = "mse-administrator__error";
   const tableHost = document.createElement("div");
-  const toolbar = document.createElement("div");
-  const reloadButton = node(document, "button", "Recarregar");
-  toolbar.append(reloadButton);
-  panel.append(node(document, "h2", "Templates instalados"), error, toolbar, tableHost);
+  let searchTerm = ""; let loadedStyles = [];
+  const toolbar = createAdministratorToolbar({
+    root: panel,
+    primaryActions: [],
+    secondaryActions: [{ label: "Recarregar", onClick: () => reload() }],
+    search: { placeholder: "Buscar template...", onInput: (value) => { searchTerm = value; renderTable(loadedStyles); } }
+  });
+  panel.append(node(document, "h2", "Templates instalados"), error, tableHost);
   root.append(panel);
 
   // `route.task`/`route.id` só são aplicados uma vez, no primeiro
@@ -83,11 +88,14 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
 
   function renderTable(styles) {
     clear(tableHost);
+    const term = searchTerm.trim().toLowerCase();
+    const visible = term ? styles.filter((style) => [style.Title, style.Template].some((value) => String(value ?? "").toLowerCase().includes(term))) : styles;
     const table = document.createElement("table");
+    table.className = "mse-administrator__table";
     const header = document.createElement("tr");
     for (const label of ["Título", "Template", "Padrão", "Ações"]) header.append(node(document, "th", label));
     table.append(header);
-    for (const style of styles) {
+    for (const style of visible) {
       const row = document.createElement("tr");
       row.append(node(document, "td", String(style.Title ?? "")));
       row.append(node(document, "td", String(style.Template ?? "")));
@@ -113,6 +121,7 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
     try {
       const all = await listAdminItems({ client, list, select: TEMPLATE_STYLES_FIELDS, orderby: "Template" });
       const styles = listTemplateStylesByClient(all, { clientId: CLIENT_ID });
+      loadedStyles = styles;
       renderTable(styles);
       if (pendingTask != null) {
         const targetId = pendingTask;
@@ -125,7 +134,6 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
     }
   }
 
-  bind(reloadButton, reload);
   reload();
-  return { dispose() { panel.remove(); } };
+  return { dispose() { toolbar.dispose(); panel.remove(); } };
 }

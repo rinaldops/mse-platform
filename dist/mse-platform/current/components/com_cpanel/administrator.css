@@ -24,7 +24,21 @@
    retangulares e têm cantos retos") — nenhuma exceção documentada foi
    aberta para esta tarefa. Sombras/brilhos evitados (mesmo documento: "Evitar
    sombras, reflexos, brilhos e efeitos decorativos exagerados") — hierarquia
-   visual vem de espaço, borda e cor sólida, não de `box-shadow`. */
+   visual vem de espaço, borda e cor sólida, não de `box-shadow`.
+
+   Fidelidade visual ao Joomla! 6.2 real (24/10/2026 — usuário comparou com
+   https://.../administrator e anexou 5 screenshots do backend `atum` real,
+   "ainda está longe do layout correto"): o Joomla real usa um navy/
+   quase-preto na sidebar — fora do alcance desta paleta (os 8 tokens de
+   CAMAP-AGP/theme/tokens.css não têm nada mais escuro que `--camap-ocean`,
+   e inventar um token novo está fora de escopo/viola a identidade de marca
+   já declarada). DECISÃO: `--camap-ocean` é usado como a aproximação mais
+   escura disponível para o fundo da sidebar (`__nav`), com texto/ícones em
+   `--camap-white` por cima — esta é a ÚNICA divergência deliberada de
+   fidelidade pixel-a-pixel ao Joomla nesta rodada; o resto (sidebar em
+   altura total/sticky, grupos colapsados por padrão, header fino em estilo
+   breadcrumb, tiles mais compactos) segue a referência real o mais de perto
+   possível dentro desta paleta. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -32,26 +46,80 @@
 
 /* --- Shell formal do Administrator (components/com_cpanel/administrator-shell.js,
    análogo ao template de backend `atum` do Joomla! real): cabeçalho +
-   navegação lateral persistente + slot de conteúdo. ----------------------- */
+   navegação lateral persistente + slot de conteúdo.
+
+   Sidebar em altura total/sticky (24/10/2026 — fidelidade ao Joomla! real):
+   `__nav` usa `position: sticky; height: 100vh` para acompanhar o scroll da
+   tela, análogo à sidebar fixa do `atum` real. Isso só funciona se existir
+   um ancestro com altura estabelecida até o viewport — por isso o pacote de
+   template do site precisa declarar `min-height: 100vh` na classe aplicada
+   quando o Administrator está ativo (ver
+   CAMAP-AGP/templates/camap-tema-01/css/administrator.css,
+   `.camap-template__shell--admin-active`); sem esse ancestro, `100vh`/
+   `sticky` aqui não têm "trilho" e a sidebar volta a rolar junto com o
+   conteúdo (degradação graciosa, não quebra nada). ------------------------- */
 
 .mse-administrator-shell__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 4px solid var(--camap-sun, #FDC82F);
-  background: var(--camap-ocean, #006298);
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--camap-grey-light, #E3E9ED);
+  background: var(--camap-white, #FFFFFF);
 }
-.mse-administrator-shell__brand { display: flex; align-items: center; gap: 10px; color: var(--camap-white, #FFFFFF); font-size: 1.15rem; }
+.mse-administrator-shell__header-icon { display: inline-flex; flex: 0 0 auto; width: 20px; height: 20px; color: var(--camap-ocean, #006298); }
+.mse-administrator-shell__header-icon svg { width: 100%; height: 100%; }
+.mse-administrator-shell__header-title { color: var(--camap-ocean, #006298); font-size: 1rem; font-weight: 700; }
+.mse-administrator-shell__brand { display: flex; align-items: center; gap: 10px; color: var(--camap-white, #FFFFFF); font-size: 1.15rem; margin-bottom: 8px; }
 .mse-administrator-shell__brand-icon { display: inline-flex; width: 26px; height: 26px; color: var(--camap-sun, #FDC82F); }
 .mse-administrator-shell__brand-icon svg { width: 100%; height: 100%; }
 .mse-administrator-shell__brand-label { font-weight: 700; letter-spacing: .02em; }
-.mse-administrator-shell__tagline { color: var(--camap-white, #FFFFFF); font-size: .8rem; opacity: .85; }
+.mse-administrator-shell__tagline { display: block; color: var(--camap-white, #FFFFFF); font-size: .8rem; opacity: .85; margin-bottom: 12px; }
 
-.mse-administrator-shell__body { display: grid; grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); gap: 0; align-items: start; }
+.mse-administrator-shell__body { display: grid; grid-template-columns: minmax(200px, 240px) minmax(0, 1fr); gap: 0; align-items: start; min-height: 100vh; }
 
-.mse-administrator-shell__nav { display: flex; flex-direction: column; gap: 2px; padding: 16px 12px; border-right: 1px solid var(--camap-grey-light, #E3E9ED); background: var(--camap-white, #FFFFFF); }
+.mse-administrator-shell__nav { display: flex; flex-direction: column; gap: 2px; padding: 16px 12px; border-right: none; background: var(--camap-ocean, #006298); position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; }
+
+/* Toggle "Recolher Menu" (item 1.4 — fidelidade ao Joomla! real, o `atum`
+   real tem um controle fixo no topo da sidebar para recolher a navegação
+   para só-ícones). Quando `__nav--collapsed` está presente, a nav encolhe
+   para largura só-ícone e os textos (labels de link/grupo, marca, rótulo do
+   próprio toggle) ficam ocultos — os ícones continuam visíveis. O estado
+   `expanded`/`collapsed` de cada GRUPO individual não é afetado por esta
+   classe (ela só esconde via CSS, nunca reseta o estado interno de um
+   grupo). */
+.mse-administrator-shell__collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--camap-hover, #F2F7FA);
+  background: transparent;
+  color: var(--camap-white, #FFFFFF);
+  font: inherit;
+  font-size: .82rem;
+  text-align: left;
+  cursor: pointer;
+}
+.mse-administrator-shell__collapse-toggle:hover { background: var(--camap-hover, #F2F7FA); color: var(--camap-ocean, #006298); }
+.mse-administrator-shell__collapse-toggle:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
+.mse-administrator-shell__collapse-icon { display: inline-flex; flex: 0 0 auto; width: 16px; height: 16px; }
+.mse-administrator-shell__collapse-icon svg { width: 100%; height: 100%; transition: transform .15s ease; }
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__collapse-icon svg { transform: rotate(180deg); }
+.mse-administrator-shell__collapse-label { min-width: 0; }
+
+.mse-administrator-shell__nav--collapsed { width: 56px; padding-inline: 8px; }
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__brand-label,
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__tagline,
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__collapse-label,
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__nav-label,
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__group-label {
+  display: none;
+}
+.mse-administrator-shell__nav--collapsed .mse-administrator-shell__group-items { padding-left: 0; }
+
 .mse-administrator-shell__nav-link {
   display: flex;
   align-items: center;
@@ -59,15 +127,15 @@
   padding: 10px 12px;
   border: 1px solid transparent;
   border-left: 4px solid transparent;
-  color: var(--camap-ocean, #006298);
+  color: var(--camap-white, #FFFFFF);
   font-weight: 600;
   text-decoration: none;
 }
 .mse-administrator-shell__nav-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; }
 .mse-administrator-shell__nav-icon svg { width: 100%; height: 100%; }
 .mse-administrator-shell__nav-label { min-width: 0; }
-.mse-administrator-shell__nav-link:hover { background: var(--camap-hover, #F2F7FA); }
-.mse-administrator-shell__nav-link[aria-current="page"] { background: var(--camap-hover, #F2F7FA); border-color: var(--camap-grey-light, #E3E9ED); border-left-color: var(--camap-sun, #FDC82F); font-weight: 700; }
+.mse-administrator-shell__nav-link:hover { background: var(--camap-hover, #F2F7FA); color: var(--camap-ocean, #006298); }
+.mse-administrator-shell__nav-link[aria-current="page"] { background: var(--camap-hover, #F2F7FA); color: var(--camap-ocean, #006298); border-color: var(--camap-grey-light, #E3E9ED); border-left-color: var(--camap-sun, #FDC82F); font-weight: 700; }
 .mse-administrator-shell__nav-link:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
 
 /* Grupos colapsáveis da sidebar (24/10/2026 — administrator-shell.js#ADMINISTRATOR_NAV_GROUPS,
@@ -83,18 +151,18 @@
   padding: 10px 12px;
   border: none;
   background: transparent;
-  color: var(--camap-ocean, #006298);
+  color: var(--camap-white, #FFFFFF);
   font: inherit;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
 }
-.mse-administrator-shell__group-toggle:hover { background: var(--camap-hover, #F2F7FA); }
+.mse-administrator-shell__group-toggle:hover { background: var(--camap-hover, #F2F7FA); color: var(--camap-ocean, #006298); }
 .mse-administrator-shell__group-toggle:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 2px; }
 .mse-administrator-shell__group-icon { display: inline-flex; flex: 0 0 auto; width: 16px; height: 16px; }
 .mse-administrator-shell__group-icon svg { width: 100%; height: 100%; }
 .mse-administrator-shell__group-label { min-width: 0; text-transform: uppercase; font-size: .78rem; letter-spacing: .04em; }
-.mse-administrator-shell__group--active .mse-administrator-shell__group-toggle { color: var(--camap-ocean, #006298); border-left: 4px solid var(--camap-sun, #FDC82F); padding-left: 8px; }
+.mse-administrator-shell__group--active .mse-administrator-shell__group-toggle { background: var(--camap-hover, #F2F7FA); color: var(--camap-ocean, #006298); border-left: 4px solid var(--camap-sun, #FDC82F); padding-left: 8px; }
 .mse-administrator-shell__group-items { display: flex; flex-direction: column; gap: 2px; padding-left: 14px; }
 
 .mse-administrator-shell__content { min-width: 0; }
@@ -123,12 +191,17 @@
 
 .mse-administrator__card-group { margin-top: 28px; }
 .mse-administrator__card-group-title { color: var(--camap-ocean, #006298); margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--camap-grey-light, #E3E9ED); font-size: 1rem; text-transform: uppercase; letter-spacing: .04em; }
-.mse-administrator__cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 0; }
+/* Tiles mais compactos (item 3 — fidelidade ao Joomla! real: o Painel
+   Principal do `atum` real usa tiles menores e mais densos que o grid
+   original aqui; mantém-se a descrição sob cada card — ver decisão
+   documentada no plano desta rodada, por usabilidade — só o ritmo visual
+   (coluna mínima/gap/padding/tipografia) foi comprimido). */
+.mse-administrator__cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-top: 0; }
 .mse-administrator__card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid var(--camap-grey-light, #E3E9ED);
   border-top: 4px solid var(--camap-ocean, #006298);
   background: var(--camap-white, #FFFFFF);
@@ -140,7 +213,7 @@
 .mse-administrator__card-icon { display: inline-flex; width: 28px; height: 28px; color: var(--camap-ocean, #006298); }
 .mse-administrator__card-icon svg { width: 100%; height: 100%; }
 .mse-administrator__card-title { font-size: 1rem; font-weight: 700; }
-.mse-administrator__card-description { color: var(--camap-line, #75787B); font-size: .88rem; }
+.mse-administrator__card-description { color: var(--camap-line, #75787B); font-size: .82rem; }
 
 /* --- Tabelas de coleção (com_extensions/com_menus/com_modules/com_config/
    com_templates/publisher): cabeçalho destacado, zebra, hover, badges de
@@ -171,6 +244,8 @@
 
 .mse-administrator__publisher-list { overflow-x: auto; }
 .mse-administrator__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0; }
+.mse-administrator__toolbar-search { min-height: 36px; min-width: 220px; border: 1px solid var(--camap-line, #75787B); background: var(--camap-white, #FFFFFF); color: var(--camap-ocean, #006298); padding: 7px 10px; font: inherit; }
+.mse-administrator__toolbar-search:focus-visible { outline: 3px solid var(--camap-sun, #FDC82F); outline-offset: 1px; }
 .mse-administrator__publisher-form { border-top: 3px solid var(--camap-green, #008542); margin-top: 24px; padding-top: 20px; }
 
 /* --- Formulários (editores CRUD): 2 colunas em telas largas para campos

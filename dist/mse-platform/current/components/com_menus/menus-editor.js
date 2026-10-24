@@ -1,6 +1,7 @@
 import { createAdminItem, deleteAdminItem, listAdminItems, updateAdminItem } from "../../kernel/admin-data.js";
 import { buildFormFields } from "../../kernel/admin-form.js";
 import { MSE_MENU_SCHEMA } from "../../kernel/schemas/mse-menu.js";
+import { createAdministratorToolbar } from "../com_cpanel/administrator-toolbar.js";
 
 const ESTADOS = ["Published", "Unpublished", "Trashed"];
 const ABRIR_EM = ["SameTab", "NewTab"];
@@ -60,8 +61,14 @@ export function renderMenusEditor({ root, route, services = {} } = {}) {
   const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__menus";
   const error = text(document, "p"); error.className = "mse-administrator__error";
   const tableHost = document.createElement("div"); const formHost = document.createElement("div");
-  const toolbar = document.createElement("div"); const newButton = text(document, "button", "Novo item"); const reloadButton = text(document, "button", "Recarregar"); toolbar.append(newButton, reloadButton);
-  panel.append(text(document, "h2", "Itens de menu"), error, toolbar, tableHost, formHost); root.append(panel);
+  let searchTerm = ""; let loadedItems = [];
+  const toolbar = createAdministratorToolbar({
+    root: panel,
+    primaryActions: [{ label: "Novo item", onClick: () => { currentId = null; form(); } }],
+    secondaryActions: [{ label: "Recarregar", onClick: () => reload() }],
+    search: { placeholder: "Buscar item de menu...", onInput: (value) => { searchTerm = value; render(loadedItems); } }
+  });
+  panel.append(text(document, "h2", "Itens de menu"), error, tableHost, formHost); root.append(panel);
   let currentId = null; let controls = {};
   // `route.task`/`route.id` só são aplicados uma vez, no primeiro
   // carregamento — mesmo padrão de components/com_templates/templates-editor.js.
@@ -84,13 +91,16 @@ export function renderMenusEditor({ root, route, services = {} } = {}) {
     const save = text(document, "button", "Salvar"); const cancel = text(document, "button", "Cancelar"); bindClick(cancel, () => { currentId = null; form(); }); bindClick(save, async () => { error.textContent = ""; try { const values = validateMenuValues(read()); if (currentId == null) await createAdminItem({ client, list, values }); else await updateAdminItem({ client, list, id: currentId, values }); currentId = null; form(); await reload(); } catch (e) { error.textContent = message("Falha ao salvar", e); } }); box.append(save, cancel); formHost.append(box); }
   function render(items) {
     clear(tableHost);
+    const term = searchTerm.trim().toLowerCase();
+    const visible = term ? items.filter((item) => [item.Title, item.Alias, item.Component, item.View].some((value) => String(value ?? "").toLowerCase().includes(term))) : items;
     const table = document.createElement("table");
+    table.className = "mse-administrator__table";
     const head = document.createElement("tr");
     for (const heading of ["Título", ...MENU_FORM_FIELDS.map((field) => field.label), "Ações"]) {
       head.append(text(document, "th", heading));
     }
     table.append(head);
-    for (const item of items) {
+    for (const item of visible) {
       const row = document.createElement("tr");
       for (const value of [item.Title, item.Alias, item.MenuType, item.ParentId, item.Path, item.Level, item.Ordering, item.Component, item.View, item.ParamsJson]) {
         row.append(text(document, "td", String(value ?? "")));
@@ -125,6 +135,7 @@ export function renderMenusEditor({ root, route, services = {} } = {}) {
     if (!client || !list) { error.textContent = "Client administrativo ou lista MSEMenu não configurado."; return; }
     try {
       const items = await listAdminItems({ client, list, select: ["Id", "Title", "Alias", "MenuType", "ParentId", "Path", "Level", "Ordering", "Component", "View", "ParamsJson", "Default", "Target", "Published"], orderby: "Ordering" });
+      loadedItems = items;
       render(items);
       if (pendingTask != null) {
         const { task, id } = pendingTask;
@@ -136,5 +147,5 @@ export function renderMenusEditor({ root, route, services = {} } = {}) {
       }
     } catch (e) { error.textContent = message("Falha ao carregar menus", e); }
   }
-  bindClick(newButton, () => { currentId = null; form(); }); bindClick(reloadButton, reload); form(); reload(); return { dispose() { panel.remove(); } };
+  form(); reload(); return { dispose() { toolbar.dispose(); panel.remove(); } };
 }
