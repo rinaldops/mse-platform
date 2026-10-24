@@ -2,8 +2,52 @@ import assert from "node:assert/strict";
 import {
   buildAdministratorServices,
   createTemplateResolver,
-  createTemplateLayoutResolver
+  createTemplateLayoutResolver,
+  resolveKernelListIds
 } from "../site-boot.js";
+
+// --- resolveKernelListIds: MSECategories/MSETags/MSEMedia entram no mapa
+// resolvido (regressão 25/10/2026 — gap encontrado antes da Wave 2: estas 3
+// listas eram provisionadas por kernel/installer.js e lidas por
+// `services.listIds.MSECategories`/`MSETags`/`MSEMedia`
+// (com_categories/com_tags/com_media), mas nunca entravam em
+// CONTENT_LIST_INTERNAL_NAMES — em produção, chegavam sempre `undefined`) --
+{
+  const catalog = [
+    { Id: "menu-guid", RootFolder: { Name: "MSEMenu" } },
+    { Id: "extensions-guid", RootFolder: { Name: "MSEExtensions" } },
+    { Id: "modules-guid", RootFolder: { Name: "MSEModules" } },
+    { Id: "modules-menu-guid", RootFolder: { Name: "MSEModulesMenu" } },
+    { Id: "categories-guid", RootFolder: { Name: "MSECategories" } },
+    { Id: "tags-guid", RootFolder: { Name: "MSETags" } },
+    { Id: "media-guid", RootFolder: { Name: "MSEMedia" } }
+  ];
+  const client = { request: async () => ({ data: { value: catalog } }) };
+  const resolved = await resolveKernelListIds(client);
+  assert.equal(resolved.MSECategories, "categories-guid");
+  assert.equal(resolved.MSETags, "tags-guid");
+  assert.equal(resolved.MSEMedia, "media-guid");
+  console.log("site-boot.test.js: resolveKernelListIds resolve MSECategories/MSETags/MSEMedia ok.");
+}
+
+// --- resolveKernelListIds: ausência de uma lista de conteúdo opcional (ex.:
+// site que ainda não rodou a migração do kernel) não lança — o mapa
+// simplesmente não traz a chave ausente (mesmo tratamento já existente de
+// MSETemplateStyles) ---------------------------------------------------------
+{
+  const catalog = [
+    { Id: "menu-guid", RootFolder: { Name: "MSEMenu" } },
+    { Id: "extensions-guid", RootFolder: { Name: "MSEExtensions" } },
+    { Id: "modules-guid", RootFolder: { Name: "MSEModules" } },
+    { Id: "modules-menu-guid", RootFolder: { Name: "MSEModulesMenu" } }
+  ];
+  const client = { request: async () => ({ data: { value: catalog } }) };
+  const resolved = await resolveKernelListIds(client);
+  assert.equal(resolved.MSECategories, undefined);
+  assert.equal(resolved.MSETags, undefined);
+  assert.equal(resolved.MSEMedia, undefined);
+  console.log("site-boot.test.js: resolveKernelListIds tolera ausência de listas de conteúdo opcionais ok.");
+}
 
 // Este arquivo cobre só a parte NOVA de site-boot.js (Templates:
 // createTemplateResolver + o resolveLayout adaptado para o shape de

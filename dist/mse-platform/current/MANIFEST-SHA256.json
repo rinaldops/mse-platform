@@ -8,8 +8,8 @@
     },
     {
       "path": "host-adapters/modern-script-editor/site-boot.js",
-      "bytes": 29805,
-      "sha256": "fd41981296fa733c383ff50901837b3581b2ce5f4724050b8bb84cce37f0c665"
+      "bytes": 30433,
+      "sha256": "742e8aec4a8256dc2f10179aefd53dbe699cbbc53090479db28d4994e1866856"
     },
     {
       "path": "kernel/application.js",

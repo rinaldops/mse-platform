@@ -69,7 +69,15 @@ const KERNEL_LIST_INTERNAL_NAMES = Object.freeze(["MSEMenu", "MSEExtensions", "M
 // components/com_config/config-editor.js), sem mudar como
 // core/configuration-store.js é lido (ele resolve seu próprio listId por
 // Title, de forma independente).
-const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes", "MSETemplateStyles"]);
+// MSECategories/MSETags/MSEMedia (kernel/schemas/mse-categories.js,
+// mse-tags.js, mse-media.js — componentes com_categories/com_tags/com_media
+// do Administrator) acrescentadas aqui: gap encontrado antes da Wave 2
+// (25/10/2026) — estavam provisionadas por kernel/installer.js e lidas por
+// `services.listIds.MSECategories`/`MSETags`/`MSEMedia` (ver
+// `components/com_categories/categories-editor.js` etc.), mas nunca
+// resolvidas aqui, então `listIds` chegava sempre `undefined` para essas 3
+// listas em produção (as telas quebravam com "lista não configurada").
+const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCategorias", "CAMAPTags", "CAMAPPublicacaoTags", "MSEConfiguracoes", "MSETemplateStyles", "MSECategories", "MSETags", "MSEMedia"]);
 // MSETemplateStyles (22/10/2026, ampliação de escopo — Templates
 // instaláveis/registro ≈ #__template_styles) entra na lista OPCIONAL por
 // propósito: sites que ainda não rodaram a migração
@@ -98,7 +106,7 @@ const CONTENT_LIST_INTERNAL_NAMES = Object.freeze(["CAMAPPublicacoes", "CAMAPCat
  * @param {ReturnType<typeof createSharePointRestClient>} client
  * @returns {Promise<Record<string, string>>} mapa `internalName -> listId`
  */
-async function resolveKernelListIds(client) {
+export async function resolveKernelListIds(client) {
   const result = await client.request(
     "/_api/web/lists?$select=Id,RootFolder/Name&$expand=RootFolder&$top=5000"
   );
