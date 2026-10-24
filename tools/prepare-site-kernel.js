@@ -122,6 +122,7 @@ const FILES = [
   "components/com_cpanel/router.js",
   "components/com_cpanel/administrator.css",
   "components/com_cpanel/administrator-shell.js",
+  "components/com_cpanel/administrator-toolbar.js",
   "components/com_cpanel/control-panel.js",
   "components/com_extensions/extensions-screen.js",
   "components/com_extensions/extensions-editor.js",
