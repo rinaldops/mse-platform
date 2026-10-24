@@ -37,6 +37,7 @@ const CARD_DESCRIPTIONS = Object.freeze({
   com_diagnostics: "Verifica a saúde estrutural do site e permissões efetivas.",
   com_content: "Cria, edita e publica artigos do site.",
   com_categories: "Organiza o conteúdo em categorias hierárquicas.",
+  com_media: "Gerencia os arquivos de mídia (imagens e documentos) do site.",
   com_extensions: "Gerencia componentes, módulos, plugins e templates instalados.",
   com_menus: "Organiza os itens de menu e a navegação do site.",
   com_modules: "Posiciona e configura instâncias de módulo nas páginas.",

@@ -39,6 +39,12 @@
  * para evoluir no futuro (paginação de UI, cache por lista, etc.) sem
  * precisar localizar e ajustar todas as telas que hoje chamariam
  * `client.getListItems` diretamente.
+ *
+ * `uploadAdminFile` é o mesmo princípio de wrapper fino, só que sobre
+ * `client.uploadFile` — usado pelo component `com_media` (`MSEMedia`, uma
+ * biblioteca `template: 101`) para enviar arquivos. Diferente de
+ * `createAdminItem`, não cria um item de lista comum: o próprio upload já
+ * cria o item correspondente na biblioteca (ver `core/rest.js#uploadFile`).
  */
 
 /** Campo mínimo universal usado só para obter a ETag atual de um item. */
@@ -201,4 +207,27 @@ export async function deleteAdminItem({ client, list, id } = {}) {
   requireId(id);
   const { etag } = await client.getListItem(list, id, { select: ETAG_SELECT });
   return client.deleteListItem(list, id, { etag });
+}
+
+/**
+ * Envia um arquivo para a biblioteca de documentos `list` — wrapper fino
+ * sobre `client.uploadFile(list, { fileName, content, contentType })`
+ * (ver `core/rest.js`, método usado pelo gerenciador de mídia do
+ * Administrator — `components/com_media/media-editor.js`). Nenhuma
+ * validação de `fileName`/`content`/`contentType` é duplicada aqui: isso
+ * já é feito por `core/rest.js#uploadFile` no momento da chamada real.
+ *
+ * @param {{
+ *   client: { uploadFile: Function },
+ *   list: {listId: string},
+ *   fileName: string,
+ *   content: ArrayBuffer|ArrayBufferView|Blob,
+ *   contentType?: string
+ * }} options
+ * @returns {Promise<{ file: object, serverRelativeUrl: string, etag: string|null, status: number }>}
+ */
+export async function uploadAdminFile({ client, list, fileName, content, contentType } = {}) {
+  requireClient(client, ["uploadFile"]);
+  requireList(list);
+  return client.uploadFile(list, { fileName, content, contentType });
 }
