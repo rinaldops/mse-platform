@@ -104,6 +104,14 @@ const FILES = [
   "kernel/schemas/mse-menu-types.js",
   "kernel/schemas/mse-modules-menu.js",
   "kernel/schemas/mse-template-styles.js",
+  // 24/10/2026 — faltavam nesta lista explícita (causa raiz de um boot
+  // quebrado em produção: `kernel/installer.js` importa os 3 na raiz do
+  // módulo, então qualquer import dele falhava com 404 antes de qualquer
+  // outra coisa acontecer, inclusive o `component.js` do Administrator,
+  // que depende de `kernel/installer.js` via `site-boot.js#buildAdministratorServices`).
+  "kernel/schemas/mse-categories.js",
+  "kernel/schemas/mse-tags.js",
+  "kernel/schemas/mse-media.js",
   "kernel/installer.js",
   "kernel/template-registry.js",
   "core/list-provisioning.js",
@@ -140,6 +148,18 @@ const FILES = [
   "components/com_diagnostics/diagnostics.js",
   "kernel/administrator-diagnostics.js",
   "kernel/administrator-permissions.js",
+  // 24/10/2026 — com_categories/com_tags/com_media faltavam nesta lista
+  // explícita (mesma causa raiz do comentário acima sobre os 3 schemas):
+  // `components/com_cpanel/component.js` importa os 3 `*-screen.js` na raiz
+  // do módulo (SCREEN_RENDERERS), então qualquer navegação para o
+  // Administrator falhava ao importar o Componente inteiro, mesmo para
+  // option=com_cpanel/com_menus/etc. — não só para estas 3 telas.
+  "components/com_categories/categories-screen.js",
+  "components/com_categories/categories-editor.js",
+  "components/com_tags/tags-screen.js",
+  "components/com_tags/tags-editor.js",
+  "components/com_media/media-screen.js",
+  "components/com_media/media-editor.js",
 ];
 
 // Mesmas regras de `tools/build-release.js`: nenhum arquivo publicado pode

@@ -52,8 +52,10 @@
  * com itens repetidos" nesta rodada). `ADMINISTRATOR_NAV_GROUPS` declara a
  * qual grupo cada `option` pertence — `com_cpanel` fica de fora (é o link
  * solto do topo, nunca um grupo). Mapeamento Joomla! real → mse-platform:
- * - "Conteúdo" → com_content (Publicador/Artigos); Mídia/Campos/Grupos de
- *   Campos do Joomla! real não têm equivalente implementado ainda.
+ * - "Conteúdo" → com_content (Publicador/Artigos), com_categories
+ *   (Categorias), com_tags (Tags) e com_media (gerenciador de mídia);
+ *   Campos/Grupos de Campos do Joomla! real não têm equivalente
+ *   implementado ainda.
  * - "Menus" → com_menus (igual ao Joomla! real, 1:1).
  * - "Sistema" → com_extensions/com_modules/com_templates (no Joomla! real
  *   vivem sob "Sistema > Gerenciar/Temas", não sob "Componentes" — ver
@@ -64,11 +66,9 @@
  *   "Sistema > Instalar", adaptado para o provisionamento de listas do
  *   kernel).
  * "Componentes" e "Usuários" do Joomla! real não têm grupo equivalente
- * aqui de propósito: `components/com_categories|com_media|com_tags`
- * seguem reservados sem implementação (ver seus README.md), e gestão de
- * usuário é uma decisão arquitetural já declarada (SharePoint é a
- * autoridade de permissão, não um `com_users` próprio) — não é uma lacuna
- * a preencher nesta rodada.
+ * aqui de propósito: gestão de usuário é uma decisão arquitetural já
+ * declarada (SharePoint é a autoridade de permissão, não um `com_users`
+ * próprio) — não é uma lacuna a preencher nesta rodada.
  *
  * @param {{ root: Element, activeOption?: string }} options
  * @returns {{ contentElement: Element, dispose(): void }}
@@ -76,6 +76,9 @@
 export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
   ["com_cpanel", "Painel"],
   ["com_content", "Publicador"],
+  ["com_categories", "Categorias"],
+  ["com_tags", "Tags"],
+  ["com_media", "Mídia"],
   ["com_menus", "Menus"],
   ["com_extensions", "Extensões"],
   ["com_modules", "Módulos"],
@@ -93,7 +96,7 @@ export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
 // por teste em administrator-shell.test.js). `com_cpanel` nunca aparece
 // aqui: é o único link que fica fora de qualquer grupo.
 export const ADMINISTRATOR_NAV_GROUPS = Object.freeze([
-  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content"]) },
+  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content", "com_categories", "com_tags", "com_media"]) },
   { key: "menus", label: "Menus", options: Object.freeze(["com_menus"]) },
   {
     key: "system",
@@ -123,11 +126,14 @@ export const ADMINISTRATOR_NAV_ICON_PATHS = Object.freeze({
   com_config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3.09 12H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 1.6a1.65 1.65 0 0 0 1-1.51V0"/>',
   com_diagnostics: '<path d="M9 11.5 11 13.5 15.5 9"/><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z"/>',
   com_content: '<path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8 12h8M8 16h8M8 8h3"/>',
+  com_categories: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  com_media: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M4 17l5-5 4 4 3-3 4 4"/>',
   com_extensions: '<path d="M9 3h2a1 1 0 0 1 1 1v1.5a1.5 1.5 0 0 0 3 0V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1.5a1.5 1.5 0 0 0 0 3H19a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1.5a1.5 1.5 0 0 0-3 0V14a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1.5a1.5 1.5 0 0 0 0-3H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>',
   com_menus: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>',
   com_modules: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
   com_templates: '<rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/>',
-  com_installer: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>'
+  com_installer: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>',
+  com_tags: '<path d="M20.59 13.41 12.41 21.6a2 2 0 0 1-2.83 0l-7.17-7.17a2 2 0 0 1 0-2.83L10.59 3.4A2 2 0 0 1 12 2.83H20a1 1 0 0 1 1 1v7.76a2 2 0 0 1-.41 1.21z"/><circle cx="16.5" cy="7.5" r="1.5"/>'
 });
 
 function createIcon(document, option) {
@@ -295,12 +301,18 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   });
   nav.append(collapseToggle);
 
+  // Links de navegação por `option` (soltos + agrupados) — guardados para
+  // `setActiveOption` poder migrar `aria-current` sem reconstruir o shell.
+  const navLinksByOption = new Map();
+
   // "Painel" (com_cpanel) fica solto no topo, fora de qualquer grupo —
   // mesmo papel do item "Painel Principal" no backend `atum` do Joomla!
   // real (nunca pertence a uma categoria).
   for (const [option, label] of ADMINISTRATOR_NAV_LINKS) {
     if (groupedOptions.has(option)) continue;
-    nav.append(createNavLink(document, option, label, activeOption));
+    const link = createNavLink(document, option, label, activeOption);
+    navLinksByOption.set(option, link);
+    nav.append(link);
   }
 
   // Grupos colapsáveis — cada cabeçalho é um <button> (não <a>: o teste
@@ -309,6 +321,12 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   // grupo não pode ser um link navegável, só um controle de
   // expandir/recolher — mesmo papel do "has-arrow" do atum, que também não
   // navega, só expande).
+  //
+  // `groupControllers` guarda, por grupo, o necessário para
+  // `setActiveOption` (abaixo) poder expandir/recolher o grupo certo ao
+  // trocar de tela SEM reconstruir o shell inteiro — mesma função
+  // `applyExpanded` já usada na montagem inicial, só reaproveitada depois.
+  const groupControllers = [];
   for (const group of ADMINISTRATOR_NAV_GROUPS) {
     const groupActive = group.options.includes(activeOption);
     const section = document.createElement("div");
@@ -330,7 +348,9 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
     for (const option of group.options) {
       const label = labelByOption.get(option);
       if (label == null) continue;
-      sublist.append(createNavLink(document, option, label, activeOption));
+      const link = createNavLink(document, option, label, activeOption);
+      navLinksByOption.set(option, link);
+      sublist.append(link);
     }
 
     let expanded = groupActive;
@@ -347,6 +367,15 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
 
     section.append(toggle, sublist);
     nav.append(section);
+
+    groupControllers.push({
+      options: group.options,
+      setExpanded(value) {
+        expanded = value;
+        applyExpanded();
+        section.classList.toggle("mse-administrator-shell__group--active", value);
+      }
+    });
   }
 
   const content = document.createElement("div");
@@ -355,8 +384,44 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   body.append(nav, content);
   root.append(header, body);
 
+  let currentActiveOption = activeOption;
+
+  /**
+   * Atualiza header (ícone+título), link ativo (`aria-current`) e
+   * expansão de grupo para refletir uma nova `option`, SEM reconstruir o
+   * shell (sem `root.replaceChildren()`) — usado por
+   * `components/com_cpanel/component.js#update()` ao trocar de tela
+   * internamente no Administrator (ver `kernel/application.js`, hook
+   * `update()` do contrato de entrypoint) para que a sidebar/header
+   * permaneçam visíveis durante a troca, em vez de desaparecer e
+   * reaparecer a cada navegação interna (bug relatado: "vários links não
+   * estão funcionando" — na realidade, o shell inteiro desmontava e
+   * remontava a cada clique).
+   *
+   * @param {string} option
+   */
+  function setActiveOption(option) {
+    if (option === currentActiveOption) return;
+    currentActiveOption = option;
+
+    for (const [linkOption, link] of navLinksByOption) {
+      if (linkOption === option) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+
+    if (headerIcon) {
+      headerIcon.innerHTML = createIcon(document, option)?.innerHTML ?? "";
+    }
+    headerTitle.textContent = labelByOption.get(option) || "Administrator";
+
+    for (const controller of groupControllers) {
+      controller.setExpanded(controller.options.includes(option));
+    }
+  }
+
   return {
     contentElement: content,
+    setActiveOption,
     dispose() {
       root.replaceChildren();
       root.classList.remove("mse-administrator-shell");

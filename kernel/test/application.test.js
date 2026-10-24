@@ -1199,4 +1199,205 @@ function fixtureRegistry({ onComponentMount, onModuleMount, failComponent = fals
   console.log("application.test.js: Componente sem manifest.styles não toca document.head ok.");
 }
 
+// --- fast-path de navegação interna (25/10/2026 — corrige o bug real por
+// trás de "vários links não estão funcionando": um Componente
+// "guarda-chuva" como o Administrator, com uma única rota de menu
+// (`alias="administrator"`) para todas as suas telas internas (`option=
+// com_xxx` via query string), resolve sempre o MESMO par (componente, view)
+// a cada navegação interna. Quando o entrypoint montado expõe `update()`,
+// `renderComponent` deve chamar `update({context,...})` em vez de desmontar
+// e remontar o Componente inteiro -------------------------------------------
+
+function fixtureMenuItemsComAdministrator() {
+  return [
+    ...fixtureMenuItems(),
+    { Id: 4, Title: "Administrator", Alias: "administrator", ParentId: 0, Component: "administrator", View: null, ParamsJson: null, Default: false, Published: "Published" }
+  ];
+}
+
+function fixtureExtensionsComAdministrator() {
+  return [...fixtureExtensions(), { Title: "Administrator", Type: "Component", Element: "administrator", Version: "1.0.0", Enabled: true, Protected: false }];
+}
+
+function fixtureAdministratorRegistry({ onMount, onUpdate, onDispose, withUpdate = true } = {}) {
+  const manifestUrl = (elemento) => `https://example.invalid/${elemento}/manifest.js`;
+  const registryModules = new Map([
+    [manifestUrl("administrator"), {
+      default: { id: "administrator", type: "component", entrypoints: { full: "./full.js" } }
+    }],
+    ["https://example.invalid/administrator/full.js", {
+      async mount({ root, config, context }) {
+        onMount?.({ root, config, context });
+        root.setAttribute("data-mounted", "administrator");
+        root.setAttribute("data-mount-count", String((Number(root.getAttribute("data-mount-count")) || 0) + 1));
+        return {
+          dispose: () => onDispose?.(),
+          ...(withUpdate ? { update: ({ context: nextContext, config: nextConfig }) => onUpdate?.({ context: nextContext, config: nextConfig }) } : {})
+        };
+      }
+    }]
+  ]);
+  async function importModule(url) {
+    const found = registryModules.get(url);
+    if (!found) throw new Error(`Módulo de teste não registrado: ${url}`);
+    return found;
+  }
+  return { importModule, resolveManifestUrl: manifestUrl };
+}
+
+{
+  const root = createRoot();
+  const window = createWindow("#/administrator?option=com_cpanel");
+  const mountCalls = [];
+  const updateCalls = [];
+  const disposeCalls = [];
+  const { importModule, resolveManifestUrl } = fixtureAdministratorRegistry({
+    onMount: (info) => mountCalls.push(info),
+    onUpdate: (info) => updateCalls.push(info),
+    onDispose: () => disposeCalls.push(true)
+  });
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: [],
+    loadMenu: async () => fixtureMenuItemsComAdministrator(),
+    loadExtensions: async () => fixtureExtensionsComAdministrator(),
+    loadModulos: async () => [],
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  assert.equal(mountCalls.length, 1, "1º render monta por completo");
+  assert.equal(mountCalls[0].context.params.option, "com_cpanel");
+
+  const [componentElement] = root.children;
+  assert.equal(componentElement.getAttribute("data-mount-count"), "1");
+
+  // Navegação interna: MESMO alias ("administrator"), só muda `option` na
+  // query string — mesmo par (componente, view) resolvido pelo dispatcher.
+  dispatchHashChange(window, "#/administrator?option=com_menus");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(mountCalls.length, 1, "navegação interna NÃO remonta o Componente (continua só 1 mount)");
+  assert.equal(disposeCalls.length, 0, "dispose() do Componente NÃO é chamado entre navegações internas");
+  assert.equal(updateCalls.length, 1, "update() é chamado 1x na navegação interna");
+  assert.equal(updateCalls[0].context.params.option, "com_menus", "update() recebe o context com a nova option");
+  assert.equal(componentElement.getAttribute("data-mount-count"), "1", "o próprio elemento do Componente não foi recriado/remontado");
+
+  dispatchHashChange(window, "#/administrator?option=com_extensions");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(mountCalls.length, 1, "2ª navegação interna também não remonta");
+  assert.equal(updateCalls.length, 2, "update() chamado novamente na 2ª navegação interna");
+  assert.equal(updateCalls[1].context.params.option, "com_extensions");
+
+  await app.dispose();
+  assert.equal(disposeCalls.length, 1, "dispose() do Componente só é chamado no dispose() do app");
+
+  console.log("application.test.js: navegação interna com update() não remonta o Componente ok.");
+}
+
+// --- entrypoint SEM update(): comportamento legado intacto — toda
+// navegação (mesmo para o mesmo componente/view) continua remontando por
+// completo (dispose + mount), sem fast-path (não-regressão) ----------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/administrator?option=com_cpanel");
+  const mountCalls = [];
+  const disposeCalls = [];
+  const { importModule, resolveManifestUrl } = fixtureAdministratorRegistry({
+    onMount: (info) => mountCalls.push(info),
+    onDispose: () => disposeCalls.push(true),
+    withUpdate: false
+  });
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: [],
+    loadMenu: async () => fixtureMenuItemsComAdministrator(),
+    loadExtensions: async () => fixtureExtensionsComAdministrator(),
+    loadModulos: async () => [],
+    loadModulosMenu: async () => [],
+    resolveManifestUrl,
+    importModule
+  });
+
+  assert.equal(mountCalls.length, 1);
+
+  dispatchHashChange(window, "#/administrator?option=com_menus");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(mountCalls.length, 2, "sem update(), a navegação interna remonta por completo (comportamento legado)");
+  assert.equal(disposeCalls.length, 1, "dispose() é chamado antes do remount completo");
+
+  await app.dispose();
+
+  console.log("application.test.js: entrypoint sem update() mantém remount completo (não-regressão) ok.");
+}
+
+// --- update() que lança: cai para o remount completo em vez de deixar o
+// app num estado quebrado (auto-recuperação) --------------------------------
+
+{
+  const root = createRoot();
+  const window = createWindow("#/administrator?option=com_cpanel");
+  const mountCalls = [];
+  const moduleErrors = [];
+  const manifestUrl = (elemento) => `https://example.invalid/${elemento}/manifest.js`;
+  const registryModules = new Map([
+    [manifestUrl("administrator"), {
+      default: { id: "administrator", type: "component", entrypoints: { full: "./full.js" } }
+    }],
+    ["https://example.invalid/administrator/full.js", {
+      async mount({ root: mountRoot, context }) {
+        mountCalls.push({ context });
+        mountRoot.setAttribute("data-mounted", "administrator");
+        return {
+          dispose: () => {},
+          update: () => { throw new Error("update() proposital falhou."); }
+        };
+      }
+    }]
+  ]);
+  async function importModule(url) {
+    const found = registryModules.get(url);
+    if (!found) throw new Error(`Módulo de teste não registrado: ${url}`);
+    return found;
+  }
+
+  const app = await createSiteApplication({
+    root,
+    window,
+    positions: [],
+    loadMenu: async () => fixtureMenuItemsComAdministrator(),
+    loadExtensions: async () => fixtureExtensionsComAdministrator(),
+    loadModulos: async () => [],
+    loadModulosMenu: async () => [],
+    resolveManifestUrl: manifestUrl,
+    importModule,
+    onModuleError: (error, info) => moduleErrors.push({ error, info })
+  });
+
+  assert.equal(mountCalls.length, 1);
+
+  dispatchHashChange(window, "#/administrator?option=com_menus");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(mountCalls.length, 2, "update() falhando cai para remount completo");
+  assert.equal(moduleErrors.length, 1, "falha de update() é reportada via onModuleError");
+  assert.equal(moduleErrors[0].info.kind, "component-update");
+
+  await app.dispose();
+
+  console.log("application.test.js: update() que lança cai para remount completo (auto-recuperação) ok.");
+}
+
 console.log("application.test.js: verificações concluídas com sucesso.");

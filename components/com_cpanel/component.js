@@ -33,6 +33,19 @@ const SCREEN_RENDERERS = {
 // por navegação, substituindo o `<section class="mse-administrator__panel">`
 // que cada tela desenhava "nua" — a tela ativa é injetada dentro de
 // `shell.contentElement`, mantendo cabeçalho+navegação persistentes.
+//
+// `update({ context })` (25/10/2026 — corrige o bug real por trás de
+// "vários links não estão funcionando": diagnóstico ao vivo mostrou que
+// `kernel/application.js#renderComponent` desmontava e remontava este
+// Componente POR COMPLETO a cada clique em qualquer link interno do
+// Administrator, porque toda navegação `option=com_xxx` resolve para o
+// MESMO par (componente="administrator", view) — ver cabeçalho de
+// `kernel/application.js`). Agora, quando o kernel detecta que o par
+// (componente, view) não mudou, chama `update()` em vez de remontar: este
+// módulo troca só a TELA ATIVA dentro de `shell.contentElement` e atualiza
+// o estado visual do shell (`shell.setActiveOption`) via
+// `administrator-shell.js`, sem nunca destruir/recriar o shell em si —
+// sidebar e header permanecem visíveis durante toda a troca.
 export function mount({ root, context = {}, services = {} } = {}) {
   if (!root?.ownerDocument) throw new TypeError("root é obrigatório.");
   const route = parseAdministratorRoute(context.params || context.route?.query || {});
@@ -40,8 +53,16 @@ export function mount({ root, context = {}, services = {} } = {}) {
   const screen = resolveAdministratorScreen(route);
   const shell = createAdministratorShell({ root, activeOption: route.option });
   const render = SCREEN_RENDERERS[screen] || SCREEN_RENDERERS.controlpanel;
-  const view = render({ root: shell.contentElement, route, services });
+  let view = render({ root: shell.contentElement, route, services: services ?? {} });
   return {
+    update({ context: nextContext = {}, services: nextServices } = {}) {
+      const nextRoute = parseAdministratorRoute(nextContext.params || nextContext.route?.query || {});
+      const nextScreen = resolveAdministratorScreen(nextRoute);
+      shell.setActiveOption?.(nextRoute.option);
+      view?.dispose?.();
+      const nextRender = SCREEN_RENDERERS[nextScreen] || SCREEN_RENDERERS.controlpanel;
+      view = nextRender({ root: shell.contentElement, route: nextRoute, services: nextServices ?? services ?? {} });
+    },
     dispose() {
       view?.dispose?.();
       shell.dispose();

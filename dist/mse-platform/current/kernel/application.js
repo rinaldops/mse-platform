@@ -244,7 +244,7 @@ function loadManifestStyles(root, manifest, manifestUrl) {
  *   deve pagar o custo (nem o risco de inconsistência de cache do host) de
  *   importar o mesmo manifesto duas vezes. `renderModules` (Módulos em
  *   posição) não precisa disso e simplesmente omite o campo.
- * @returns {Promise<{ dispose: () => void|Promise<void>, manifest: object }>}
+ * @returns {Promise<{ dispose: () => void|Promise<void>, update?: (args: { context: object, config: object, services: object }) => void|Promise<void>, manifest: object }>}
  */
 async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestUrl, importModule, config, services, context, preloadedManifest }) {
   const { manifest, manifestUrl } = preloadedManifest ?? (await importManifest(elemento, resolveManifestUrl, importModule));
@@ -260,7 +260,8 @@ async function mountEntrypoint({ root, elemento, entrypointKey, resolveManifestU
   }
   const mounted = await entrypointModule.mount({ root, config, services, context });
   const dispose = typeof mounted?.dispose === "function" ? mounted.dispose : entrypointModule.dispose;
-  return { manifest, dispose: typeof dispose === "function" ? dispose : () => {} };
+  const update = typeof mounted?.update === "function" ? mounted.update : undefined;
+  return { manifest, dispose: typeof dispose === "function" ? dispose : () => {}, update };
 }
 
 /**
@@ -283,7 +284,8 @@ async function mountOverrideEntrypoint({ root, url, importModule, config, servic
   }
   const mounted = await entrypointModule.mount({ root, config, services, context });
   const dispose = typeof mounted?.dispose === "function" ? mounted.dispose : entrypointModule.dispose;
-  return { dispose: typeof dispose === "function" ? dispose : () => {} };
+  const update = typeof mounted?.update === "function" ? mounted.update : undefined;
+  return { dispose: typeof dispose === "function" ? dispose : () => {}, update };
 }
 
 /**
@@ -440,6 +442,27 @@ export async function createSiteApplication({
 
   /** Dispose da instância de Componente atualmente montada (se houver). */
   let disposeComponent = null;
+  // Fast-path de navegação interna (25/10/2026 — corrige o bug real por
+  // trás de "vários links não estão funcionando" relatado pelo usuário:
+  // diagnóstico ao vivo, clicando de fato num link da sidebar do
+  // Administrator e amostrando o DOM por 1,3s, mostrou a tela inteira
+  // desaparecendo e reaparecendo a cada navegação — `renderComponent`
+  // sempre fazia `clearComponent()` + remount completo do Componente,
+  // mesmo quando a nova rota resolve para o MESMO par (componente, view)
+  // já montado, o que é o caso normal de navegar ENTRE TELAS internas de um
+  // Componente "guarda-chuva" como o Administrator, com uma única rota de
+  // menu `alias="administrator"` para todas as suas telas internas).
+  //
+  // `updateComponent`: função opcional `update({context, config, services})`
+  // devolvida por `mount()` do entrypoint atualmente montado (contrato
+  // aditivo — ver `mountEntrypoint`/`mountOverrideEntrypoint` acima; sem
+  // `update()`, nenhuma mudança de comportamento). `lastDispatchKey`:
+  // `"<componente>::<view>"` do último mount COMPLETO. `lastManifest`: o
+  // manifesto desse mount, reaproveitado pelo fast-path para
+  // `namedRouteParams` sem reimportar.
+  let updateComponent = null;
+  let lastDispatchKey = null;
+  let lastManifest = null;
   /** Dispose das instâncias de Módulo atualmente montadas, por posição. */
   const disposeModulesByPosition = new Map();
 
@@ -448,6 +471,9 @@ export async function createSiteApplication({
       await disposeComponent();
       disposeComponent = null;
     }
+    updateComponent = null;
+    lastDispatchKey = null;
+    lastManifest = null;
     if (typeof layout.componentElement.replaceChildren === "function") {
       layout.componentElement.replaceChildren();
     }
@@ -550,13 +576,46 @@ export async function createSiteApplication({
   }
 
   async function renderComponent(dispatch, route, menuItem) {
-    await clearComponent();
     const element = layout.componentElement;
 
     if (!dispatch.found) {
+      await clearComponent();
       element.dataset && (element.dataset.mseDispatchReason = dispatch.reason);
       return;
     }
+
+    // Fast-path (ver comentário de `updateComponent` acima): mesma
+    // (componente, view) já montada E o entrypoint expõe `update()` ->
+    // atualiza em vez de desmontar+remontar o Componente inteiro. Sem
+    // isto, qualquer Componente "guarda-chuva" com várias telas internas
+    // sob uma única rota de menu (ex.: o Administrator, `option=com_xxx`)
+    // desmontava e remontava por completo a cada navegação interna —
+    // percebido pelo usuário como a página inteira desaparecendo e
+    // "links não funcionando".
+    const dispatchKey = `${dispatch.componente}::${dispatch.view}`;
+    if (updateComponent && dispatchKey === lastDispatchKey) {
+      try {
+        const config = { ...globalConfig, ...(await extensionConfig(dispatch.componente)) };
+        const namedParams = namedRouteParams(lastManifest?.routeParams, dispatch);
+        const context = Object.freeze({
+          route,
+          menuItem,
+          position: componentPosition,
+          navigate: navigateFn,
+          view: dispatch.view,
+          params: { ...dispatch.params, ...namedParams }
+        });
+        await updateComponent({ context, config, services });
+        return;
+      } catch (error) {
+        // Nunca deixa o app num estado quebrado: reporta e cai para o
+        // caminho de remount completo abaixo (mesma auto-recuperação já
+        // aplicada a falhas de mount normal).
+        onModuleError(error, { elemento: dispatch.componente, kind: "component-update" });
+      }
+    }
+
+    await clearComponent();
 
     try {
       const config = { ...globalConfig, ...(await extensionConfig(dispatch.componente)) };
@@ -577,7 +636,7 @@ export async function createSiteApplication({
       // original — mesmo contrato mount()/dispose(), nenhuma mudança de
       // forma. Ausente/undefined: comportamento idêntico a hoje.
       const overrideUrl = layout.viewOverrides?.[dispatch.componente]?.[dispatch.view];
-      const { manifest, dispose } = overrideUrl
+      const { manifest, dispose, update } = overrideUrl
         ? {
             manifest: preloadedManifest.manifest,
             ...(await mountOverrideEntrypoint({ root: element, url: overrideUrl, importModule, config, services, context }))
@@ -600,6 +659,9 @@ export async function createSiteApplication({
         element.dataset && (element.dataset.mseView = dispatch.view);
       }
       disposeComponent = dispose;
+      updateComponent = update ?? null;
+      lastDispatchKey = dispatchKey;
+      lastManifest = manifest;
     } catch (error) {
       onModuleError(error, { elemento: dispatch.componente, kind: "component" });
       element.dataset && (element.dataset.mseDispatchReason = "error");

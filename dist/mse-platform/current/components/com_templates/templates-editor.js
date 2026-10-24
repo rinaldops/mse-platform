@@ -52,7 +52,7 @@ export function renderTemplatesEditor({ root, route, services = {} } = {}) {
   const list = services.listIds?.MSETemplateStyles;
   if (!document) throw new TypeError("root é obrigatório.");
   const panel = document.createElement("section");
-  panel.className = "mse-administrator__panel mse-administrator__templates";
+  panel.className = "mse-administrator__templates";
   const error = node(document, "p");
   error.className = "mse-administrator__error";
   const tableHost = document.createElement("div");

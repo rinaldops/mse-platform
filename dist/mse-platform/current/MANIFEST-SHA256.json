@@ -13,8 +13,8 @@
     },
     {
       "path": "kernel/application.js",
-      "bytes": 34233,
-      "sha256": "74222782cce887e21be16de010639351236d85741d3e75bb242bc062307abc6c"
+      "bytes": 37558,
+      "sha256": "321d1992c21d0980c18f0607cb4181a12982a6c21c238b575ad42c3c8a818e07"
     },
     {
       "path": "kernel/router.js",
@@ -88,8 +88,8 @@
     },
     {
       "path": "kernel/admin-data.js",
-      "bytes": 8730,
-      "sha256": "ac9a7aac07e299622b636150081350945227d672f944b5874fe66f2f857a41ba"
+      "bytes": 10076,
+      "sha256": "3c03bcd27976872c51820a6853d6229637f93ee976fb6ee8c944f56fb2910cc2"
     },
     {
       "path": "kernel/admin-form.js",
@@ -127,9 +127,24 @@
       "sha256": "a69b37afe41f08860a53d8b39e0b4fc5f34729cafe3cbed1b3ec032e6da336a9"
     },
     {
+      "path": "kernel/schemas/mse-categories.js",
+      "bytes": 3025,
+      "sha256": "93d8a1095ad965fbef703b4a82f987a09d0d26734e842cf5ee7d29e8d7dca5e0"
+    },
+    {
+      "path": "kernel/schemas/mse-tags.js",
+      "bytes": 2043,
+      "sha256": "bc67b14bc73c5da3e49e03fba49b98edfaeeca8aba2c700d0b0de27de170bec2"
+    },
+    {
+      "path": "kernel/schemas/mse-media.js",
+      "bytes": 1856,
+      "sha256": "3d68891e4ff4b66af6b8c50a02e9c3bf442502ff5e0005743b574dadfacc5408"
+    },
+    {
       "path": "kernel/installer.js",
-      "bytes": 3369,
-      "sha256": "ec2905dfb64f7ab84eae7b7e862b73cce4ec97f426b9cbecdc663b25431cf301"
+      "bytes": 3988,
+      "sha256": "523a6bb44b14eddb37a27200e0f77555c5a25ccf5f9071c1d94ed4c58e8c49f9"
     },
     {
       "path": "kernel/template-registry.js",
@@ -173,13 +188,13 @@
     },
     {
       "path": "components/com_cpanel/component.js",
-      "bytes": 2661,
-      "sha256": "8ecea1cfc488328e2df5b9058ad184a2ae5793f749b191a24771f434afc236bf"
+      "bytes": 4533,
+      "sha256": "d5391159ec361bcff09bd2d3b2e5c0ef052bb75bf2d676f80ff8c9060c5d44e2"
     },
     {
       "path": "components/com_cpanel/router.js",
-      "bytes": 1808,
-      "sha256": "b14f6de88355eeb6d7a8fc95dddeddbde65b242e9eec2be5d3ee36892d31210e"
+      "bytes": 1876,
+      "sha256": "1027e64d6f4cea0c27c1bdbac157f73b3a87f613e86d01be02cbd774d2ff30d4"
     },
     {
       "path": "components/com_cpanel/administrator.css",
@@ -188,8 +203,8 @@
     },
     {
       "path": "components/com_cpanel/administrator-shell.js",
-      "bytes": 19416,
-      "sha256": "e9926c6019d32e4373c7596a9f08a956dc5e34a881817cdc74c635b70da3f144"
+      "bytes": 22222,
+      "sha256": "35bc0984a02ad8514bd0dc2d3f4f5dec05456907c2a330485fa2bf52a4403ba4"
     },
     {
       "path": "components/com_cpanel/administrator-toolbar.js",
@@ -198,8 +213,8 @@
     },
     {
       "path": "components/com_cpanel/control-panel.js",
-      "bytes": 5263,
-      "sha256": "47b4248fa0ff064344f1e794eae7899e3229c14da04ece089318fcaa516cdb8e"
+      "bytes": 5492,
+      "sha256": "9acffb35ed279991f94c252b26523075f8fdae7b411b376adf6b04e48bda43e6"
     },
     {
       "path": "components/com_extensions/extensions-screen.js",
@@ -208,8 +223,8 @@
     },
     {
       "path": "components/com_extensions/extensions-editor.js",
-      "bytes": 10809,
-      "sha256": "526931ef52e139ff39ce0754683ef98524d1f966a81fbc805f566b24684ee894"
+      "bytes": 10784,
+      "sha256": "3a32592f895eb8ac3f05a7c1918f8d759ad012ddb77de9fa18e5c74ceadc2c5e"
     },
     {
       "path": "components/com_menus/menus-screen.js",
@@ -218,8 +233,8 @@
     },
     {
       "path": "components/com_menus/menus-editor.js",
-      "bytes": 12104,
-      "sha256": "35dc13167c5903f19a89e2784185baa8867aa96caa52ddebe19245881ebe668c"
+      "bytes": 12079,
+      "sha256": "cd3f3a10a0afc47ca2990df2f0827c268310730b2a25d2b933d9f2e759f5639e"
     },
     {
       "path": "components/com_modules/modules-screen.js",
@@ -228,8 +243,8 @@
     },
     {
       "path": "components/com_modules/modules-editor.js",
-      "bytes": 11930,
-      "sha256": "912d1f8ff68def59b6c113621fad4c322ea9270036ca850fa8deeaabf55f1d27"
+      "bytes": 11905,
+      "sha256": "d9dbfd62d3cafe40377f10b7271c22724092d8c74532b6582e03d502da2501ae"
     },
     {
       "path": "components/com_config/config-screen.js",
@@ -238,8 +253,8 @@
     },
     {
       "path": "components/com_config/config-editor.js",
-      "bytes": 13569,
-      "sha256": "2b0a6c9f6f67adfde070b144f0c916bc3a0fecc9cbef9f6d0fb7c62b3dad333e"
+      "bytes": 13544,
+      "sha256": "e5ed42b4150159bb4e7527a097ea8e50a53de8e28f872cfc529c82d243ca9cfe"
     },
     {
       "path": "components/com_installer/installer-screen.js",
@@ -253,8 +268,8 @@
     },
     {
       "path": "components/com_templates/templates-editor.js",
-      "bytes": 7650,
-      "sha256": "9be2091a552005c77d815012456b92aedda55ffe4bb93e99b63033964bc47eff"
+      "bytes": 7625,
+      "sha256": "1b1eb20283251f8e95d9a7ebddcf686dd2f7a6917a6d847c3dc8d9e89541d966"
     },
     {
       "path": "components/com_content/publisher.js",
@@ -280,6 +295,36 @@
       "path": "kernel/administrator-permissions.js",
       "bytes": 1243,
       "sha256": "33d708a64587e7018ab685b14cfc128c193e82dc70bbd08eba9226996c35c5a8"
+    },
+    {
+      "path": "components/com_categories/categories-screen.js",
+      "bytes": 1094,
+      "sha256": "64e3b541295a71568a998163b9a2da019692668e9b4e37dd0f13d71c5378fc60"
+    },
+    {
+      "path": "components/com_categories/categories-editor.js",
+      "bytes": 10226,
+      "sha256": "4be98c1b34c8858233ef2861bf678ba99b5a8ff7a6a415abfbc4226598fd0701"
+    },
+    {
+      "path": "components/com_tags/tags-screen.js",
+      "bytes": 1080,
+      "sha256": "5c492b2db3a05bd0f62b8bab3756ff98435c558bee54b6b1bbeaa3083fc9d92e"
+    },
+    {
+      "path": "components/com_tags/tags-editor.js",
+      "bytes": 9124,
+      "sha256": "a9ea256c19279ed12402991c432da297e9f82ebdb7652d88e508e2aa1d8446fe"
+    },
+    {
+      "path": "components/com_media/media-screen.js",
+      "bytes": 835,
+      "sha256": "1395d97390abdd02530b268e73d80e3d77bfc29ac002bc4c947e1a6ee4422f7f"
+    },
+    {
+      "path": "components/com_media/media-editor.js",
+      "bytes": 7292,
+      "sha256": "d9760aece9dc3d1287f8415dcb0b70381167d0a39d8a3aced11f2c54d7ccbc00"
     }
   ]
 }

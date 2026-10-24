@@ -35,7 +35,7 @@ const DISABLE_TASK = "extensions.disable";
 export function renderExtensionsEditor({ root, route, services = {} } = {}) {
   const document = root?.ownerDocument; const client = services.adminClient; const list = services.listIds?.MSEExtensions;
   if (!document) throw new TypeError("root é obrigatório.");
-  const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__extensions";
+  const panel = document.createElement("section"); panel.className = "mse-administrator__extensions";
   const error = node(document, "p"); error.className = "mse-administrator__error";
   const tableHost = document.createElement("div"); const formHost = document.createElement("div");
   let searchTerm = "";

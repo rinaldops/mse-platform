@@ -33,6 +33,7 @@ class FakeElement {
 
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   getAttribute(name) { return this.attributes.has(name) ? this.attributes.get(name) : null; }
+  removeAttribute(name) { this.attributes.delete(name); }
 
   addEventListener(type, listener) { this.listeners.set(type, listener); }
   removeEventListener(type, listener) { if (this.listeners.get(type) === listener) this.listeners.delete(type); }
@@ -252,6 +253,60 @@ function createFakeStorage(initial = {}) {
   assert.equal(nav.classList.names.has("mse-administrator-shell__nav--collapsed"), true, "com storage indicando colapsado, nav deve nascer já colapsada");
 
   console.log("administrator-shell.test.js: com storage prévio colapsado, shell nasce colapsado ok.");
+}
+
+// --- setActiveOption (25/10/2026 — corrige o bug real por trás de "vários
+// links não estão funcionando": a navegação interna do Administrator
+// passou a usar este método para atualizar header/link ativo/grupo
+// expandido SEM reconstruir o shell — ver `components/com_cpanel/
+// component.js#update()` e `kernel/application.js`) ------------------------
+
+{
+  const root = createRoot();
+  const shell = createAdministratorShell({ root, activeOption: "com_menus" }); // grupo "menus"
+
+  const linkFor = (option) => root.querySelectorAll("a").find((a) => a.href === `#/administrator?option=${option}`);
+  assert.equal(linkFor("com_menus").getAttribute("aria-current"), "page");
+  assert.equal(linkFor("com_extensions").getAttribute("aria-current"), null);
+
+  const groupSections = root.querySelectorAll("div").filter((node) => node.className === "mse-administrator-shell__group");
+  const groupFor = (option) => groupSections.find((section) => section.children.some((child) => child.tagName === "DIV" && child.children.some((a) => a.href === `#/administrator?option=${option}`)));
+  const menusGroup = groupFor("com_menus");
+  const systemGroup = groupFor("com_extensions"); // com_extensions pertence ao grupo "system"
+  assert.equal(menusGroup.classList.has("mse-administrator-shell__group--active"), true, "grupo 'menus' nasce ativo (contém a option inicial)");
+  assert.equal(systemGroup.classList.has("mse-administrator-shell__group--active"), false);
+
+  const header = root.querySelectorAll("header")[0];
+  const headerTitle = header.children.find((child) => child.className === "mse-administrator-shell__header-title");
+  assert.equal(headerTitle.textContent, "Menus");
+
+  shell.setActiveOption("com_extensions"); // troca para uma option do grupo "system"
+
+  assert.equal(linkFor("com_menus").getAttribute("aria-current"), null, "link 'Menus' perde aria-current");
+  assert.equal(linkFor("com_extensions").getAttribute("aria-current"), "page", "link 'Extensões' ganha aria-current");
+  assert.equal(headerTitle.textContent, "Extensões", "header-title passa a refletir a nova option");
+
+  const menusToggle = menusGroup.children.find((child) => child.tagName === "BUTTON");
+  const menusSublist = menusGroup.children.find((child) => child !== menusToggle);
+  assert.equal(menusToggle.getAttribute("aria-expanded"), "false", "grupo 'menus' recolhe ao sair da option ativa");
+  assert.equal(menusSublist.hidden, true);
+  assert.equal(menusGroup.classList.has("mse-administrator-shell__group--active"), false);
+
+  const systemToggle = systemGroup.children.find((child) => child.tagName === "BUTTON");
+  const systemSublist = systemGroup.children.find((child) => child !== systemToggle);
+  assert.equal(systemToggle.getAttribute("aria-expanded"), "true", "grupo 'system' expande ao entrar na option ativa");
+  assert.equal(systemSublist.hidden, false);
+  assert.equal(systemGroup.classList.has("mse-administrator-shell__group--active"), true);
+
+  // Chamar com a MESMA option já ativa não deve lançar nem alterar nada (no-op).
+  shell.setActiveOption("com_extensions");
+  assert.equal(linkFor("com_extensions").getAttribute("aria-current"), "page");
+
+  // Nenhuma reconstrução do shell: root continua com o mesmo filho <header>
+  // e <body>/<nav> (setActiveOption nunca chama root.replaceChildren()).
+  assert.equal(root.children.length, 2, "setActiveOption não reconstrói o shell (header+body continuam os únicos filhos de root)");
+
+  console.log("administrator-shell.test.js: setActiveOption atualiza header/link ativo/grupo expandido sem reconstruir o shell ok.");
 }
 
 // --- dispose() limpa o root por completo ------------------------------------

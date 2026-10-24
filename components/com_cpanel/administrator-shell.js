@@ -301,12 +301,18 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   });
   nav.append(collapseToggle);
 
+  // Links de navegação por `option` (soltos + agrupados) — guardados para
+  // `setActiveOption` poder migrar `aria-current` sem reconstruir o shell.
+  const navLinksByOption = new Map();
+
   // "Painel" (com_cpanel) fica solto no topo, fora de qualquer grupo —
   // mesmo papel do item "Painel Principal" no backend `atum` do Joomla!
   // real (nunca pertence a uma categoria).
   for (const [option, label] of ADMINISTRATOR_NAV_LINKS) {
     if (groupedOptions.has(option)) continue;
-    nav.append(createNavLink(document, option, label, activeOption));
+    const link = createNavLink(document, option, label, activeOption);
+    navLinksByOption.set(option, link);
+    nav.append(link);
   }
 
   // Grupos colapsáveis — cada cabeçalho é um <button> (não <a>: o teste
@@ -315,6 +321,12 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   // grupo não pode ser um link navegável, só um controle de
   // expandir/recolher — mesmo papel do "has-arrow" do atum, que também não
   // navega, só expande).
+  //
+  // `groupControllers` guarda, por grupo, o necessário para
+  // `setActiveOption` (abaixo) poder expandir/recolher o grupo certo ao
+  // trocar de tela SEM reconstruir o shell inteiro — mesma função
+  // `applyExpanded` já usada na montagem inicial, só reaproveitada depois.
+  const groupControllers = [];
   for (const group of ADMINISTRATOR_NAV_GROUPS) {
     const groupActive = group.options.includes(activeOption);
     const section = document.createElement("div");
@@ -336,7 +348,9 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
     for (const option of group.options) {
       const label = labelByOption.get(option);
       if (label == null) continue;
-      sublist.append(createNavLink(document, option, label, activeOption));
+      const link = createNavLink(document, option, label, activeOption);
+      navLinksByOption.set(option, link);
+      sublist.append(link);
     }
 
     let expanded = groupActive;
@@ -353,6 +367,15 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
 
     section.append(toggle, sublist);
     nav.append(section);
+
+    groupControllers.push({
+      options: group.options,
+      setExpanded(value) {
+        expanded = value;
+        applyExpanded();
+        section.classList.toggle("mse-administrator-shell__group--active", value);
+      }
+    });
   }
 
   const content = document.createElement("div");
@@ -361,8 +384,44 @@ export function createAdministratorShell({ root, activeOption, storage } = {}) {
   body.append(nav, content);
   root.append(header, body);
 
+  let currentActiveOption = activeOption;
+
+  /**
+   * Atualiza header (ícone+título), link ativo (`aria-current`) e
+   * expansão de grupo para refletir uma nova `option`, SEM reconstruir o
+   * shell (sem `root.replaceChildren()`) — usado por
+   * `components/com_cpanel/component.js#update()` ao trocar de tela
+   * internamente no Administrator (ver `kernel/application.js`, hook
+   * `update()` do contrato de entrypoint) para que a sidebar/header
+   * permaneçam visíveis durante a troca, em vez de desaparecer e
+   * reaparecer a cada navegação interna (bug relatado: "vários links não
+   * estão funcionando" — na realidade, o shell inteiro desmontava e
+   * remontava a cada clique).
+   *
+   * @param {string} option
+   */
+  function setActiveOption(option) {
+    if (option === currentActiveOption) return;
+    currentActiveOption = option;
+
+    for (const [linkOption, link] of navLinksByOption) {
+      if (linkOption === option) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+
+    if (headerIcon) {
+      headerIcon.innerHTML = createIcon(document, option)?.innerHTML ?? "";
+    }
+    headerTitle.textContent = labelByOption.get(option) || "Administrator";
+
+    for (const controller of groupControllers) {
+      controller.setExpanded(controller.options.includes(option));
+    }
+  }
+
   return {
     contentElement: content,
+    setActiveOption,
     dispose() {
       root.replaceChildren();
       root.classList.remove("mse-administrator-shell");

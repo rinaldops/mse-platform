@@ -48,7 +48,7 @@ export function renderModulesEditor({ root, route, services = {} } = {}) {
   const client = services.adminClient;
   const list = services.listIds?.MSEModules;
   if (!document) throw new TypeError("root é obrigatório.");
-  const panel = document.createElement("section"); panel.className = "mse-administrator__panel mse-administrator__modules";
+  const panel = document.createElement("section"); panel.className = "mse-administrator__modules";
   const error = node(document, "p"); error.className = "mse-administrator__error";
   const tableHost = document.createElement("div"); const formHost = document.createElement("div");
   let searchTerm = ""; let loadedItems = [];
