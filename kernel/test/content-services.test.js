@@ -6,7 +6,8 @@ import {
   filterFeatured,
   sortByDate,
   paginate,
-  composeFilters
+  composeFilters,
+  aggregateTagCounts
 } from "../content-services.js";
 
 // --- filterPublished -------------------------------------------------------
@@ -225,6 +226,41 @@ import {
 {
   assert.deepEqual(composeFilters(undefined, { publicadosApenas: true }).items, []);
   console.log("content-services.test.js: composeFilters tolera artigos ausente ok.");
+}
+
+// --- aggregateTagCounts -----------------------------------------------------
+
+{
+  const artigos = [
+    { id: 1, tags: ["a", "b"] },
+    { id: 2, tags: ["b"] },
+    { id: 3, tags: ["a", "c"] },
+    { id: 4, tags: [] },
+    { id: 5 }
+  ];
+  assert.deepEqual(aggregateTagCounts(artigos), [
+    { tag: "a", count: 2 },
+    { tag: "b", count: 2 },
+    { tag: "c", count: 1 }
+  ]);
+  console.log("content-services.test.js: aggregateTagCounts soma ocorrências por tag, ordenado por contagem desc ok.");
+}
+
+{
+  // empate em contagem: ordem alfabética.
+  const artigos = [{ id: 1, tags: ["z"] }, { id: 2, tags: ["a"] }];
+  assert.deepEqual(aggregateTagCounts(artigos), [
+    { tag: "a", count: 1 },
+    { tag: "z", count: 1 }
+  ]);
+  console.log("content-services.test.js: aggregateTagCounts desempata por ordem alfabética ok.");
+}
+
+{
+  assert.deepEqual(aggregateTagCounts(undefined), []);
+  assert.deepEqual(aggregateTagCounts([]), []);
+  assert.deepEqual(aggregateTagCounts([{ id: 1, tags: "nao-e-array" }]), []);
+  console.log("content-services.test.js: aggregateTagCounts tolera lista ausente/artigo sem tags válidas ok.");
 }
 
 console.log("content-services.test.js: verificações concluídas com sucesso.");
