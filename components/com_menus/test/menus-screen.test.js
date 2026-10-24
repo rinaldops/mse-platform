@@ -131,12 +131,20 @@ function textOf(elements) {
   assert.equal(h1.textContent, "Menus");
 
   const headers = textOf(root.querySelectorAll("th"));
-  const expectedLabels = ["Título", ...MENU_FORM_FIELDS.map((d) => d.label), "Ações"];
+  // 24/10/2026 — "Alias"/"Item pai" ganharam cabeçalho próprio (bug real de
+  // produção: apareciam no corpo da tabela sem cabeçalho correspondente,
+  // deslocando todo o resto da linha uma coluna à direita — ver
+  // menus-editor.js#render). ParamsJson deixou de ser lido no corpo (não é
+  // exibido em nenhuma tabela do Administrator, só no formulário).
+  const expectedLabels = ["Título", "Alias", "Item pai", ...MENU_FORM_FIELDS.map((d) => d.label), "Ações"];
   assert.deepEqual(headers, expectedLabels);
 
   const rows = root.querySelectorAll("tr").slice(1);
   assert.equal(rows.length, 1);
   assert.equal(rows[0].querySelectorAll("td")[0].textContent, "Início");
+  // Trava a regressão em si: cabeçalho e corpo devem ter sempre a MESMA
+  // contagem de colunas, senão todo valor aparece sob o rótulo errado.
+  assert.equal(rows[0].querySelectorAll("td").length, headers.length);
 
   view.dispose();
   console.log("menus-screen.test.js: com_menus renderiza tabela real ok.");

@@ -96,13 +96,22 @@ export function renderMenusEditor({ root, route, services = {} } = {}) {
     const table = document.createElement("table");
     table.className = "mse-administrator__table";
     const head = document.createElement("tr");
-    for (const heading of ["Título", ...MENU_FORM_FIELDS.map((field) => field.label), "Ações"]) {
+    // Cabeçalho deve ter exatamente 1 <th> por <td> do corpo, na MESMA ordem
+    // (24/10/2026 — bug real de produção: "Alias"/"Item pai" apareciam no
+    // corpo sem cabeçalho correspondente, deslocando todo o resto da linha
+    // uma coluna à direita; ParamsJson também estava no corpo sem cabeçalho
+    // — nenhum outro editor do Administrator exibe ParamsJson em tabela, só
+    // no formulário, então aqui ele deixou de ser lido no corpo também, em
+    // vez de ganhar uma coluna nova. "Alias"/"Item pai" seguem o mesmo
+    // padrão já usado em com_categories/categories-editor.js, que exibe
+    // ambos como colunas próprias).
+    for (const heading of ["Título", "Alias", "Item pai", ...MENU_FORM_FIELDS.map((field) => field.label), "Ações"]) {
       head.append(text(document, "th", heading));
     }
     table.append(head);
     for (const item of visible) {
       const row = document.createElement("tr");
-      for (const value of [item.Title, item.Alias, item.MenuType, item.ParentId, item.Path, item.Level, item.Ordering, item.Component, item.View, item.ParamsJson]) {
+      for (const value of [item.Title, item.Alias, item.ParentId, item.MenuType, item.Path, item.Level, item.Ordering, item.Component, item.View]) {
         row.append(text(document, "td", String(value ?? "")));
       }
       const defaultCell = text(document, "td", item.Default ? "Sim" : "Não");

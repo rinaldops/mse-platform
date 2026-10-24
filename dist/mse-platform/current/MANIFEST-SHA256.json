@@ -223,8 +223,8 @@
     },
     {
       "path": "components/com_cpanel/administrator.css",
-      "bytes": 20060,
-      "sha256": "02d6d016f0cb4715f0bc57764d3ed1ce1d22752471bee1592b75bafae0d3c88c"
+      "bytes": 21013,
+      "sha256": "8d0c6d66f63e4a15a1f7a8a8287f3838bb431fd6d6b3f9dcfa8afcdb11ee6152"
     },
     {
       "path": "components/com_cpanel/administrator-shell.js",
@@ -258,8 +258,8 @@
     },
     {
       "path": "components/com_menus/menus-editor.js",
-      "bytes": 12079,
-      "sha256": "cd3f3a10a0afc47ca2990df2f0827c268310730b2a25d2b933d9f2e759f5639e"
+      "bytes": 12742,
+      "sha256": "3d388b84f38161df57c57448fa7ee9994901e401204afe35bf52d9d41a35190d"
     },
     {
       "path": "components/com_modules/modules-screen.js",

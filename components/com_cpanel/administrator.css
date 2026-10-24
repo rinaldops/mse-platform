@@ -120,7 +120,19 @@
 }
 .mse-administrator-shell__nav--collapsed .mse-administrator-shell__group-items { padding-left: 0; }
 
-.mse-administrator-shell__nav-link {
+/* `color` qualificado com `.mse-administrator-shell__nav` (2 classes) em vez
+   de só `.mse-administrator-shell__nav-link` (1 classe): o CSS do tema do
+   site consumidor (CAMAP-AGP/templates/camap-tema-01/template.css) define
+   `.camap-template--tema-01 a { color: inherit; }` — 1 classe + 1 elemento,
+   MESMA especificidade que ganha de empate por vir depois no documento. O
+   link herdava `inherit` → cor do `<nav>` pai (`--camap-ocean`, o mesmo azul
+   do FUNDO da própria sidebar) → texto invisível, exceto sob `:hover`/
+   `[aria-current="page"]` (ambas com especificidade maior, mascarando o bug
+   só nesses 2 estados — relatado pelo usuário como "menu só aparece passando
+   o mouse por cima", confirmado via CSS.getMatchedStylesForNode real contra
+   a página publicada, 24/10/2026). 2 classes > 1 classe + 1 elemento,
+   resolve sem !important e sem depender da ordem das folhas de estilo. */
+.mse-administrator-shell__nav .mse-administrator-shell__nav-link {
   display: flex;
   align-items: center;
   gap: 10px;
