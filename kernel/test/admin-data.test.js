@@ -3,7 +3,8 @@ import {
   listAdminItems,
   createAdminItem,
   updateAdminItem,
-  deleteAdminItem
+  deleteAdminItem,
+  uploadAdminFile
 } from "../admin-data.js";
 
 /**
@@ -38,6 +39,15 @@ function createFakeClient({ etag = '"1"', onUpdate, onDelete } = {}) {
       calls.push({ method: "deleteListItem", list, id, options });
       if (onDelete) onDelete(options);
       return Object.freeze({ etag: null, status: 204 });
+    },
+    async uploadFile(list, options) {
+      calls.push({ method: "uploadFile", list, options });
+      return Object.freeze({
+        file: { Name: options.fileName },
+        serverRelativeUrl: `/sites/x/MSEMedia/${options.fileName}`,
+        etag,
+        status: 201
+      });
     }
   };
   return { client, calls };
@@ -147,6 +157,43 @@ const LIST = Object.freeze({ listId: "10000000-0000-4000-8000-000000000001" });
   assert.deepEqual(calls[1].options, { etag: '"99"' });
 
   console.log("admin-data.test.js: deleteAdminItem busca ETag antes de excluir ok.");
+}
+
+// --- uploadAdminFile: delega a client.uploadFile (component com_media) -----
+
+{
+  const { client, calls } = createFakeClient();
+  const content = Uint8Array.from([1, 2, 3]);
+  const result = await uploadAdminFile({
+    client,
+    list: LIST,
+    fileName: "foto.png",
+    content,
+    contentType: "image/png"
+  });
+  assert.equal(result.serverRelativeUrl, "/sites/x/MSEMedia/foto.png");
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0], {
+    method: "uploadFile",
+    list: LIST,
+    options: { fileName: "foto.png", content, contentType: "image/png" }
+  });
+
+  console.log("admin-data.test.js: uploadAdminFile delega ok.");
+}
+
+// --- uploadAdminFile: client/list ausentes lançam TypeError -----------------
+
+{
+  const { client } = createFakeClient();
+  await assert.rejects(uploadAdminFile({ list: LIST, fileName: "a.png", content: new Uint8Array() }), TypeError);
+  await assert.rejects(uploadAdminFile({ client, fileName: "a.png", content: new Uint8Array() }), TypeError);
+  await assert.rejects(
+    uploadAdminFile({ client: { uploadFile: undefined }, list: LIST, fileName: "a.png", content: new Uint8Array() }),
+    TypeError
+  );
+
+  console.log("admin-data.test.js: uploadAdminFile rejeita client/list ausentes ok.");
 }
 
 // --- updateAdminItem: propaga erro de conflito de concorrência -------------

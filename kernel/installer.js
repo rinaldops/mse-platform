@@ -37,17 +37,22 @@ import { MSE_EXTENSIONS_SCHEMA } from "./schemas/mse-extensions.js";
 import { MSE_MODULES_SCHEMA } from "./schemas/mse-modules.js";
 import { MSE_MODULES_MENU_SCHEMA } from "./schemas/mse-modules-menu.js";
 import { MSE_TEMPLATE_STYLES_SCHEMA } from "./schemas/mse-template-styles.js";
+import { MSE_MEDIA_SCHEMA } from "./schemas/mse-media.js";
 
 // MSETemplateStyles (≈ #__template_styles) acrescentada ao conjunto fixo
 // junto com o mecanismo de Templates instaláveis/fallback — ver
 // kernel/schemas/mse-template-styles.js e kernel/template-registry.js.
+// MSEMedia (biblioteca de documentos do component com_media) acrescentada
+// junto com o gerenciador de mídia do Administrator — ver
+// kernel/schemas/mse-media.js.
 export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_MENU_TYPES_SCHEMA,
   MSE_MENU_SCHEMA,
   MSE_EXTENSIONS_SCHEMA,
   MSE_MODULES_SCHEMA,
   MSE_MODULES_MENU_SCHEMA,
-  MSE_TEMPLATE_STYLES_SCHEMA
+  MSE_TEMPLATE_STYLES_SCHEMA,
+  MSE_MEDIA_SCHEMA
 ]);
 
 /**

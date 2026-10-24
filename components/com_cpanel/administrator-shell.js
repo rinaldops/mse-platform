@@ -52,8 +52,9 @@
  * com itens repetidos" nesta rodada). `ADMINISTRATOR_NAV_GROUPS` declara a
  * qual grupo cada `option` pertence — `com_cpanel` fica de fora (é o link
  * solto do topo, nunca um grupo). Mapeamento Joomla! real → mse-platform:
- * - "Conteúdo" → com_content (Publicador/Artigos); Mídia/Campos/Grupos de
- *   Campos do Joomla! real não têm equivalente implementado ainda.
+ * - "Conteúdo" → com_content (Publicador/Artigos) e com_media (gerenciador
+ *   de mídia); Campos/Grupos de Campos do Joomla! real não têm equivalente
+ *   implementado ainda.
  * - "Menus" → com_menus (igual ao Joomla! real, 1:1).
  * - "Sistema" → com_extensions/com_modules/com_templates (no Joomla! real
  *   vivem sob "Sistema > Gerenciar/Temas", não sob "Componentes" — ver
@@ -64,11 +65,11 @@
  *   "Sistema > Instalar", adaptado para o provisionamento de listas do
  *   kernel).
  * "Componentes" e "Usuários" do Joomla! real não têm grupo equivalente
- * aqui de propósito: `components/com_categories|com_media|com_tags`
- * seguem reservados sem implementação (ver seus README.md), e gestão de
- * usuário é uma decisão arquitetural já declarada (SharePoint é a
- * autoridade de permissão, não um `com_users` próprio) — não é uma lacuna
- * a preencher nesta rodada.
+ * aqui de propósito: `components/com_categories|com_tags` seguem
+ * reservados sem implementação (ver seus README.md), e gestão de usuário é
+ * uma decisão arquitetural já declarada (SharePoint é a autoridade de
+ * permissão, não um `com_users` próprio) — não é uma lacuna a preencher
+ * nesta rodada.
  *
  * @param {{ root: Element, activeOption?: string }} options
  * @returns {{ contentElement: Element, dispose(): void }}
@@ -76,6 +77,7 @@
 export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
   ["com_cpanel", "Painel"],
   ["com_content", "Publicador"],
+  ["com_media", "Mídia"],
   ["com_menus", "Menus"],
   ["com_extensions", "Extensões"],
   ["com_modules", "Módulos"],
@@ -93,7 +95,7 @@ export const ADMINISTRATOR_NAV_LINKS = Object.freeze([
 // por teste em administrator-shell.test.js). `com_cpanel` nunca aparece
 // aqui: é o único link que fica fora de qualquer grupo.
 export const ADMINISTRATOR_NAV_GROUPS = Object.freeze([
-  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content"]) },
+  { key: "content", label: "Conteúdo", options: Object.freeze(["com_content", "com_media"]) },
   { key: "menus", label: "Menus", options: Object.freeze(["com_menus"]) },
   {
     key: "system",
@@ -123,6 +125,7 @@ export const ADMINISTRATOR_NAV_ICON_PATHS = Object.freeze({
   com_config: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3.09 12H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 1.6a1.65 1.65 0 0 0 1-1.51V0"/>',
   com_diagnostics: '<path d="M9 11.5 11 13.5 15.5 9"/><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z"/>',
   com_content: '<path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8 12h8M8 16h8M8 8h3"/>',
+  com_media: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M4 17l5-5 4 4 3-3 4 4"/>',
   com_extensions: '<path d="M9 3h2a1 1 0 0 1 1 1v1.5a1.5 1.5 0 0 0 3 0V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1.5a1.5 1.5 0 0 0 0 3H19a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1.5a1.5 1.5 0 0 0-3 0V14a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1.5a1.5 1.5 0 0 0 0-3H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>',
   com_menus: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>',
   com_modules: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
