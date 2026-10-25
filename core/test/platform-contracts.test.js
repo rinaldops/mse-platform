@@ -29,6 +29,7 @@ import articlesCategoryManifestDefault, { ARTICLES_CATEGORY_MANIFEST } from "../
 import articlesPopularManifestDefault, { ARTICLES_POPULAR_MANIFEST } from "../../modules/mod_articles_popular/manifest.js";
 import articlesArchiveManifestDefault, { ARTICLES_ARCHIVE_MANIFEST } from "../../modules/mod_articles_archive/manifest.js";
 import articlesCategoriesManifestDefault, { ARTICLES_CATEGORIES_MANIFEST } from "../../modules/mod_articles_categories/manifest.js";
+import relatedItemsManifestDefault, { RELATED_ITEMS_MANIFEST } from "../../modules/mod_related_items/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });
@@ -73,6 +74,7 @@ assert.equal(articlesCategoryManifestDefault, ARTICLES_CATEGORY_MANIFEST);
 assert.equal(articlesPopularManifestDefault, ARTICLES_POPULAR_MANIFEST);
 assert.equal(articlesArchiveManifestDefault, ARTICLES_ARCHIVE_MANIFEST);
 assert.equal(articlesCategoriesManifestDefault, ARTICLES_CATEGORIES_MANIFEST);
+assert.equal(relatedItemsManifestDefault, RELATED_ITEMS_MANIFEST);
 
 let disposed = false;
 function classList() {
