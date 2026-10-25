@@ -127,20 +127,15 @@ const FILES = [
   "kernel/articles-data.js",
   "kernel/categories.js",
   "kernel/publisher-data.js",
-  // Módulos de posição mod_tags_popular/mod_tags_similar (Wave 2): leem
-  // artigos em memória via services.adminClient (mesmo contrato dos demais
-  // módulos de posição acima), então seus próprios arquivos também
-  // precisam estar no pacote publicado.
-  "modules/mod_tags_popular/manifest.js",
-  "modules/mod_tags_popular/module.js",
-  "modules/mod_tags_popular/popular-data.js",
-  "modules/mod_tags_popular/popular-view.js",
-  "modules/mod_tags_popular/popular-settings-schema.js",
-  "modules/mod_tags_similar/manifest.js",
-  "modules/mod_tags_similar/module.js",
-  "modules/mod_tags_similar/similar-data.js",
-  "modules/mod_tags_similar/similar-view.js",
-  "modules/mod_tags_similar/similar-settings-schema.js",
+  // Nota de integração (Wave 2): os próprios arquivos de
+  // `modules/mod_tags_popular`/`mod_tags_similar`/`mod_articles_*` NÃO
+  // entram nesta lista — ao contrário do Site Kernel central (listado aqui
+  // de forma explícita e mínima), módulos de posição são publicados por
+  // `tools/build-release.js` (que varre `modules/` por completo, incluindo
+  // `.css`/README/USAGE/package.json), mesmo mecanismo já usado por
+  // `mod_menu`/`mod_breadcrumbs`/`mod_footer` — confirmado antes de
+  // mesclar as 3 branches da Wave 2 (uma delas havia adicionado esses
+  // módulos aqui por engano; removido na integração).
   // Templates shipped pela PLATAFORMA (fallback de 2º/3º nível — ver
   // site-boot.js#createTemplateLayoutResolver): carregados em runtime pelo
   // navegador via import() dinâmico, mesmo mecanismo de qualquer Template

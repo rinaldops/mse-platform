@@ -158,8 +158,8 @@
     },
     {
       "path": "kernel/content-services.js",
-      "bytes": 9139,
-      "sha256": "78ccfe82519efd8a418187b77bea7f24623afab01dbbfd66f225497dbf5df7b9"
+      "bytes": 10548,
+      "sha256": "1ecb8569b71b9bb5a2907e21db86007288bdbf0691f3e94b5a2843c626ee5fc9"
     },
     {
       "path": "kernel/article-mapper.js",
@@ -180,6 +180,56 @@
       "path": "kernel/publisher-data.js",
       "bytes": 21558,
       "sha256": "546349175dc39aef929aeee21b287925ef53ced3fc63dd3f45fd2f54136886bd"
+    },
+    {
+      "path": "modules/mod_tags_popular/manifest.js",
+      "bytes": 1353,
+      "sha256": "4568cc1a5ee387f2700ca16baa029a8055016888e7118fde65dedf1723258f82"
+    },
+    {
+      "path": "modules/mod_tags_popular/module.js",
+      "bytes": 1767,
+      "sha256": "59660ff41bcdedca670b5ed3a24863719fda859d8db3531be20323a33400696c"
+    },
+    {
+      "path": "modules/mod_tags_popular/popular-data.js",
+      "bytes": 4803,
+      "sha256": "0797b791bd9af234a99254322af0a77b68891e36acaaf47417235103eb328d19"
+    },
+    {
+      "path": "modules/mod_tags_popular/popular-view.js",
+      "bytes": 3479,
+      "sha256": "e65dfa8f2b3cfa351403ce032842ee999980c58831de593bad5c150a4a7e2e49"
+    },
+    {
+      "path": "modules/mod_tags_popular/popular-settings-schema.js",
+      "bytes": 2430,
+      "sha256": "0b48cd0075c94bc6658de30d526b6b64274b1a22cff4023f0caf3939323ede07"
+    },
+    {
+      "path": "modules/mod_tags_similar/manifest.js",
+      "bytes": 1389,
+      "sha256": "13be6c7d85103474b8ab6d1c51b52d253d359ba8d7f6bb992607a1972e4b21b8"
+    },
+    {
+      "path": "modules/mod_tags_similar/module.js",
+      "bytes": 1800,
+      "sha256": "baaf01be50cb413d991705a3d5ebf612b38cd582f565e910b5505b7fc28798ba"
+    },
+    {
+      "path": "modules/mod_tags_similar/similar-data.js",
+      "bytes": 4770,
+      "sha256": "28ad4d9f6a203e369dd7574fd24b1d15ec671dc807b7daa8d241ea35dd20d0f1"
+    },
+    {
+      "path": "modules/mod_tags_similar/similar-view.js",
+      "bytes": 2350,
+      "sha256": "0b2876634d48351fa6499697f69dda4f4866d705adc2906044413712d9345e3b"
+    },
+    {
+      "path": "modules/mod_tags_similar/similar-settings-schema.js",
+      "bytes": 1614,
+      "sha256": "e0a8cf44d3e102ef4d88eecb2bd6e8f18c784ab630f310d47f9137a2c7ede253"
     },
     {
       "path": "templates/mse-default/index.js",
