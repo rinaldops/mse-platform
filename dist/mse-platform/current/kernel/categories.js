@@ -113,3 +113,40 @@ export function resolveArticleCategory(categories, categoriaId) {
     ?? null
   );
 }
+
+/**
+ * Filtra artigos mapeados (ver `kernel/article-mapper.js`) pela categoria
+ * indicada por `categoriaIdFiltro` (Id, Alias ou Title — mesmo campo `catid`
+ * do Joomla! real, ver `mod_articles_latest`/`mod_articles_news`/
+ * `mod_articles_category`/`mod_articles_popular`). Reutilizada por mais de
+ * um módulo de posição da família `mod_articles_*` (em vez de duplicada em
+ * cada `*-data.js`) — por isso mora aqui, não em `kernel/content-services.js`
+ * (que é agnóstico de categorias/`MSECategories`).
+ *
+ * Resolve TANTO o filtro quanto o `categoriaId` de cada artigo via
+ * `resolveArticleCategory`, para que o filtro funcione corretamente mesmo
+ * quando um dos dois lados é um Id numérico e o outro é um Alias/Title
+ * (reflexo de `categoriaId` não ser uma FK formal — ver cabeçalho de
+ * `kernel/article-mapper.js`). Quando o filtro não resolve para nenhuma
+ * categoria real de `categories` (ex.: `MSECategories` vazio/não carregado),
+ * cai para a comparação direta de `kernel/content-services.js#filterByCategoria`
+ * (`artigo.categoriaId === categoriaIdFiltro`), em vez de excluir tudo
+ * silenciosamente.
+ *
+ * `categoriaIdFiltro` ausente/vazio devolve `articles` inalterado (sem
+ * restrição), mesmo comportamento de `filterByCategoria`.
+ *
+ * @param {Array<object>} articles artigos já mapeados.
+ * @param {Array<object>} categories itens crus de MSECategories.
+ * @param {number | string | null | undefined} categoriaIdFiltro
+ * @returns {Array<object>}
+ */
+export function filterArticlesByCategory(articles, categories, categoriaIdFiltro) {
+  const list = Array.isArray(articles) ? articles : [];
+  if (categoriaIdFiltro === null || categoriaIdFiltro === undefined || categoriaIdFiltro === "") return list;
+
+  const targetCategory = resolveArticleCategory(categories, categoriaIdFiltro);
+  if (!targetCategory) return list.filter((article) => article?.categoriaId === categoriaIdFiltro);
+
+  return list.filter((article) => resolveArticleCategory(categories, article?.categoriaId)?.Id === targetCategory.Id);
+}

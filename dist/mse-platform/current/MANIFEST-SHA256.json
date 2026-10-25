@@ -163,8 +163,8 @@
     },
     {
       "path": "kernel/content-services.js",
-      "bytes": 10548,
-      "sha256": "1ecb8569b71b9bb5a2907e21db86007288bdbf0691f3e94b5a2843c626ee5fc9"
+      "bytes": 12868,
+      "sha256": "af771a38b259bae171a9832853a7d93b1040b9bf2436464d5bba6c7623878a0c"
     },
     {
       "path": "kernel/article-mapper.js",
@@ -178,8 +178,8 @@
     },
     {
       "path": "kernel/categories.js",
-      "bytes": 4049,
-      "sha256": "cce0639010ba1fe94445b1c764df8b9aba0ad77e3d1ddbad2d82702ae501a41e"
+      "bytes": 6104,
+      "sha256": "9be89ed850ec6462ed0814e54f4457e60ad029039a2b853e881dd948f8368ef2"
     },
     {
       "path": "kernel/publisher-data.js",
