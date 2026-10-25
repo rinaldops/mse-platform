@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../docs/schemas/extension-contract.schema.json",
+  "id": "plg-extension-manifest-validator",
+  "type": "plugin",
+  "group": "extension",
+  "element": "manifest-validator",
+  "displayName": "Extension Manifest Validator",
+  "version": "0.1.0",
+  "coreCompatibility": ">=1.0.0 <2.0.0",
+  "stability": "preview",
+  "dataSchemaVersion": 1,
+  "settingsSchemaVersion": 1,
+  "permissions": ["read"],
+  "locales": ["pt-BR"],
+  "styles": [],
+  "dataSources": [],
+  "entrypoints": { "full": "./manifest-validator.js" },
+  "events": ["onAfterRoute"],
+  "capabilities": { "full": true, "summary": false, "settings": false, "provisioning": false }
+}
