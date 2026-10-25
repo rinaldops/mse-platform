@@ -43,7 +43,8 @@ const CARD_DESCRIPTIONS = Object.freeze({
   com_modules: "Posiciona e configura instâncias de módulo nas páginas.",
   com_templates: "Escolhe o template ativo do site.",
   com_installer: "Inspeciona, verifica e aplica o provisionamento das listas do kernel.",
-  com_tags: "Organiza o conteúdo com etiquetas transversais às categorias."
+  com_tags: "Organiza o conteúdo com etiquetas transversais às categorias.",
+  com_finder: "Gerencia os filtros de busca salvos do site."
 });
 
 function cardIcon(document, option) {
