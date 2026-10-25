@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mse-platform.local/schemas/extension-contract.schema.json",
+  "title": "MSE Platform Extension Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "version", "coreCompatibility", "entrypoints"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$",
+      "description": "Identifier in kebab-case, stable across releases."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["component", "module", "plugin"],
+      "description": "Extension kind, aligned with Joomla concepts."
+    },
+    "displayName": { "type": "string", "minLength": 1 },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+      "description": "SemVer"
+    },
+    "coreCompatibility": {
+      "type": "string",
+      "pattern": "^>=\\d+\\.\\d+\\.\\d+\\s+<\\d+\\.\\d+\\.\\d+$",
+      "description": "Inclusive min and exclusive max, space separated."
+    },
+    "stability": {
+      "type": "string",
+      "enum": ["preview", "stable", "deprecated"],
+      "default": "preview"
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full"],
+      "properties": {
+        "full": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "full": { "type": "boolean" },
+        "summary": { "type": "boolean" },
+        "settings": { "type": "boolean" },
+        "provisioning": { "type": "boolean" },
+        "publishing": { "type": "boolean" }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["read", "write", "manage-lists", "send-mail"]
+      },
+      "uniqueItems": true
+    },
+    "dataSchemaVersion": { "type": "integer", "minimum": 0 },
+    "settingsSchemaVersion": { "type": "integer", "minimum": 1 },
+    "locales": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2 },
+      "uniqueItems": true
+    },
+    "styles": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "dataSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "type", "internalName", "displayName"],
+        "properties": {
+          "key": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+          "type": { "type": "string", "enum": ["list", "library"] },
+          "internalName": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean", "default": true }
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" },
+      "description": "Enabled component views"
+    },
+    "routeParams": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "positions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+      "uniqueItems": true
+    },
+    "events": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "component" } } },
+      "then": { "properties": { "views": { "type": "object" } } }
+    },
+    {
+      "if": { "properties": { "type": { "const": "module" } } },
+      "then": { "required": ["positions"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "plugin" } } },
+      "then": { "required": ["events"] }
+    }
+  ]
+}
