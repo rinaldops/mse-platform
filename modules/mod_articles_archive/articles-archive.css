@@ -1,0 +1,48 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="articles-archive"][data-mse-module="articles-archive"] {
+  --articles-archive-text: #000000;
+  --articles-archive-text-muted: #75787B;
+  --articles-archive-accent: #006298;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-articles-archive {
+  display: block;
+}
+
+.mse-module-articles-archive__status,
+.mse-module-articles-archive__empty {
+  color: var(--articles-archive-text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.mse-module-articles-archive__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mse-module-articles-archive__item {
+  border-bottom: 1px solid var(--articles-archive-text-muted);
+  padding-bottom: 0.5rem;
+}
+
+.mse-module-articles-archive__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mse-module-articles-archive__link {
+  color: var(--articles-archive-accent);
+  text-decoration: none;
+}
+
+.mse-module-articles-archive__link:hover {
+  text-decoration: underline;
+}

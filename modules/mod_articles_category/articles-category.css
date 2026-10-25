@@ -1,0 +1,54 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="articles-category"][data-mse-module="articles-category"] {
+  --articles-category-text: #000000;
+  --articles-category-text-muted: #75787B;
+  --articles-category-accent: #006298;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-articles-category {
+  display: block;
+}
+
+.mse-module-articles-category__status,
+.mse-module-articles-category__empty {
+  color: var(--articles-category-text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.mse-module-articles-category__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mse-module-articles-category__item {
+  border-bottom: 1px solid var(--articles-category-text-muted);
+  padding-bottom: 0.5rem;
+}
+
+.mse-module-articles-category__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mse-module-articles-category__link {
+  color: var(--articles-category-accent);
+  text-decoration: none;
+}
+
+.mse-module-articles-category__link:hover {
+  text-decoration: underline;
+}
+
+.mse-module-articles-category__intro {
+  color: var(--articles-category-text);
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
