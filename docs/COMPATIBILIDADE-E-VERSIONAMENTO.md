@@ -13,6 +13,7 @@ SharePoint nem substitui os testes de uma release.
 | Videoteca | 0.8.0 | 0.9.1 |
 | Home | 0.5.0 | 0.7.0 |
 | Administração | 1.0.2 | 1.0.2 |
+| Artigos (mod_articles_*) | 0.1.0 | 0.1.0 |
 | Adaptador MSE | 0.1.0 | — |
 
 Os manifestos dos módulos e administração declaram `>=0.8.0 <2.0.0` e

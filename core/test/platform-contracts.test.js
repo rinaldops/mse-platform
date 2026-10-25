@@ -20,6 +20,12 @@ import videotecaManifestDefault, { VIDEOTECA_MANIFEST } from "../../modules/mod_
 import menuManifestDefault, { MENU_MANIFEST } from "../../modules/mod_menu/manifest.js";
 import breadcrumbsManifestDefault, { BREADCRUMBS_MANIFEST } from "../../modules/mod_breadcrumbs/manifest.js";
 import footerManifestDefault, { FOOTER_MANIFEST } from "../../modules/mod_footer/manifest.js";
+import articlesLatestManifestDefault, { ARTICLES_LATEST_MANIFEST } from "../../modules/mod_articles_latest/manifest.js";
+import articlesNewsManifestDefault, { ARTICLES_NEWS_MANIFEST } from "../../modules/mod_articles_news/manifest.js";
+import articlesCategoryManifestDefault, { ARTICLES_CATEGORY_MANIFEST } from "../../modules/mod_articles_category/manifest.js";
+import articlesPopularManifestDefault, { ARTICLES_POPULAR_MANIFEST } from "../../modules/mod_articles_popular/manifest.js";
+import articlesArchiveManifestDefault, { ARTICLES_ARCHIVE_MANIFEST } from "../../modules/mod_articles_archive/manifest.js";
+import articlesCategoriesManifestDefault, { ARTICLES_CATEGORIES_MANIFEST } from "../../modules/mod_articles_categories/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });
@@ -55,6 +61,12 @@ assert.equal(videotecaManifestDefault, VIDEOTECA_MANIFEST);
 assert.equal(menuManifestDefault, MENU_MANIFEST);
 assert.equal(breadcrumbsManifestDefault, BREADCRUMBS_MANIFEST);
 assert.equal(footerManifestDefault, FOOTER_MANIFEST);
+assert.equal(articlesLatestManifestDefault, ARTICLES_LATEST_MANIFEST);
+assert.equal(articlesNewsManifestDefault, ARTICLES_NEWS_MANIFEST);
+assert.equal(articlesCategoryManifestDefault, ARTICLES_CATEGORY_MANIFEST);
+assert.equal(articlesPopularManifestDefault, ARTICLES_POPULAR_MANIFEST);
+assert.equal(articlesArchiveManifestDefault, ARTICLES_ARCHIVE_MANIFEST);
+assert.equal(articlesCategoriesManifestDefault, ARTICLES_CATEGORIES_MANIFEST);
 
 let disposed = false;
 function classList() {
