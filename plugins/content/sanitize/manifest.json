@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../docs/schemas/extension-contract.schema.json",
+  "id": "plg-content-sanitize",
+  "type": "plugin",
+  "group": "content",
+  "element": "sanitize",
+  "displayName": "Content — Sanitização",
+  "version": "0.1.0",
+  "coreCompatibility": ">=1.0.0 <2.0.0",
+  "stability": "preview",
+  "dataSchemaVersion": 1,
+  "settingsSchemaVersion": 1,
+  "permissions": ["read"],
+  "locales": ["pt-BR"],
+  "styles": [],
+  "dataSources": [],
+  "entrypoints": { "full": "./plg-content-sanitize.js" },
+  "events": ["onAfterRoute", "onBeforeRender"],
+  "capabilities": { "full": true, "summary": false, "settings": false, "provisioning": false }
+}

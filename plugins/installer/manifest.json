@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../docs/schemas/extension-contract.schema.json",
+  "id": "installer-core",
+  "type": "plugin",
+  "group": "installer",
+  "element": "core",
+  "displayName": "Installer lifecycle plugin",
+  "version": "1.0.0",
+  "coreCompatibility": ">=1.0.0 <2.0.0",
+  "stability": "preview",
+  "dataSchemaVersion": 1,
+  "settingsSchemaVersion": 1,
+  "permissions": ["read", "write", "manage-lists"],
+  "locales": ["pt-BR"],
+  "styles": [],
+  "dataSources": [],
+  "entrypoints": { "full": "./plugin.js" },
+  "events": ["onInstallerInspect", "onInstallerVerify", "onInstallerApply"],
+  "capabilities": { "full": true, "summary": false, "settings": false, "provisioning": true }
+}

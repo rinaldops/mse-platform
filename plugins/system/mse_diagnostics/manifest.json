@@ -1,17 +1,20 @@
 {
-  "$schema": "https://example.invalid/mse-plugin.schema.json",
-  "name": "plg_system_mse_diagnostics",
+  "$schema": "../../../../docs/schemas/extension-contract.schema.json",
+  "id": "plg-system-mse-diagnostics",
+  "type": "plugin",
   "group": "system",
   "element": "mse_diagnostics",
+  "displayName": "MSE System Diagnostics",
   "version": "0.1.0",
-  "title": "MSE System Diagnostics",
-  "description": "Diagnóstico mínimo do ciclo de vida do Site Kernel (router/render) e registro em console.",
-  "entry": "plugins/system/mse_diagnostics/mse_diagnostics.js",
+  "coreCompatibility": ">=1.0.0 <2.0.0",
+  "stability": "preview",
+  "dataSchemaVersion": 1,
+  "settingsSchemaVersion": 1,
+  "permissions": ["read"],
+  "locales": ["pt-BR"],
+  "styles": [],
+  "dataSources": [],
+  "entrypoints": { "full": "./mse_diagnostics.js" },
   "events": ["onAfterRoute", "onBeforeRender", "onAfterRender"],
-  "provides": {
-    "diagnostics": {
-      "id": "mse_diagnostics",
-      "label": "System Diagnostics"
-    }
-  }
+  "capabilities": { "full": true, "summary": false, "settings": false, "provisioning": false }
 }
