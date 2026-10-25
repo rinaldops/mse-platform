@@ -14,7 +14,7 @@ um desenvolvedor familiarizado com Joomla!.
 | `administrator/components/com_<nome>/` | `components/com_<nome>/` | um componente físico por `option=com_xxx`; `com_cpanel` acumula o painel inicial + o roteador comum do Administrator |
 | `administrator/templates/atum/` | `components/com_cpanel/administrator-shell.js` | template formal único do Administrator (cabeçalho + navegação lateral persistente + slot de conteúdo), 22/10/2026 — substitui o `<section class="mse-administrator__panel">` que cada tela desenhava isolada |
 | `components/_shared/` | — | não é um componente Joomla!; infraestrutura interna comum (render de tabela, paginação) compartilhada entre `com_extensions`/`com_menus`/`com_modules` |
-| `modules/mod_<nome>/` | `modules/mod_<nome>/` | `mod_forum`, `mod_home`, `mod_recursos`, `mod_videoteca` |
+| `modules/mod_<nome>/` | `modules/mod_<nome>/` | `mod_forum`, `mod_home`, `mod_recursos`, `mod_videoteca`; `mod_menu`, `mod_breadcrumbs`, `mod_footer` (24/10/2026); `mod_articles_latest`/`mod_articles_news`/`mod_articles_category`/`mod_articles_popular`/`mod_articles_archive`/`mod_articles_categories`, `mod_search`, `mod_tags_popular`, `mod_tags_similar` (24/10/2026); `mod_related_items`, `mod_random_image` (25/10/2026) |
 | `libraries/` | `libraries/ui/` | facade JS opcional (accordion/carousel compartilhados entre módulos); **não** é `mod_*` |
 | `plugins/<grupo>/<nome>/` | `plugins/` | reservada, convenção pronta; nenhum plugin real ainda |
 | `templates/<nome>/` | `templates/<nome>/` | agora um sistema real de Templates instaláveis (`templates/mse-default/`, `templates/system/`; sites consumidores publicam os seus próprios, ex.: `camap-tema-01`) — ver seção 4 (`MSETemplateStyles`) e `com_templates` abaixo; `themes/` (tema-base antigo) foi substituído por este mecanismo |
@@ -24,13 +24,28 @@ um desenvolvedor familiarizado com Joomla!.
 
 ### Componentes administrativos reservados (sem implementação ainda)
 
-`components/com_config/`, `components/com_installer/`,
-`components/com_categories/`, `components/com_tags/`,
-`components/com_media/` existem como pastas com `README.md`
-"reservada/fora de escopo" — enumeração honesta do conjunto Joomla!-completo,
-sem prometer funcionalidade. `components/com_templates/` **deixou de ser
-reservado** (22/10/2026): tem implementação real (lista de templates
-instalados + "Tornar padrão" por `ClientId`), ver seção 4.
+`components/com_config/`, `components/com_installer/` existem como pastas
+com `README.md` "reservada/fora de escopo" — enumeração honesta do conjunto
+Joomla!-completo, sem prometer funcionalidade.
+
+`components/com_templates/` **deixou de ser reservado** (22/10/2026): tem
+implementação real (lista de templates instalados + "Tornar padrão" por
+`ClientId`), ver seção 4.
+
+`components/com_categories/`, `components/com_tags/`, `components/com_media/`
+**deixaram de ser reservados** (24/10/2026, implementação selecionada pelo
+usuário a partir da auditoria pente-fino): CRUD-lite completo sobre
+`MSECategories`/`MSETags`/`MSEMedia` (ver `categories-editor.js`,
+`tags-editor.js`, `media-editor.js`), mesmo padrão de `components/com_modules`.
+
+`components/com_finder/` também deixou de ser reservado (24/10/2026), com
+escopo reduzido deliberado: é um CRUD-lite de "filtros de busca salvos"
+(`MSESearchFilters`, ≈ Joomla! `#__finder_filters`) — não reimplementa o
+motor de indexação full-text real do Joomla! (`#__finder_tokens`/
+`#__finder_links`/mapas de termos). A busca de fato no site é feita por
+`modules/mod_search` (≈ `mod_finder` real), que filtra em memória os
+artigos já carregados, sem consultar nenhum filtro salvo aqui. Ver
+`components/com_finder/README.md` e `modules/mod_search/README.md`.
 
 ## 2. Estrutura de pastas (CAMAP-AGP, site consumidor)
 

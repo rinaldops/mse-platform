@@ -332,6 +332,73 @@ depois das correções de 2.1–2.6; esta entrega fecha ou formaliza cada uma:
     (confirmados sem necessidade de alteração — não afirmavam os campos
     PT).
 
+## 2.11 Lacunas de tipos de extensão Joomla! fechadas em 24–25/10/2026
+
+Além das lacunas estruturais acima (templates, `controller.task`,
+`MSEConfiguracoes`, decomissionamento PT), esta auditoria também apontou
+que o `mse-platform` cobria só um subconjunto pequeno dos tipos de
+extensão REAIS do Joomla! (`com_categories`/`com_tags`/`com_media`/
+`com_finder` entre os Componentes; só `mod_forum`/`mod_home`/
+`mod_recursos`/`mod_videoteca` entre os Módulos de posição). O usuário
+selecionou uma lista fechada de 4 Componentes + 8 Módulos para fechamento,
+implementada em 3 ondas dependentes (Wave 1 → Wave 2 → Wave 3), cada módulo
+com seu próprio `README.md`/`USAGE.md` documentando decisões de escopo —
+este parágrafo só consolida a lista e aponta para cada fonte. Todas as
+ondas: `npm test` 100% verde, mesclado em `main`, publicado em
+`origin/main`.
+
+- **Wave 1 (24/10/2026, sem dependências):**
+  `components/com_categories/` (CRUD-lite sobre `MSECategories`, ≈
+  `#__categories`), `components/com_tags/` (CRUD-lite completo sobre
+  `MSETags`, ≈ `#__tags`), `components/com_media/` (gerenciador de mídia
+  sobre a biblioteca `MSEMedia`, ≈ `images/`/gerenciador de mídia real) +
+  `modules/mod_menu/`, `modules/mod_breadcrumbs/`, `modules/mod_footer/`
+  (módulos de posição do site, consumindo `MSEMenu`/`kernel/menu.js`).
+- **Wave 2 (24/10/2026, depende de categorias/tags da Wave 1):**
+  `modules/mod_articles_latest/news/category/popular/archive/categories/`
+  (família completa, sobre `kernel/articles-data.js`/
+  `kernel/content-services.js`, novos nesta onda), `components/com_finder/`
+  e `modules/mod_search/`, `modules/mod_tags_popular/` e
+  `modules/mod_tags_similar/`.
+  - **Decisão de escopo — `com_finder`/`mod_search` (MVP, não documentada
+    antes desta entrada):** o `com_finder` real do Joomla! é um motor de
+    indexação full-text completo, com tokenização e tabelas de mapa de
+    termos (`#__finder_tokens`/`#__finder_links`/etc.). Reimplementar esse
+    motor sobre SharePoint REST está fora de escopo desta rodada — o que
+    foi entregue é um CRUD-lite de "filtros de busca salvos"
+    (`MSESearchFilters`, ≈ `#__finder_filters`), no mesmo espírito CRUD-lite
+    já usado em `com_categories`/`com_tags` (ver
+    `components/com_finder/README.md`). A busca de fato no site é feita
+    por `modules/mod_search/` (≈ `mod_finder` real), que filtra EM
+    MEMÓRIA os artigos já carregados via `kernel/articles-data.js` — não
+    consulta índice algum, nem os filtros salvos de `com_finder` (ver
+    `modules/mod_search/README.md`). Esta é uma limitação deliberada, não
+    um defeito: não há, hoje, nenhum mecanismo de indexação server-side no
+    Site Kernel para um `mod_search` real consultar.
+  - Demais decisões de escopo de cada módulo (`mod_articles_popular`
+    aproxima por data de criação; `mod_articles_archive` sem agrupamento
+    mês/ano; `mod_tags_similar` só `matchType: "any"`) documentadas nos
+    respectivos `README.md`.
+- **Wave 3 (25/10/2026, depende de finder/tags/media da Wave 2):**
+  `modules/mod_related_items/` e `modules/mod_random_image/`.
+  - **Decisão de escopo — `mod_related_items`:** o Joomla! real casa
+    artigos pelo campo livre `metakey` (comparação `LIKE`/substring,
+    palavras-chave separadas por vírgula). `MSEPublicacoes` não tem campo
+    equivalente a `metakey` — este MVP reusa o array `tags` (mesmo campo já
+    consumido por `mod_tags_similar`) como substituto, com comparação por
+    IGUALDADE de string (não substring), critério "qualquer tag em comum"
+    (`any`). Ver `modules/mod_related_items/README.md`.
+  - **Decisão de escopo — `mod_random_image`:** o Joomla! real varre uma
+    pasta do sistema de arquivos (`folder`) e calcula largura/altura reais
+    via `getimagesize`. Este MVP usa a biblioteca `MSEMedia` (já existente,
+    Wave 1) como fonte de imagens em vez de uma pasta — sem conceito de
+    subpastas — e não calcula proporção real (`MSEMedia` não declara
+    dimensões de imagem); expõe só `maxWidth` como limite de exibição via
+    CSS. Ver `modules/mod_random_image/README.md`.
+- Inventário de versões por pacote: `docs/COMPATIBILIDADE-E-VERSIONAMENTO.md`.
+  Equivalência de pastas por módulo/componente: `docs/CONVENCAO-JOOMLA.md`
+  §1.
+
 ## 3. Permanecem fora de escopo — só documentadas para tratamento futuro
 
 Nenhuma destas foi corrigida nesta rodada; cada uma tem uma razão
