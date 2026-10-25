@@ -1,0 +1,77 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="tags-popular"][data-mse-module="tags-popular"] {
+  --tags-popular-text: #000000;
+  --tags-popular-text-muted: #75787B;
+  --tags-popular-accent: #006298;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-tags-popular {
+  display: block;
+}
+
+.mse-module-tags-popular__status,
+.mse-module-tags-popular__empty {
+  color: var(--tags-popular-text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.mse-module-tags-popular__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mse-module-tags-popular__list--cloud {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.mse-module-tags-popular__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.mse-module-tags-popular__tag {
+  color: var(--tags-popular-accent);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.mse-module-tags-popular__tag:hover {
+  text-decoration: underline;
+}
+
+.mse-module-tags-popular__tag--size-1 {
+  font-size: 0.75rem;
+}
+
+.mse-module-tags-popular__tag--size-2 {
+  font-size: 0.875rem;
+}
+
+.mse-module-tags-popular__tag--size-3 {
+  font-size: 1rem;
+}
+
+.mse-module-tags-popular__tag--size-4 {
+  font-size: 1.25rem;
+}
+
+.mse-module-tags-popular__tag--size-5 {
+  font-size: 1.5rem;
+}
+
+.mse-module-tags-popular__count {
+  color: var(--tags-popular-text-muted);
+  font-size: 0.75rem;
+}

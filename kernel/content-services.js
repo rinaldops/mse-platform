@@ -30,6 +30,12 @@
  *
  * Todas as funções são puras: nunca mutam o array (ou os objetos) de entrada, tratam
  * `artigos` ausente/`undefined`/não-array como lista vazia, e nunca fazem I/O.
+ *
+ * `aggregateTagCounts` (Wave 2, `modules/mod_tags_popular`): agrega a contagem de uso
+ * de cada tag a partir de uma lista de artigos já carregada (tipicamente após
+ * `filterPublished`) — mesmo princípio das demais funções deste arquivo (pura, nunca
+ * muta a entrada, tolera `artigos` ausente). Não existe hoje nenhuma outra função de
+ * agregação neste módulo; esta é a primeira.
  */
 
 const ESTADO_PUBLICADO = "Publicado";
@@ -225,4 +231,29 @@ export function composeFilters(artigos, filtros = {}) {
   if (options.destaque === true) resultado = filterFeatured(resultado, { agora: options.agora });
 
   return paginate(resultado, { page: options.page, pageSize: options.pageSize });
+}
+
+/**
+ * Agrega a contagem de uso de cada tag a partir de `artigos` — cada tag do
+ * array `tags` de cada artigo soma 1 à sua contagem. Artigos sem `tags` (ou
+ * com `tags` que não é array) não contribuem com nenhuma tag. O resultado é
+ * ordenado por contagem descendente; em caso de empate, por ordem
+ * alfabética (`tag`, `localeCompare`) para um resultado estável e
+ * determinístico independente da ordem de entrada dos artigos.
+ *
+ * @param {Array<object>} artigos
+ * @returns {Array<{ tag: string, count: number }>}
+ */
+export function aggregateTagCounts(artigos) {
+  const counts = new Map();
+  for (const artigo of toArray(artigos)) {
+    if (!Array.isArray(artigo?.tags)) continue;
+    for (const tag of artigo.tags) {
+      if (typeof tag !== "string" || tag === "") continue;
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => (b.count - a.count) || a.tag.localeCompare(b.tag));
 }

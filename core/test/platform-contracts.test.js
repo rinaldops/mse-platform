@@ -20,6 +20,8 @@ import videotecaManifestDefault, { VIDEOTECA_MANIFEST } from "../../modules/mod_
 import menuManifestDefault, { MENU_MANIFEST } from "../../modules/mod_menu/manifest.js";
 import breadcrumbsManifestDefault, { BREADCRUMBS_MANIFEST } from "../../modules/mod_breadcrumbs/manifest.js";
 import footerManifestDefault, { FOOTER_MANIFEST } from "../../modules/mod_footer/manifest.js";
+import tagsPopularManifestDefault, { TAGS_POPULAR_MANIFEST } from "../../modules/mod_tags_popular/manifest.js";
+import tagsSimilarManifestDefault, { TAGS_SIMILAR_MANIFEST } from "../../modules/mod_tags_similar/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });
@@ -55,6 +57,8 @@ assert.equal(videotecaManifestDefault, VIDEOTECA_MANIFEST);
 assert.equal(menuManifestDefault, MENU_MANIFEST);
 assert.equal(breadcrumbsManifestDefault, BREADCRUMBS_MANIFEST);
 assert.equal(footerManifestDefault, FOOTER_MANIFEST);
+assert.equal(tagsPopularManifestDefault, TAGS_POPULAR_MANIFEST);
+assert.equal(tagsSimilarManifestDefault, TAGS_SIMILAR_MANIFEST);
 
 let disposed = false;
 function classList() {
