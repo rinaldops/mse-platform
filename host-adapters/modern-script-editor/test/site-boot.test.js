@@ -6,12 +6,13 @@ import {
   resolveKernelListIds
 } from "../site-boot.js";
 
-// --- resolveKernelListIds: MSECategories/MSETags/MSEMedia entram no mapa
-// resolvido (regressão 25/10/2026 — gap encontrado antes da Wave 2: estas 3
-// listas eram provisionadas por kernel/installer.js e lidas por
-// `services.listIds.MSECategories`/`MSETags`/`MSEMedia`
-// (com_categories/com_tags/com_media), mas nunca entravam em
-// CONTENT_LIST_INTERNAL_NAMES — em produção, chegavam sempre `undefined`) --
+// --- resolveKernelListIds: MSECategories/MSETags/MSEMedia/MSESearchFilters
+// entram no mapa resolvido (regressão 25/10/2026 - gap encontrado antes da
+// Wave 2: estas listas eram provisionadas por kernel/installer.js e lidas
+// por `services.listIds.MSECategories`/`MSETags`/`MSEMedia`/
+// `MSESearchFilters` (com_categories/com_tags/com_media/com_finder), mas
+// nunca entravam em CONTENT_LIST_INTERNAL_NAMES - em produção, chegavam
+// sempre `undefined`) --
 {
   const catalog = [
     { Id: "menu-guid", RootFolder: { Name: "MSEMenu" } },
@@ -20,14 +21,16 @@ import {
     { Id: "modules-menu-guid", RootFolder: { Name: "MSEModulesMenu" } },
     { Id: "categories-guid", RootFolder: { Name: "MSECategories" } },
     { Id: "tags-guid", RootFolder: { Name: "MSETags" } },
-    { Id: "media-guid", RootFolder: { Name: "MSEMedia" } }
+    { Id: "media-guid", RootFolder: { Name: "MSEMedia" } },
+    { Id: "search-filters-guid", RootFolder: { Name: "MSESearchFilters" } }
   ];
   const client = { request: async () => ({ data: { value: catalog } }) };
   const resolved = await resolveKernelListIds(client);
   assert.equal(resolved.MSECategories, "categories-guid");
   assert.equal(resolved.MSETags, "tags-guid");
   assert.equal(resolved.MSEMedia, "media-guid");
-  console.log("site-boot.test.js: resolveKernelListIds resolve MSECategories/MSETags/MSEMedia ok.");
+  assert.equal(resolved.MSESearchFilters, "search-filters-guid");
+  console.log("site-boot.test.js: resolveKernelListIds resolve MSECategories/MSETags/MSEMedia/MSESearchFilters ok.");
 }
 
 // --- resolveKernelListIds: ausência de uma lista de conteúdo opcional (ex.:
@@ -46,6 +49,7 @@ import {
   assert.equal(resolved.MSECategories, undefined);
   assert.equal(resolved.MSETags, undefined);
   assert.equal(resolved.MSEMedia, undefined);
+  assert.equal(resolved.MSESearchFilters, undefined);
   console.log("site-boot.test.js: resolveKernelListIds tolera ausência de listas de conteúdo opcionais ok.");
 }
 

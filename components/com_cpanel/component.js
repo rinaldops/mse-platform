@@ -12,6 +12,7 @@ import { renderTemplatesScreen } from "../com_templates/templates-screen.js";
 import { renderCategoriesScreen } from "../com_categories/categories-screen.js";
 import { renderTagsScreen } from "../com_tags/tags-screen.js";
 import { renderMediaScreen } from "../com_media/media-screen.js";
+import { renderFinderScreen } from "../com_finder/finder-screen.js";
 
 const SCREEN_RENDERERS = {
   controlpanel: ({ root }) => renderControlPanel({ root }),
@@ -25,7 +26,8 @@ const SCREEN_RENDERERS = {
   templates: ({ root, route, services }) => renderTemplatesScreen({ root, route, services }),
   categories: ({ root, route, services }) => renderCategoriesScreen({ root, route, services }),
   tags: ({ root, route, services }) => renderTagsScreen({ root, route, services }),
-  media: ({ root, route, services }) => renderMediaScreen({ root, route, services })
+  media: ({ root, route, services }) => renderMediaScreen({ root, route, services }),
+  finder: ({ root, route, services }) => renderFinderScreen({ root, route, services })
 };
 
 // Shell formal do Administrator (components/com_cpanel/administrator-shell.js,

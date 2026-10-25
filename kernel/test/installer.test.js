@@ -139,21 +139,22 @@ function createFakeClient() {
 // com_categories (components/com_categories). MSETags (≈ #__tags)
 // acrescentada junto com o componente com_tags. MSEMedia (biblioteca de
 // documentos do component com_media) acrescentada junto com o
-// gerenciador de mídia do Administrator.
-assert.equal(KERNEL_LIST_SCHEMAS.length, 9);
+// gerenciador de mídia do Administrator. MSESearchFilters
+// (≈ #__finder_filters) acrescentada junto com o componente com_finder.
+assert.equal(KERNEL_LIST_SCHEMAS.length, 10);
 assert.deepEqual(
   KERNEL_LIST_SCHEMAS.map((schema) => schema.internalName),
-  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles", "MSECategories", "MSETags", "MSEMedia"]
+  ["MSEMenuTypes", "MSEMenu", "MSEExtensions", "MSEModules", "MSEModulesMenu", "MSETemplateStyles", "MSECategories", "MSETags", "MSEMedia", "MSESearchFilters"]
 );
 assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
 
-// inspect() detecta as 9 listas ausentes quando o site não tem nenhuma delas.
+// inspect() detecta as 10 listas ausentes quando o site não tem nenhuma delas.
 {
   const { client } = createFakeClient();
   const installer = createKernelInstaller({ client });
   const inspection = await installer.inspect();
   assert.equal(inspection.status, "changes-required");
-  assert.equal(inspection.plan.lists.length, 9);
+  assert.equal(inspection.plan.lists.length, 10);
   assert.equal(inspection.plan.lists.every((list) => list.createList), true);
 }
 
@@ -178,14 +179,14 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.writes.length, 0);
 }
 
-// apply(confirm) autorizado cria as 9 listas + campos; verify() confirma estado final.
+// apply(confirm) autorizado cria as 10 listas + campos; verify() confirma estado final.
 {
   const { client, state } = createFakeClient();
   const installer = createKernelInstaller({ client });
 
   const applied = await installer.apply(() => true);
   assert.equal(applied.status, "provisioned");
-  assert.equal(state.lists.size, 9);
+  assert.equal(state.lists.size, 10);
   assert.equal(state.lists.get("MSEMenuTypes").fields.some((field) => field.InternalName === "Key"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Alias"), true);
   assert.equal(state.lists.get("MSEMenu").fields.some((field) => field.InternalName === "Component"), true);
@@ -196,6 +197,7 @@ assert.ok(Object.isFrozen(KERNEL_LIST_SCHEMAS));
   assert.equal(state.lists.get("MSECategories").fields.some((field) => field.InternalName === "Alias"), true);
   assert.equal(state.lists.get("MSETags").fields.some((field) => field.InternalName === "Alias"), true);
   assert.equal(state.lists.get("MSEMedia").fields.some((field) => field.InternalName === "AltText"), true);
+  assert.equal(state.lists.get("MSESearchFilters").fields.some((field) => field.InternalName === "Alias"), true);
 
   const verified = await installer.verify();
   assert.equal(verified.status, "ready");

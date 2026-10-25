@@ -22,6 +22,7 @@ import breadcrumbsManifestDefault, { BREADCRUMBS_MANIFEST } from "../../modules/
 import footerManifestDefault, { FOOTER_MANIFEST } from "../../modules/mod_footer/manifest.js";
 import tagsPopularManifestDefault, { TAGS_POPULAR_MANIFEST } from "../../modules/mod_tags_popular/manifest.js";
 import tagsSimilarManifestDefault, { TAGS_SIMILAR_MANIFEST } from "../../modules/mod_tags_similar/manifest.js";
+import searchManifestDefault, { SEARCH_MANIFEST } from "../../modules/mod_search/manifest.js";
 
 const nested = setSettingValue({}, "summary.pageSize", 8);
 assert.deepEqual(nested, { summary: { pageSize: 8 } });
@@ -59,6 +60,7 @@ assert.equal(breadcrumbsManifestDefault, BREADCRUMBS_MANIFEST);
 assert.equal(footerManifestDefault, FOOTER_MANIFEST);
 assert.equal(tagsPopularManifestDefault, TAGS_POPULAR_MANIFEST);
 assert.equal(tagsSimilarManifestDefault, TAGS_SIMILAR_MANIFEST);
+assert.equal(searchManifestDefault, SEARCH_MANIFEST);
 
 let disposed = false;
 function classList() {
