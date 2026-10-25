@@ -1,0 +1,65 @@
+/* doubled selector: beats core.css's .mse-app (same 0,1,0 specificity)
+   regardless of which module's loader injects its core.css <link> last */
+[data-mse-module="articles-categories"][data-mse-module="articles-categories"] {
+  --articles-categories-text: #000000;
+  --articles-categories-text-muted: #75787B;
+  --articles-categories-accent: #006298;
+
+  font-family: var(--mse-font-family, Arial, sans-serif);
+}
+
+.mse-module-articles-categories {
+  display: block;
+}
+
+.mse-module-articles-categories__status,
+.mse-module-articles-categories__empty {
+  color: var(--articles-categories-text-muted);
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.mse-module-articles-categories__list,
+.mse-module-articles-categories__sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mse-module-articles-categories__sublist {
+  margin-top: 0.35rem;
+  padding-left: 1rem;
+}
+
+.mse-module-articles-categories__item {
+  border-bottom: 1px solid var(--articles-categories-text-muted);
+  padding-bottom: 0.35rem;
+}
+
+.mse-module-articles-categories__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mse-module-articles-categories__link {
+  color: var(--articles-categories-accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.mse-module-articles-categories__link:hover {
+  text-decoration: underline;
+}
+
+.mse-module-articles-categories__count {
+  color: var(--articles-categories-text-muted);
+}
+
+.mse-module-articles-categories__description {
+  color: var(--articles-categories-text);
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}

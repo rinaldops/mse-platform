@@ -154,6 +154,63 @@ export function filterFeatured(artigos, { agora } = {}) {
   return stableSortBy(destacados, compareOrdemDestaque);
 }
 
+function isDateWithinRange(value, startDate, endDate) {
+  const start = parseDateOrNull(startDate);
+  const end = parseDateOrNull(endDate);
+  if (start && value.getTime() < start.getTime()) return false;
+  if (end && value.getTime() > end.getTime()) return false;
+  return true;
+}
+
+function isWithinRelativeDays(value, now, days) {
+  if (!Number.isFinite(days) || days <= 0) return true;
+  const threshold = now.getTime() - days * 24 * 60 * 60 * 1000;
+  return value.getTime() >= threshold;
+}
+
+/**
+ * Restringe artigos a uma janela de data — generaliza o campo `date_filtering`
+ * usado tanto por `mod_articles_category` quanto por `mod_articles_popular`
+ * (Joomla!, ambos com os mesmos 5 campos `date_filtering`/`date_field`/
+ * `start_date_range`/`end_date_range`/`relative_date`) — reaproveitada aqui
+ * em vez de duplicada módulo a módulo (ver `modules/mod_articles_category/category-data.js`
+ * e `modules/mod_articles_popular/popular-data.js`).
+ *
+ * Três modos (`mode`):
+ * - `"off"` (padrão): nenhuma restrição, devolve `artigos` inalterado.
+ * - `"range"`: retém artigos cujo campo `field` (padrão `"criadoEm"`) cai
+ *   entre `startDate`/`endDate` (ambos opcionais; lado ausente = sem limite
+ *   naquele lado).
+ * - `"relative"`: retém artigos cujo campo `field` está dentro dos últimos
+ *   `relativeDays` dias a partir de `agora` (padrão: relógio atual).
+ * Em "range"/"relative", um artigo cujo campo de data está ausente/inválido
+ * nunca combina (tratado como fora da janela).
+ *
+ * @param {Array<object>} artigos
+ * @param {{
+ *   mode?: "off" | "range" | "relative",
+ *   field?: string,
+ *   startDate?: string | Date,
+ *   endDate?: string | Date,
+ *   relativeDays?: number,
+ *   agora?: Date | string | number
+ * }} [options]
+ * @returns {Array<object>}
+ */
+export function filterByDateWindow(artigos, { mode = "off", field = "criadoEm", startDate, endDate, relativeDays, agora } = {}) {
+  const list = toArray(artigos);
+  if (mode !== "range" && mode !== "relative") return list;
+
+  const now = resolveNow(agora);
+  return list.filter((artigo) => {
+    const value = parseDateOrNull(artigo?.[field]);
+    if (!value) return false;
+    return mode === "range"
+      ? isDateWithinRange(value, startDate, endDate)
+      : isWithinRelativeDays(value, now, relativeDays);
+  });
+}
+
 /**
  * Ordena por um campo de data (`field`, padrão `"criadoEm"`), ascendente ou
  * descendente (`direction`, padrão `"desc"`). Itens cujo campo está

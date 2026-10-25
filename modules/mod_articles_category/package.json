@@ -1,0 +1,9 @@
+{
+  "name": "mse-mod-articles-category",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/contract.test.js && node test/module.test.js && node test/articles-category-view.test.js && node test/articles-category-data.test.js"
+  }
+}
