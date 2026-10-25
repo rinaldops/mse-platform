@@ -4,13 +4,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineExtensionContract } from "../../../../core/extension-contract.js";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const manifests = [
-  ["system", "../manifest.json"],
-  ["content", "../../manifest.json"]
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
+const files = [
+  "plugins/system/mse_diagnostics/manifest.json",
+  "plugins/content/sanitize/manifest.json",
+  "plugins/extension/manifest-validator/manifest.json",
+  "plugins/installer/manifest.json"
 ];
-for (const [name, relative] of manifests) {
-  const value = JSON.parse(await readFile(path.resolve(here, relative), "utf8"));
+for (const relative of files) {
+  const value = JSON.parse(await readFile(path.join(root, relative), "utf8"));
   const normalized = defineExtensionContract(value);
   assert.equal(normalized.type, "plugin");
   assert.equal(normalized.entrypoints.full.startsWith("./"), true);
