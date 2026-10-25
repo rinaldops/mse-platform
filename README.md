@@ -43,7 +43,7 @@ antigos permanecem para compatibilidade, não como guia de novas instalações.
 - `host-adapters/`: integração com o Modern Script Editor.
 - `modules/`: módulos `mod_<nome>` (convenção Joomla!, ex. `modules/mod_forum/`, `modules/mod_home/`, `modules/mod_recursos/`, `modules/mod_videoteca/`).
 - `libraries/`: infraestrutura visual compartilhada entre módulos, não é um módulo Joomla! (`libraries/ui/`: accordion/carousel).
-- `plugins/`: reservada, convenção `plugins/<grupo>/<nome>/` para uso futuro — nenhum plugin real ainda.
+- `plugins/`: plugins Joomla-like já existem (grupos `system/`, `content/`, `extension/`, `installer/`). **O loader/registry automático ainda está planejado**; por enquanto os plugins são testados/rodados isoladamente via `kernel/events.js#createEventBus`.
 - `themes/`: tema-base.
 - `examples/`: módulo de exemplo e hosts locais.
 - `tools/`: empacotamento e verificação de releases.

@@ -16,7 +16,7 @@ um desenvolvedor familiarizado com Joomla!.
 | `components/_shared/` | — | não é um componente Joomla!; infraestrutura interna comum (render de tabela, paginação) compartilhada entre `com_extensions`/`com_menus`/`com_modules` |
 | `modules/mod_<nome>/` | `modules/mod_<nome>/` | `mod_forum`, `mod_home`, `mod_recursos`, `mod_videoteca`; `mod_menu`, `mod_breadcrumbs`, `mod_footer` (24/10/2026); `mod_articles_latest`/`mod_articles_news`/`mod_articles_category`/`mod_articles_popular`/`mod_articles_archive`/`mod_articles_categories`, `mod_search`, `mod_tags_popular`, `mod_tags_similar` (24/10/2026); `mod_related_items`, `mod_random_image` (25/10/2026) |
 | `libraries/` | `libraries/ui/` | facade JS opcional (accordion/carousel compartilhados entre módulos); **não** é `mod_*` |
-| `plugins/<grupo>/<nome>/` | `plugins/` | reservada, convenção pronta; nenhum plugin real ainda |
+| `plugins/<grupo>/<nome>/` | `plugins/<grupo>/<nome>/` | plugins Joomla-like existem (grupos iniciais `system`, `content`, `extension`, `installer`); loader/registry automático ainda planejado |
 | `templates/<nome>/` | `templates/<nome>/` | agora um sistema real de Templates instaláveis (`templates/mse-default/`, `templates/system/`; sites consumidores publicam os seus próprios, ex.: `camap-tema-01`) — ver seção 4 (`MSETemplateStyles`) e `com_templates` abaixo; `themes/` (tema-base antigo) foi substituído por este mecanismo |
 | — | `components/com_templates/` | análogo a `administrator/components/com_templates/`: lista os Templates instalados e define qual é o padrão (`Home=true`) por `ClientId` |
 | — | `admin/` | painel administrativo histórico, pré-Site-Kernel ("um MSE por módulo"); **congelado deliberadamente**, não migra |
