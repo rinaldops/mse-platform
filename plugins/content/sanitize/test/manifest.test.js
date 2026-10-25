@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineExtensionContract } from "../../../../core/extension-contract.js";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const files = [
   "plugins/system/mse_diagnostics/manifest.json",
   "plugins/content/sanitize/manifest.json",
@@ -18,3 +18,4 @@ for (const relative of files) {
   assert.equal(normalized.entrypoints.full.startsWith("./"), true);
 }
 console.log("plugin manifests: ok");
+
