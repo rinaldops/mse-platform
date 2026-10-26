@@ -3,8 +3,22 @@ import {
   buildAdministratorServices,
   createTemplateResolver,
   createTemplateLayoutResolver,
-  resolveKernelListIds
+  resolveKernelListIds,
+  resolveRestClientFactory
 } from "../site-boot.js";
+import { createSharePointRestClient } from "../../../core/rest.js";
+import { createSpmiddleRestClient } from "../spmiddle-rest-adapter.js";
+
+// --- resolveRestClientFactory: "spmiddle" seleciona o adapter sobre o
+// SPMIDDLE; qualquer outro valor (inclusive ausente) preserva
+// core/rest.js#createSharePointRestClient — nenhum site existente (sem
+// data-rest-adapter) é afetado ----------------------------------------------
+{
+  assert.equal(resolveRestClientFactory("spmiddle"), createSpmiddleRestClient);
+  assert.equal(resolveRestClientFactory(undefined), createSharePointRestClient);
+  assert.equal(resolveRestClientFactory("outro-valor-qualquer"), createSharePointRestClient);
+  console.log("site-boot.test.js: resolveRestClientFactory seleciona o client REST certo ok.");
+}
 
 // --- resolveKernelListIds: MSECategories/MSETags/MSEMedia/MSESearchFilters
 // entram no mapa resolvido (regressão 25/10/2026 - gap encontrado antes da
@@ -529,6 +543,30 @@ import {
   assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/camap-tema-01/index.js"]);
 
   console.log("site-boot.test.js: menuItem.TemplateStyleId tem precedência sobre o Home do site (fallback quando ausente/inválido) ok.");
+}
+
+// --- createTemplateLayoutResolver: platformTemplateNames customizado
+// (ex. "minijoomla-classic", template que também vive no pacote do
+// mse-platform) resolve contra platformTemplateBase, igual a
+// mse-default/system — sem o override, cairia contra releaseBase ---------
+
+{
+  const calls = [];
+  const fallbackRoot = { id: "fallback-root" };
+  const template = {
+    async createTemplate({ root: receivedRoot }) {
+      return { root: receivedRoot, regions: new Map(), component: {}, dispose() {} };
+    }
+  };
+  const resolveLayout = createTemplateLayoutResolver({
+    releaseBase: "/sites/demo/SiteAssets/minijoomla-modules/0.1.0",
+    platformTemplateBase: "/sites/demo/SiteAssets/mse-platform/current",
+    platformTemplateNames: ["mse-default", "system", "minijoomla-classic"],
+    importModule: async (url) => { calls.push(url); return template; }
+  });
+  await resolveLayout({ root: fallbackRoot, positions: [], componentPosition: "conteudo-principal", theme: { name: "minijoomla-classic" } });
+  assert.deepEqual(calls, ["/sites/demo/SiteAssets/mse-platform/current/templates/minijoomla-classic/index.js"]);
+  console.log("site-boot.test.js: platformTemplateNames customizado resolve nome adicional contra platformTemplateBase ok.");
 }
 
 console.log("site-boot.test.js (host-adapters): verificações concluídas com sucesso.");

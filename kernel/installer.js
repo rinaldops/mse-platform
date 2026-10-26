@@ -41,7 +41,12 @@ import { MSE_CATEGORIES_SCHEMA } from "./schemas/mse-categories.js";
 import { MSE_TAGS_SCHEMA } from "./schemas/mse-tags.js";
 import { MSE_MEDIA_SCHEMA } from "./schemas/mse-media.js";
 import { MSE_SEARCH_FILTERS_SCHEMA } from "./schemas/mse-search-filters.js";
+import { MSE_CONTENT_SCHEMA } from "./schemas/mse-content.js";
 
+// MSEContent (≈ #__content, ver docs/JOOMLA-CONVENCOES-E-MIGRACAO.md §4.2)
+// acrescentada ao conjunto fixo: primeira versão formal/em inglês da lista
+// de artigos — as legadas (CAMAPPublicacoes/MSEPublicacoes/Publicacoes),
+// nunca tiveram defineListSchema, continuam fora deste conjunto.
 // MSETemplateStyles (≈ #__template_styles) acrescentada ao conjunto fixo
 // junto com o mecanismo de Templates instaláveis/fallback — ver
 // kernel/schemas/mse-template-styles.js e kernel/template-registry.js.
@@ -64,7 +69,8 @@ export const KERNEL_LIST_SCHEMAS = Object.freeze([
   MSE_CATEGORIES_SCHEMA,
   MSE_TAGS_SCHEMA,
   MSE_MEDIA_SCHEMA,
-  MSE_SEARCH_FILTERS_SCHEMA
+  MSE_SEARCH_FILTERS_SCHEMA,
+  MSE_CONTENT_SCHEMA
 ]);
 
 /**

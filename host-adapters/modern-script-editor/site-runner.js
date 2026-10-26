@@ -86,6 +86,20 @@
     // Opcional: sites antigos/testes que não informam este atributo caem no
     // comportamento anterior (tudo resolvido contra `releaseBase`).
     var platformTemplateBase = getAttr(s, "data-platform-template-base", undefined);
+    // Nomes de template tratados como "da plataforma" (resolvidos contra
+    // platformTemplateBase em vez de releaseBase — ver site-boot.js#
+    // createTemplateLayoutResolver). Default (ausente) é ["mse-default",
+    // "system"], aplicado dentro do próprio site-boot.js; um site cujo
+    // template também vive no pacote do mse-platform (ex.
+    // "minijoomla-classic") acrescenta esse nome aqui via CSV, em vez de
+    // publicar o template dentro do pacote do site.
+    var platformTemplateNamesRaw = getAttr(s, "data-platform-template-names", "");
+    var platformTemplateNames = platformTemplateNamesRaw ? parseCsv(platformTemplateNamesRaw) : undefined;
+    // Adapter de client REST (ver site-boot.js#resolveRestClientFactory):
+    // "spmiddle" usa o adapter sobre o SPMIDDLE
+    // (host-adapters/modern-script-editor/spmiddle-rest-adapter.js) em vez
+    // de core/rest.js; ausente preserva o comportamento atual.
+    var restAdapter = getAttr(s, "data-rest-adapter", undefined);
 
     if (!releaseBase) {
       throw new Error("site-runner.js: data-release-base é obrigatório.");
@@ -108,6 +122,8 @@
       manifestPathByElemento: manifestPathByElemento,
       templatePathByName: templatePathByName,
       platformTemplateBase: platformTemplateBase,
+      platformTemplateNames: platformTemplateNames,
+      restAdapter: restAdapter,
       onLoadError: function (error, chave) {
         console.error("mse-platform site kernel: falha ao carregar \"" + chave + "\", mantendo último estado válido.", error);
       },

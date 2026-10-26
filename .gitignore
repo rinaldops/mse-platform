@@ -4,6 +4,7 @@ tmp/
 .vscode/
 node_modules/
 graphify-out/
+Joomla6.2.0/
 
 # OS
 .DS_Store

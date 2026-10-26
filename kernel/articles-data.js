@@ -15,7 +15,11 @@
  * deliberadamente a mesma lista de fallback já usada por
  * `components/com_content/publisher.js#resolvePublisherList`
  * (`CAMAPPublicacoes`/`MSEPublicacoes`/`Publicacoes`/`publicacoes`/
- * `publisher`). É uma CÓPIA, não um import daquele módulo: `publisher.js` é
+ * `publisher`), com `MSEContent` (ver `kernel/schemas/mse-content.js` ≈
+ * Joomla! `#__content`) acrescentado como PRIMEIRA opção — sites novos
+ * (ex. MINIJOOMLA) usam só o nome oficial em inglês; os 4 nomes legados
+ * continuam intactos para não quebrar nenhum site existente. É uma CÓPIA,
+ * não um import daquele módulo: `publisher.js` é
  * uma tela do Administrator (import pesado, não pensado para ser dependência
  * de um módulo de posição do site) — duplicar esta função pura de poucas
  * linhas evita acoplar módulos de posição a um Componente do Administrator.
@@ -55,7 +59,8 @@ function resolveArticleFields(fieldMap) {
  */
 export function resolveArticlesList(listIds) {
   return (
-    listIds?.CAMAPPublicacoes
+    listIds?.MSEContent
+    || listIds?.CAMAPPublicacoes
     || listIds?.MSEPublicacoes
     || listIds?.Publicacoes
     || listIds?.publicacoes

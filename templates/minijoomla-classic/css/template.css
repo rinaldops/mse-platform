@@ -1,0 +1,76 @@
+/* templates/minijoomla-classic/css/template.css
+ * Layout inspirado no Joomla! Cassiopeia: cabeçalho escuro com marca,
+ * navegação clara, trilha discreta, grade de conteúdo + barra lateral,
+ * rodapé escuro. Cores via custom properties (--minijoomla-*) com
+ * fallback embutido, sobrescritas por web-devs/MINIJOOMLA/theme/tokens.css.
+ */
+.minijoomla-classic-template {
+  min-height: 100%;
+  background: var(--minijoomla-bg, #ffffff);
+  color: var(--minijoomla-text, #212529);
+  font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+  line-height: 1.6;
+}
+.minijoomla-classic-template__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px 24px;
+  background: var(--minijoomla-header-bg, #1b1f22);
+  color: var(--minijoomla-header-text, #ffffff);
+}
+.minijoomla-classic-template__brand-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.minijoomla-classic-template__brand-mark { color: var(--minijoomla-accent, #f0ad4e); }
+.minijoomla-classic-template__region--nav {
+  display: flex;
+  gap: 16px;
+  font-weight: 600;
+}
+.minijoomla-classic-template__region--breadcrumbs {
+  color: var(--minijoomla-muted, #6c757d);
+  font-size: 0.875rem;
+  padding: 8px 0;
+}
+.minijoomla-classic-template__shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: min(100% - 48px, 1200px);
+  margin-inline: auto;
+  padding-block: 24px;
+}
+.minijoomla-classic-template__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+.minijoomla-classic-template__body:has(.minijoomla-classic-template__region--sidebar) {
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+}
+.minijoomla-classic-template__region--sidebar {
+  border-left: 1px solid var(--minijoomla-border, #e0e0e0);
+  padding-left: 24px;
+}
+.minijoomla-classic-template__region { min-width: 0; }
+.minijoomla-classic-template__region--footer {
+  background: var(--minijoomla-header-bg, #1b1f22);
+  color: var(--minijoomla-header-text, #ffffff);
+  padding: 24px;
+  text-align: center;
+}
+[data-mse-position]:empty { display: none; }
+@media (max-width: 767px) {
+  .minijoomla-classic-template__body:has(.minijoomla-classic-template__region--sidebar) {
+    grid-template-columns: 1fr;
+  }
+  .minijoomla-classic-template__region--sidebar { border-left: none; padding-left: 0; }
+}

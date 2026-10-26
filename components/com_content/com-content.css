@@ -1,0 +1,11 @@
+/* components/com_content/com-content.css
+ * Estilo mínimo do Componente público com_content — só legibilidade básica
+ * (sem cor/identidade de tenant, isso é responsabilidade do template ativo).
+ */
+.com-content__items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.com-content__item { display: flex; flex-direction: column; gap: 4px; }
+.com-content__link { font-weight: 600; text-decoration: none; }
+.com-content__summary { margin: 0; color: inherit; opacity: 0.85; }
+.com-content__empty, .com-content__status { opacity: 0.75; }
+.com-content__title { margin: 0 0 8px; }
+.com-content__intro { margin-bottom: 16px; }

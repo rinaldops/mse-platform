@@ -38,6 +38,24 @@ import { createSharePointRestClient, buildListItemsRequest, unwrapPage, batchGet
 import { createSharePointConfigurationStore } from "../../core/configuration-store.js";
 import { createKernelInstaller } from "../../kernel/installer.js";
 import { resolveActiveTemplateName, resolveTemplateNameForMenuItem } from "../../kernel/template-registry.js";
+import { createSpmiddleRestClient } from "./spmiddle-rest-adapter.js";
+
+/**
+ * Escolhe a função de criação de client REST a usar em `bootSiteKernel`
+ * (`restAdapter`, vindo de `data-rest-adapter` em `site-snippet.html` —
+ * ver `site-runner.js`). `"spmiddle"` usa o adapter sobre o SPMIDDLE
+ * (`spmiddle-rest-adapter.js` — ver seu cabeçalho sobre por que essa ponte
+ * mora aqui, não dentro do SPMIDDLE nem do kernel); qualquer outro valor
+ * (inclusive ausente/undefined) preserva o comportamento atual
+ * (`core/rest.js#createSharePointRestClient`) — nenhum site existente
+ * (CAMAP-AGP e qualquer outro sem este atributo) é afetado.
+ *
+ * @param {string} [restAdapter]
+ * @returns {typeof createSharePointRestClient}
+ */
+export function resolveRestClientFactory(restAdapter) {
+  return restAdapter === "spmiddle" ? createSpmiddleRestClient : createSharePointRestClient;
+}
 
 const TEMPLATE_STYLES_FIELDS = Object.freeze(["Id", "Title", "Template", "ClientId", "Home"]);
 
@@ -498,6 +516,8 @@ export function createTemplateLayoutResolver({
  *   manifestPathByElemento?: Record<string, string>,
  *   templatePathByName?: Record<string, string>,
  *   platformTemplateBase?: string,
+ *   platformTemplateNames?: string[],
+ *   restAdapter?: string,
  *   fetchImpl?: typeof fetch,
  *   services?: Record<string, unknown>,
  *   onLoadError?: (error: Error, chave: string) => void,
@@ -517,12 +537,15 @@ export async function bootSiteKernel({
   manifestPathByElemento = {},
   templatePathByName = {},
   platformTemplateBase,
+  platformTemplateNames,
+  restAdapter,
   fetchImpl = globalThis.fetch,
   services = {},
   onLoadError,
   onModuleError
 } = {}) {
-  const client = createSharePointRestClient({ webUrl, fetchImpl });
+  const createRestClient = resolveRestClientFactory(restAdapter);
+  const client = createRestClient({ webUrl, fetchImpl });
   const listIdsPromise = resolveKernelListIds(client);
   const resolvedListIds = await listIdsPromise;
   // O kernel usa GUIDs crus nos loaders; as telas administrativas recebem o
@@ -557,6 +580,6 @@ export async function bootSiteKernel({
     services: administratorServices,
     onLoadError,
     onModuleError,
-    resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule, platformTemplateBase, loadTemplateStyles })
+    resolveLayout: createTemplateLayoutResolver({ releaseBase, templatePathByName, importModule, platformTemplateBase, platformTemplateNames, loadTemplateStyles })
   });
 }

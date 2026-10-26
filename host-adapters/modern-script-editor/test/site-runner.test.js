@@ -165,4 +165,55 @@ async function runWithAttributes(attributes) {
   console.log("site-runner.test.js: sem data-platform-template-base, platformTemplateBase é undefined (sem regressão) ok.");
 }
 
+// (5) data-rest-adapter chega intacto a bootSiteKernel({ restAdapter });
+// ausente -> restAdapter === undefined (comportamento prévio preservado).
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/mse-platform/current",
+    "data-positions": "hero,rodape",
+    "data-rest-adapter": "spmiddle"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.equal(captured.bootOptions.restAdapter, "spmiddle", "data-rest-adapter deve chegar intacto em bootSiteKernel({ restAdapter })");
+  console.log("site-runner.test.js: data-rest-adapter chega a bootSiteKernel({ restAdapter }) ok.");
+}
+
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/mse-platform/current",
+    "data-positions": "hero,rodape"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.equal(captured.bootOptions.restAdapter, undefined, "sem o atributo, restAdapter deve ser undefined");
+  console.log("site-runner.test.js: sem data-rest-adapter, restAdapter é undefined (sem regressão) ok.");
+}
+
+// (6) data-platform-template-names (CSV) chega a bootSiteKernel como
+// array; ausente -> platformTemplateNames === undefined (default de
+// site-boot.js aplica ["mse-default","system"] por conta própria).
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/camap-agp-modules/0.1.0",
+    "data-positions": "hero,rodape",
+    "data-platform-template-names": "mse-default,system,minijoomla-classic"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.deepEqual(
+    captured.bootOptions.platformTemplateNames,
+    ["mse-default", "system", "minijoomla-classic"],
+    "data-platform-template-names deve chegar como array em bootSiteKernel({ platformTemplateNames })"
+  );
+  console.log("site-runner.test.js: data-platform-template-names chega a bootSiteKernel({ platformTemplateNames }) ok.");
+}
+
+{
+  const captured = await runWithAttributes({
+    "data-release-base": "https://example.invalid/SiteAssets/mse-platform/current",
+    "data-positions": "hero,rodape"
+  });
+  assert.ok(captured.bootOptions, "bootSiteKernel deveria ter sido chamado");
+  assert.equal(captured.bootOptions.platformTemplateNames, undefined, "sem o atributo, platformTemplateNames deve ser undefined");
+  console.log("site-runner.test.js: sem data-platform-template-names, platformTemplateNames é undefined (sem regressão) ok.");
+}
+
 console.log("site-runner.test.js: verificações concluídas com sucesso.");

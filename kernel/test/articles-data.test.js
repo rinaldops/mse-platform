@@ -15,6 +15,12 @@ assert.deepEqual(
   resolveArticlesList({ publisher: { listId: "e" }, CAMAPPublicacoes: { listId: "a" } }),
   { listId: "a" }
 );
+assert.deepEqual(resolveArticlesList({ MSEContent: { listId: "f" } }), { listId: "f" });
+assert.deepEqual(
+  resolveArticlesList({ MSEContent: { listId: "f" }, CAMAPPublicacoes: { listId: "a" } }),
+  { listId: "f" },
+  "MSEContent (nome oficial Joomla!, ex. consumidor MINIJOOMLA) tem precedência sobre os nomes legados"
+);
 
 // --- createArticlesReadService: validação de parâmetros --------------------
 

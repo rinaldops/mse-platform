@@ -1,0 +1,15 @@
+{
+  "name": "minijoomla-classic",
+  "version": "0.1.0",
+  "title": "MINIJOOMLA — Template clássico",
+  "description": "Template visual inspirado no Joomla! Cassiopeia, para o consumidor MINIJOOMLA.",
+  "type": "site-template",
+  "entrypoint": "./index.js",
+  "styles": ["./css/template.css"],
+  "positions": ["topo", "menu-principal", "breadcrumbs", "lateral", "rodape"],
+  "componentPosition": "conteudo-principal",
+  "language": "pt-BR",
+  "status": "active",
+  "scope": "consumer",
+  "runtime": { "router": "kernel", "data": "sharepoint", "acl": "sharepoint", "templates": "minijoomla" }
+}
