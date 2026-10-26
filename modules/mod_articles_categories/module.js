@@ -1,7 +1,6 @@
-import { resolveArticlesList } from "../../kernel/articles-data.js";
 import { settingsDefaults } from "../../core/module-contract.js";
 import { ARTICLES_CATEGORIES_SETTINGS_SCHEMA } from "./articles-categories-settings-schema.js";
-import { createArticlesCategoriesReadService, resolveCategoriesTree, readArticleCountsByCategory } from "./articles-categories-data.js";
+import { createArticlesCategoriesReadService, resolveCategoriesTree } from "./articles-categories-data.js";
 import { createArticlesCategoriesView } from "./articles-categories-view.js";
 
 const DEFAULTS = settingsDefaults(ARTICLES_CATEGORIES_SETTINGS_SCHEMA);
@@ -29,7 +28,6 @@ export async function mount({ root, services, config = {} } = {}) {
 
   const parent = config.parent ?? DEFAULTS.parent ?? null;
   const showDescription = config.showDescription ?? DEFAULTS.showDescription;
-  const numitems = config.numitems ?? DEFAULTS.numitems;
   const showChildren = config.showChildren ?? DEFAULTS.showChildren;
   const count = config.count ?? DEFAULTS.count;
   const maxlevel = config.maxlevel ?? DEFAULTS.maxlevel;
@@ -41,17 +39,8 @@ export async function mount({ root, services, config = {} } = {}) {
     const categories = await service.listCategories();
     const tree = resolveCategoriesTree(categories, { parent, maxlevel, showChildren, count });
 
-    let counts = null;
-    if (numitems) {
-      // Degrada graciosamente quando a lista de artigos não está disponível
-      // (ver cabeçalho de articles-categories-data.js): mostra categorias
-      // sem contagem, em vez de falhar o módulo inteiro.
-      const articlesList = resolveArticlesList(services?.listIds);
-      counts = await readArticleCountsByCategory({ client: services?.adminClient, list: articlesList }, categories);
-    }
-
     if (disposed) return Object.freeze({ dispose() {} });
-    disposeView = createArticlesCategoriesView({ root, tree, counts, showDescription });
+    disposeView = createArticlesCategoriesView({ root, tree, showDescription });
   } catch {
     if (!disposed) root.replaceChildren(statusElement(document, "Não foi possível carregar as categorias."));
   }

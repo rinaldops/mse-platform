@@ -1,10 +1,8 @@
 /**
  * Serviço de leitura de categorias para o módulo de posição
  * `mod_articles_categories` — diferente dos demais módulos `mod_articles_*`
- * desta Wave, lê `MSECategories` (via `kernel/categories.js`), não
- * `CAMAPPublicacoes`. A contagem de artigos por categoria (`numitems`) é
- * opcional e só acontece quando uma lista de artigos foi resolvida (ver
- * cabeçalho de `articles-categories-settings-schema.js`).
+ * desta Wave, lê `MSECategories` (via `kernel/categories.js`). O piloto não
+ * acessa conteúdo nem calcula contagens; isso pertence a um contrato posterior.
  */
 
 import { listAdminItems } from "../../kernel/admin-data.js";

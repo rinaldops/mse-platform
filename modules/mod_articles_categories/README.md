@@ -10,14 +10,11 @@ descrição e contagem de artigos opcionais). Equivalente ao
 - Lê as categorias via `services.adminClient` + `services.listIds.MSECategories`
   (`kernel/categories.js#buildCategoryTree`).
 - Parâmetros: `parent` (Id/Alias/Título — restringe a árvore a partir dessa
-  categoria), `showDescription`, `numitems` (contagem de artigos
-  publicados por categoria), `showChildren` (mostra subcategorias),
+  categoria), `showDescription`, `showChildren` (mostra subcategorias),
   `count` (limite de categorias no nível exibido) e `maxlevel` (limite de
   profundidade).
-- `numitems`, quando habilitado, também lê `CAMAPPublicacoes` (via
-  `kernel/articles-data.js#resolveArticlesList`) para contar artigos por
-  categoria — se essa lista não estiver disponível, o módulo degrada
-  mostrando as categorias sem contagem, em vez de falhar.
+- O piloto não calcula contagem de conteúdo; essa dependência será avaliada em
+  contrato separado, sem ampliar o escopo da primeira lista migrada.
 - Posição padrão: `lateral` (ver `templates/mse-default/template.json`).
 
 ## Limites

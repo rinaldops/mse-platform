@@ -15,12 +15,7 @@ export const ARTICLES_CATEGORIES_MANIFEST = Object.freeze({
   // categorias é tipicamente um bloco lateral de navegação complementar.
   positions: ["lateral"],
   dataSources: [
-    // Diferente dos demais módulos mod_articles_* desta Wave: a fonte
-    // PRIMÁRIA aqui é MSECategories (não CAMAPPublicacoes) — este módulo
-    // lista categorias, não artigos. CAMAPPublicacoes só é lido quando
-    // `numitems` está habilitado (contagem de artigos por categoria).
-    { key: "categories", type: "list", internalName: "MSECategories", displayName: "MSE Categorias" },
-    { key: "articles", type: "list", internalName: "CAMAPPublicacoes", displayName: "MSE Publicações", required: false }
+    { key: "categories", type: "list", internalName: "MSECategories", displayName: "MSE Categorias" }
   ],
   // Mesmo princípio dos demais módulos desta Wave: settings: true.
   capabilities: { full: true, summary: true, settings: true, provisioning: false },

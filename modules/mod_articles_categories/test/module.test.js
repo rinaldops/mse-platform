@@ -39,7 +39,7 @@ const services = {
       return articles;
     }
   },
-  listIds: { CAMAPPublicacoes: { listId: "guid-fake" }, MSECategories: { listId: "cat-guid" } }
+  listIds: { MSECategories: { listId: "cat-guid" } }
 };
 
 // sem numitems: não deve precisar ler articles
