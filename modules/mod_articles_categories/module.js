@@ -8,6 +8,8 @@ const DEFAULTS = settingsDefaults(ARTICLES_CATEGORIES_SETTINGS_SCHEMA);
 function readCategoriesService(services) {
   const client = services?.adminClient;
   const list = services?.listIds?.MSECategories;
+  const repository = services?.repositories?.mseCategories;
+  if (repository) return createArticlesCategoriesReadService({ repository });
   if (!client || !list) {
     throw new TypeError("services.adminClient e services.listIds.MSECategories são obrigatórios para o módulo de Artigos — Lista de Categorias.");
   }

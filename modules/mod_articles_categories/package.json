@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test/contract.test.js && node test/module.test.js && node test/articles-categories-view.test.js && node test/articles-categories-data.test.js"
+    "test": "node test/contract.test.js && node test/module.test.js && node test/articles-categories-view.test.js && node test/articles-categories-data.test.js && node test/spmiddle-bridge.test.js"
   }
 }

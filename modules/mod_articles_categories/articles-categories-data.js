@@ -12,19 +12,47 @@ import { buildCategoryTree, listPublishedCategories, resolveArticleCategory, fil
 
 const CATEGORY_FIELDS = ["Id", "Title", "Alias", "Extension", "Description", "ParentId", "Level", "Ordering", "Published"];
 
+function mapRepositoryCategory(category) {
+  if (!category || typeof category !== "object") throw new TypeError("categoria do repository deve ser um objeto.");
+  return {
+    Id: category.id,
+    Title: category.title,
+    Alias: category.alias,
+    Extension: category.extension,
+    Description: category.description,
+    ParentId: category.parentId,
+    Level: category.level,
+    Ordering: category.ordering,
+    Published: category.published,
+    ParamsJson: category.paramsJson
+  };
+}
+
 /**
  * @param {{ client: { getListItems: Function }, list: {listId: string} }} options
  * @returns {{ listCategories: () => Promise<object[]> }}
  */
-export function createArticlesCategoriesReadService({ client, list } = {}) {
-  if (!client || typeof client.getListItems !== "function") {
-    throw new TypeError("client deve expor getListItems().");
+export function createArticlesCategoriesReadService({ client, list, repository } = {}) {
+  if (repository && typeof repository.findMany !== "function") {
+    throw new TypeError("repository deve expor findMany().");
   }
-  if (!list || typeof list !== "object") {
+  if (!client || typeof client.getListItems !== "function") {
+    if (!repository) throw new TypeError("client deve expor getListItems().");
+  }
+  if (!repository && (!list || typeof list !== "object")) {
     throw new TypeError("list deve ser o identificador resolvido de MSECategories ({ listId }).");
   }
 
   async function listCategories() {
+    if (repository) {
+      const result = await repository.findMany({
+        select: ["id", "title", "alias", "extension", "description", "parentId", "level", "ordering", "published"],
+        filter: { field: "published", operator: "eq", value: "Published" },
+        orderBy: [{ field: "ordering", direction: "asc" }],
+        pageSize: 100
+      });
+      return result.items.map(mapRepositoryCategory);
+    }
     return listAdminItems({ client, list, select: CATEGORY_FIELDS, orderby: "Ordering asc" });
   }
 

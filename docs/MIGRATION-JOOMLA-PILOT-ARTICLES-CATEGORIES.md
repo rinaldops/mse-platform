@@ -12,6 +12,8 @@
   `ParentId`, `Level`, `Ordering`, `Published`;
 - ordenação: `Ordering asc`;
 - transformação: filtro de publicados e árvore hierárquica;
+- bridge explícito entre entidades de domínio SPMIDDLE e o shape Joomla-like
+  consumido pela árvore;
 - contagem de conteúdo: fora do primeiro gate para manter uma única lista;
 - provisioning remoto: não executado.
 
@@ -19,9 +21,10 @@
 
 1. manifest declara somente `MSECategories`;
 2. adapter não contém acesso REST direto;
-3. serviço recebe cliente e identificador resolvido pelo host;
-4. testes cobrem validação, consulta, ordenação e árvore;
-5. nenhum nome físico legado é necessário para executar o piloto fake.
+3. serviço recebe repository SPMIDDLE ou cliente legado explicitamente;
+4. bridge converte entidades sem expor campos SharePoint ao restante do módulo;
+5. testes cobrem validação, consulta, ordenação e árvore;
+6. nenhum nome físico legado é necessário para executar o piloto fake.
 
 ## Próximo gate
 

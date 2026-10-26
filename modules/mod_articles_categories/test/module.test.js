@@ -55,3 +55,17 @@ assert.ok(root.children.length > 0);
 handle2.dispose();
 
 console.log("articles-categories module.test.js: verificações concluídas com sucesso.");
+
+const repositoryRoot = new FakeElement("div", document);
+const repositoryServices = {
+  repositories: {
+    mseCategories: {
+      async findMany() {
+        return { items: [{ id: 10, title: "Notícias", alias: "noticias", parentId: 0, ordering: 1, published: "Published" }] };
+      }
+    }
+  }
+};
+const repositoryHandle = await mount({ root: repositoryRoot, services: repositoryServices });
+assert.ok(repositoryRoot.children.length > 0);
+repositoryHandle.dispose();
