@@ -29,16 +29,13 @@ modules/mod_articles_news
 modules/mod_articles_popular
 modules/mod_breadcrumbs
 modules/mod_footer
-modules/mod_forum
 modules/mod_home
 modules/mod_menu
 modules/mod_random_image
 modules/mod_related_items
-modules/mod_recursos
 modules/mod_search
 modules/mod_tags_popular
 modules/mod_tags_similar
-modules/mod_videoteca
 ```
 
 ### Schemas de infraestrutura existentes
@@ -100,6 +97,6 @@ Antes de mudar qualquer schema de consumidor:
 
 ## Próximo item de análise
 
-O primeiro fluxo deve ser escolhido entre os componentes/módulos válidos para o
-site CAMAP. `mod_recursos`/Explore Mais está explicitamente fora do escopo desse
-site e não pode ser selecionado como piloto.
+O primeiro fluxo deve ser escolhido entre os componentes e módulos permitidos
+pela matriz de candidatos, após confirmação de seu contrato de dados e de seu
+caminho legado.
